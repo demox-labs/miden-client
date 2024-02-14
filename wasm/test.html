@@ -8,14 +8,25 @@
     <script type="module" src="./dist/index.js"></script>
     <script type="module">
         // Example of using the exported `greet` function directly in HTML
-        import { greet } from './dist/index.js';
+        import { greet, create_new_account } from './dist/index.js';
 
         async function loadAndGreet() {
             // Since greet is exported asynchronously, ensure it's available
             await greet(); // Assuming `greet` is a function that can be awaited
         }
 
+        async function createAndLogNewAccount() {
+            // Call create_new_account and log its result
+            try {
+                const accountResult = await create_new_account();
+                console.log(accountResult); // This will log the returned string from Rust
+            } catch (error) {
+                console.error('Error creating new account:', error);
+            }
+        }
+
         loadAndGreet().catch(console.error);
+        createAndLogNewAccount()
     </script>
 </body>
 </html>
