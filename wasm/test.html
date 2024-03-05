@@ -8,14 +8,26 @@
     <script type="module" src="./dist/index.js"></script>
     <script type="module">
         // Example of using the exported `greet` function directly in HTML
-        import { greet } from './dist/index.js';
+        import { greet, create_indexed_db } from './dist/index.js';
 
         async function loadAndGreet() {
             // Since greet is exported asynchronously, ensure it's available
             await greet(); // Assuming `greet` is a function that can be awaited
         }
 
-        loadAndGreet().catch(console.error);
+        async function createIndexedDb() {
+            console.log('Creating indexed db');
+            try {
+                await create_indexed_db();
+                console.log('Indexed db created');
+            } catch (error) {
+                console.error('Error creating indexed db', error);
+            
+            }
+        }
+
+        //loadAndGreet().catch(console.error);
+        createIndexedDb().catch(console.error);
     </script>
 </body>
 </html>
