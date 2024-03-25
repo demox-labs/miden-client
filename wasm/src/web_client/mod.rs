@@ -31,12 +31,12 @@ impl WebClient {
     }
 
     // Exposed method to JS to create an internal client
-    pub async fn create_client(&mut self) -> Result<JsValue, JsValue> {
-        let web_store = WebStore::new().await.map_err(|_| JsValue::from_str("Failed to initialize WebStore"))?;
-        let web_rpc_client = WebRpcClient::new("http://localhost:57291");
+    // pub async fn create_client(&mut self) -> Result<JsValue, JsValue> {
+    //     let web_store = WebStore::new().await.map_err(|_| JsValue::from_str("Failed to initialize WebStore"))?;
+    //     let web_rpc_client = WebRpcClient::new("http://localhost:57291");
 
-        self.inner = Some(Client::new(web_rpc_client, web_store));
+    //     self.inner = Some(Client::new(web_rpc_client, web_store));
 
-        Ok(JsValue::from_str("Client created successfully"))
-    }
+    //     Ok(JsValue::from_str("Client created successfully"))
+    // }
 }

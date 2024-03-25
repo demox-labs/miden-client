@@ -16,7 +16,7 @@ export enum Table {
   ChainMmrNodes = 'chainMmrNodes',
 }
 
-const db = new Dexie('MidenClientDB')
+export const db = new Dexie('MidenClientDB')
 db.version(1).stores({
   [Table.AccountCode]: indexes('root'),
   [Table.AccountStorage]: indexes('root'),
