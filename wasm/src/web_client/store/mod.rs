@@ -5,30 +5,28 @@ use wasm_bindgen_futures::*;
 
 use async_trait::async_trait;
 
-#[wasm_bindgen]
+#[wasm_bindgen(module = "/js/db-operations.js")]
 extern "C" {
-    pub type JsImplementor;
+    #[wasm_bindgen(js_name = setupIndexedDB)]
+    fn setup_indexed_db() -> js_sys::Promise;
 
-    #[wasm_bindgen(method)]
-    fn setup_indexed_db(this: &JsImplementor) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertGreeting)]
+    fn insert_greeting(greeting: String) -> js_sys::Promise;
 
-    #[wasm_bindgen(method)]
-    fn insert_greeting(this: &JsImplementor, greeting: String) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertAccountCode)]
+    fn insert_account_code_web(code_root: String, code: String, module: Vec<u8>) -> js_sys::Promise;
 
-    #[wasm_bindgen(method)]
-    fn insert_account_code_web(this: &JsImplementor, code_root: &str, code: String, module: Vec<u8>) -> js_sys::Promise;
-
-    #[wasm_bindgen(method)]
-    fn insert_account_storage_web(this: &JsImplementor, storage_roots: &str, storage_slots: Vec<u8>) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertAccountStorage)]
+    fn insert_account_storage_web(storage_roots: String, storage_slots: Vec<u8>) -> js_sys::Promise;
     
-    #[wasm_bindgen(method)]
-    fn insert_account_asset_vault_web(this: &JsImplementor, vault_root: &str, assets: String) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertAccountAssetVault)]
+    fn insert_account_asset_vault_web(vault_root: String, assets: String) -> js_sys::Promise;
 
-    #[wasm_bindgen(method)]
-    fn insert_account_auth_web(this: &JsImplementor, id: i64, auth_info: Vec<u8>) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertAccountAuth)]
+    fn insert_account_auth_web(id: i64, auth_info: Vec<u8>) -> js_sys::Promise;
 
-    #[wasm_bindgen(method)]
-    fn insert_account_record_web(this: &JsImplementor, id: i64, code_root: String, storage_root: String, vault_root: String, nonce: i64, committed: bool, account_seed: Option<Vec<u8>>) -> js_sys::Promise;
+    #[wasm_bindgen(js_name = insertAccountRecord)]
+    fn insert_account_record_web(id: i64, code_root: String, storage_root: String, vault_root: String, nonce: i64, committed: bool, account_seed: Option<Vec<u8>>) -> js_sys::Promise;
 }
 
 // TYPES
@@ -41,14 +39,12 @@ type SerializedAccountData = (i64, String, String, String, i64, bool);
 
 // ================================================================================================
 
-pub struct WebStore {
-  js_implementor: JsImplementor
-}
+pub struct WebStore {}
 
 impl WebStore {
-    pub async fn new(js_implementor: JsImplementor) -> Result<WebStore, ()> {
-        let _ = JsFuture::from(js_implementor.setup_indexed_db()).await;
-        Ok(WebStore { js_implementor })
+    pub async fn new() -> Result<WebStore, ()> {
+        let _ = JsFuture::from(setup_indexed_db()).await;
+        Ok(WebStore {})
     }
 }
 
@@ -58,7 +54,7 @@ impl Store for WebStore {
         &mut self, 
         data: String
     ) -> Result<(), ()> {
-        let result = JsFuture::from(self.js_implementor.insert_greeting(data)).await;
+        let result = JsFuture::from(insert_greeting(data)).await;
         match result {
             Ok(_) => Ok(()),
             Err(_) => Err(()),
