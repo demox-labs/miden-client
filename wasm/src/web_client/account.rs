@@ -76,10 +76,18 @@ impl WebClient {
         &mut self,
         template: JsValue
     ) -> Result<JsValue, JsValue> {
+        // console_error_panic_hook::set_once();
+        // console log the template
+        web_sys::console::log_1(&template);
+        web_sys::console::log_1(&"new_account".into());
+        
         if let Some(ref mut client) = self.get_mut_inner() {
+            web_sys::console::log_1(&"new_account 1".into());
             let account_template_result: Result<AccountTemplate, _> = from_value(template);
+            web_sys::console::log_1(&"new_account 2".into());
             match account_template_result {
                 Ok(account_template) => {
+                    web_sys::console::log_1(&"new_account 3".into());
                     let client_template = match account_template {
                         AccountTemplate::BasicImmutable => accounts::AccountTemplate::BasicWallet {
                             mutable_code: false,
@@ -101,6 +109,7 @@ impl WebClient {
                         },
                         AccountTemplate::NonFungibleFaucet => todo!(),
                     };
+                    web_sys::console::log_1(&"new_account 4".into());
 
                     match client.new_account(client_template).await {
                         Ok((account, word)) => {

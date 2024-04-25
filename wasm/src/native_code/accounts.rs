@@ -58,6 +58,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
         &mut self,
         template: AccountTemplate,
     ) -> Result<(Account, Word), ClientError> {
+        web_sys::console::log_1(&"parse 1".into());
         let account_and_seed = match template {
             AccountTemplate::BasicWallet {
                 mutable_code,
@@ -73,6 +74,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
                 //self.new_fungible_faucet(token_symbol, decimals, max_supply, storage_mode).await
             }
         }?;
+        web_sys::console::log_1(&"parse 2".into());
 
         Ok(account_and_seed)
     }
@@ -88,13 +90,18 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
         mutable_code: bool,
         account_storage_mode: AccountStorageMode,
     ) -> Result<(Account, Word), ClientError>  {
+        web_sys::console::log_1(&"a account 1".into());
         let key_pair = SecretKey::with_rng(&mut self.rng);
+        web_sys::console::log_1(&"a account 2".into());
 
         let auth_scheme: AuthScheme = AuthScheme::RpoFalcon512 { pub_key: key_pair.public_key() };
+        web_sys::console::log_1(&"a account 3".into());
 
         // we need to use an initial seed to create the wallet account
         let mut init_seed = [0u8; 32];
+        web_sys::console::log_1(&"a account 4".into());
         self.rng.fill_bytes(&mut init_seed);
+        web_sys::console::log_1(&"a account 5".into());
 
         let (account, seed) = if !mutable_code {
             miden_lib::accounts::wallets::create_basic_wallet(
@@ -111,8 +118,20 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
                 account_storage_mode.into(),
             )
         }?;
+        web_sys::console::log_1(&"a account 55".into());
+        // log the keypair
+        web_sys::console::log_1(&format!("key_pair: {:?}", key_pair).into());
+        let auth_info = AuthInfo::RpoFalcon512(key_pair.clone());
 
+        web_sys::console::log_1(&"a account 6".into());
         let _ = self.insert_account(&account, Some(seed), &AuthInfo::RpoFalcon512(key_pair)).await;
+
+
+        web_sys::console::log_1(&"a account 7".into());
+
+        // let _ = self.insert_account(&account, Some(seed), &AuthInfo::RpoFalcon512(key_pair)).await;
+
+        // web_sys::console::log_1(&"a account 6".into());
 
         Ok((account, seed))
     }
