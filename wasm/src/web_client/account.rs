@@ -1,7 +1,10 @@
 use super::WebClient;
 
+use std::io::Cursor;
 use base64::encode;
+use base64::decode;
 use miden_objects::{accounts::{AccountData, AccountId}, assets::TokenSymbol};
+use miden_objects::crypto::dsa::rpo_falcon512::SecretKey;
 use miden_tx::utils::{Deserializable, Serializable};
 
 use crate::native_code::accounts;
@@ -71,6 +74,86 @@ impl WebClient {
             Err(JsValue::from_str("Client not initialized"))
         }
     }
+
+    pub fn new_key(&mut self) -> Result<JsValue, JsValue> {
+        if let Some(ref mut client) = self.get_mut_inner() {
+            web_sys::console::log_1(&"new_key".into());
+            let key_pair = client.new_key().unwrap();
+            web_sys::console::log_1(&"new_key 1".into());
+            let mut bytes = Vec::new();
+            key_pair.write_into(&mut bytes);
+            let base64_encoded = encode(&bytes);
+            Ok(JsValue::from_str(&base64_encoded))
+        } else {
+            Err(JsValue::from_str("Could not generate key pair"))
+        }
+    }
+
+    pub async fn new_account_with_key(
+        &mut self,
+        template: JsValue,
+        key_pair: JsValue
+    ) -> Result<JsValue, JsValue> {
+        // console log the template
+        let mut key_pair = decode(key_pair.as_string().unwrap()).unwrap();
+        let mut cursor = Cursor::new(key_pair);
+        let key_pair = SecretKey::read_from(&mut cursor).unwrap();
+        web_sys::console::log_1(&template);
+        web_sys::console::log_1(&"new_account".into());
+        
+        if let Some(ref mut client) = self.get_mut_inner() {
+            web_sys::console::log_1(&"new_account 1".into());
+            let account_template_result: Result<AccountTemplate, _> = from_value(template);
+            web_sys::console::log_1(&"new_account 2".into());
+            match account_template_result {
+                Ok(account_template) => {
+                    web_sys::console::log_1(&"new_account 3".into());
+                    let client_template = match account_template {
+                        AccountTemplate::BasicImmutable => accounts::AccountTemplate::BasicWallet {
+                            mutable_code: false,
+                            storage_mode: accounts::AccountStorageMode::Local,
+                        },
+                        AccountTemplate::BasicMutable => accounts::AccountTemplate::BasicWallet {
+                            mutable_code: true,
+                            storage_mode: accounts::AccountStorageMode::Local,
+                        },
+                        AccountTemplate::FungibleFaucet {
+                            token_symbol,
+                            decimals,
+                            max_supply,
+                        } => accounts::AccountTemplate::FungibleFaucet {
+                            token_symbol: TokenSymbol::new(&token_symbol).unwrap(),
+                            decimals: decimals.parse::<u8>().unwrap(),
+                            max_supply: max_supply.parse::<u64>().unwrap(),
+                            storage_mode: accounts::AccountStorageMode::Local,
+                        },
+                        AccountTemplate::NonFungibleFaucet => todo!(),
+                    };
+                    web_sys::console::log_1(&"new_account 4".into());
+
+                    match client.new_account_with_key(client_template, key_pair).await {
+                        Ok((account, word)) => {
+                            // Create a struct or tuple to hold both values
+                            let result = (account, word);
+                            // Convert directly to JsValue
+                            serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
+                        },
+                        Err(err) => {
+                            let error_message = format!("Failed to create new account: {:?}", err);
+                            Err(JsValue::from_str(&error_message))
+                        }
+                    }
+                },
+                Err(e) => {
+                    let error_message = format!("Failed to parse AccountTemplate: {:?}", e);
+                    Err(JsValue::from_str(&error_message))
+                }
+            }
+        } else {
+            Err(JsValue::from_str("Client not initialized"))
+        }
+    }
+
 
     pub async fn new_account(
         &mut self,
