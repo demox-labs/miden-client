@@ -1,3 +1,5 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(target_arch = "wasm32"))]
 use miden_client::{client::rpc::NodeRpcClient, store::Store};
 use miden_objects::{
     crypto::rand::FeltRng,

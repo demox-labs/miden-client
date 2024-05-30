@@ -1,11 +1,18 @@
+#[cfg(not(target_arch = "wasm32"))]
 use std::{env, fs::File, io::Write, path::Path, rc::Rc};
 
+#[cfg(not(target_arch = "wasm32"))]
 use clap::Parser;
+
+#[cfg(not(target_arch = "wasm32"))]
 use comfy_table::{presets, Attribute, Cell, ContentArrangement, Table};
+
+#[cfg(not(target_arch = "wasm32"))]
 use figment::{
     providers::{Format, Toml},
     Figment,
 };
+
 use miden_client::{
     client::{
         get_random_coin,
@@ -26,8 +33,10 @@ use miden_objects::{
 };
 use miden_tx::TransactionAuthenticator;
 use tracing::info;
+#[cfg(not(target_arch = "wasm32"))]
 use transactions::TransactionCmd;
 
+#[cfg(not(target_arch = "wasm32"))]
 use self::{
     account::AccountCmd,
     export::ExportCmd,
@@ -58,6 +67,7 @@ const CLIENT_CONFIG_FILE_NAME: &str = "miden-client.toml";
 pub const CLIENT_BINARY_NAME: &str = "miden";
 
 /// Root CLI struct
+#[cfg(not(target_arch = "wasm32"))]
 #[derive(Parser, Debug)]
 #[clap(name = "Miden", about = "Miden client", version, rename_all = "kebab-case")]
 pub struct Cli {
@@ -71,6 +81,7 @@ pub struct Cli {
 }
 
 /// CLI actions
+#[cfg(not(target_arch = "wasm32"))]
 #[derive(Debug, Parser)]
 pub enum Command {
     Account(AccountCmd),
@@ -94,6 +105,7 @@ pub enum Command {
 }
 
 /// CLI entry point
+#[cfg(not(target_arch = "wasm32"))]
 impl Cli {
     pub async fn execute(&self) -> Result<(), String> {
         let mut current_dir = std::env::current_dir().map_err(|err| err.to_string())?;
@@ -161,12 +173,14 @@ impl Cli {
 ///
 /// This function will look for the configuration file at the provided path. If the path is
 /// relative, searches in parent directories all the way to the root as well.
+#[cfg(not(target_arch = "wasm32"))]
 pub fn load_config(config_file: &Path) -> Result<ClientConfig, String> {
     Figment::from(Toml::file(config_file))
         .extract()
         .map_err(|err| format!("Failed to load {} config file: {err}", config_file.display()))
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn create_dynamic_table(headers: &[&str]) -> Table {
     let header_cells = headers
         .iter()
@@ -190,6 +204,7 @@ pub fn create_dynamic_table(headers: &[&str]) -> Table {
 /// `note_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one note found
 /// where `note_id_prefix` is a prefix of its id.
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn get_input_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -234,6 +249,51 @@ pub(crate) fn get_input_note_with_id_prefix<
         .expect("input_note_records should always have one element"))
 }
 
+#[cfg(target_arch = "wasm32")]
+pub async fn get_input_note_with_id_prefix<
+    N: NodeRpcClient,
+    R: FeltRng,
+    S: Store,
+    A: TransactionAuthenticator,
+>(
+    client: &Client<N, R, S, A>,
+    note_id_prefix: &str,
+) -> Result<InputNoteRecord, IdPrefixFetchError> {
+    let mut input_note_records = client
+        .get_input_notes(ClientNoteFilter::All).await
+        .map_err(|err| {
+            tracing::error!("Error when fetching all notes from the store: {err}");
+            IdPrefixFetchError::NoMatch(format!("note ID prefix {note_id_prefix}").to_string())
+        })?
+        .into_iter()
+        .filter(|note_record| note_record.id().to_hex().starts_with(note_id_prefix))
+        .collect::<Vec<_>>();
+
+    if input_note_records.is_empty() {
+        return Err(IdPrefixFetchError::NoMatch(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+    if input_note_records.len() > 1 {
+        let input_note_record_ids = input_note_records
+            .iter()
+            .map(|input_note_record| input_note_record.id())
+            .collect::<Vec<_>>();
+        tracing::error!(
+            "Multiple notes found for the prefix {}: {:?}",
+            note_id_prefix,
+            input_note_record_ids
+        );
+        return Err(IdPrefixFetchError::MultipleMatches(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+
+    Ok(input_note_records
+        .pop()
+        .expect("input_note_records should always have one element"))
+}
+
 /// Returns the client output note whose ID starts with `note_id_prefix`
 ///
 /// # Errors
@@ -242,6 +302,7 @@ pub(crate) fn get_input_note_with_id_prefix<
 /// `note_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one note found
 /// where `note_id_prefix` is a prefix of its id.
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn get_output_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -286,6 +347,51 @@ pub(crate) fn get_output_note_with_id_prefix<
         .expect("input_note_records should always have one element"))
 }
 
+#[cfg(target_arch = "wasm32")]
+pub async fn get_output_note_with_id_prefix<
+    N: NodeRpcClient,
+    R: FeltRng,
+    S: Store,
+    A: TransactionAuthenticator,
+>(
+    client: &Client<N, R, S, A>,
+    note_id_prefix: &str,
+) -> Result<OutputNoteRecord, IdPrefixFetchError> {
+    let mut output_note_records = client
+        .get_output_notes(ClientNoteFilter::All).await
+        .map_err(|err| {
+            tracing::error!("Error when fetching all notes from the store: {err}");
+            IdPrefixFetchError::NoMatch(format!("note ID prefix {note_id_prefix}").to_string())
+        })?
+        .into_iter()
+        .filter(|note_record| note_record.id().to_hex().starts_with(note_id_prefix))
+        .collect::<Vec<_>>();
+
+    if output_note_records.is_empty() {
+        return Err(IdPrefixFetchError::NoMatch(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+    if output_note_records.len() > 1 {
+        let output_note_record_ids = output_note_records
+            .iter()
+            .map(|input_note_record| input_note_record.id())
+            .collect::<Vec<_>>();
+        tracing::error!(
+            "Multiple notes found for the prefix {}: {:?}",
+            note_id_prefix,
+            output_note_record_ids
+        );
+        return Err(IdPrefixFetchError::MultipleMatches(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+
+    Ok(output_note_records
+        .pop()
+        .expect("input_note_records should always have one element"))
+}
+
 /// Returns the client account whose ID starts with `account_id_prefix`
 ///
 /// # Errors
@@ -294,6 +400,7 @@ pub(crate) fn get_output_note_with_id_prefix<
 /// `account_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one account found
 /// where `account_id_prefix` is a prefix of its id.
+#[cfg(not(target_arch = "wasm32"))]
 fn get_account_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -336,6 +443,49 @@ fn get_account_with_id_prefix<
     Ok(accounts.pop().expect("account_ids should always have one element"))
 }
 
+#[cfg(target_arch = "wasm32")]
+async fn get_account_with_id_prefix<
+    N: NodeRpcClient,
+    R: FeltRng,
+    S: Store,
+    A: TransactionAuthenticator,
+>(
+    client: &Client<N, R, S, A>,
+    account_id_prefix: &str,
+) -> Result<AccountStub, IdPrefixFetchError> {
+    let mut accounts = client
+        .get_account_stubs().await
+        .map_err(|err| {
+            tracing::error!("Error when fetching all accounts from the store: {err}");
+            IdPrefixFetchError::NoMatch(
+                format!("account ID prefix {account_id_prefix}").to_string(),
+            )
+        })?
+        .into_iter()
+        .filter(|(account_stub, _)| account_stub.id().to_hex().starts_with(account_id_prefix))
+        .map(|(acc, _)| acc)
+        .collect::<Vec<_>>();
+
+    if accounts.is_empty() {
+        return Err(IdPrefixFetchError::NoMatch(
+            format!("account ID prefix {account_id_prefix}").to_string(),
+        ));
+    }
+    if accounts.len() > 1 {
+        let account_ids = accounts.iter().map(|account_stub| account_stub.id()).collect::<Vec<_>>();
+        tracing::error!(
+            "Multiple accounts found for the prefix {}: {:?}",
+            account_id_prefix,
+            account_ids
+        );
+        return Err(IdPrefixFetchError::MultipleMatches(
+            format!("account ID prefix {account_id_prefix}").to_string(),
+        ));
+    }
+
+    Ok(accounts.pop().expect("account_ids should always have one element"))
+}
+
 /// Parses a user provided account id string and returns the corresponding `AccountId`
 ///
 /// `account_id` can fall into two categories:
@@ -347,6 +497,7 @@ fn get_account_with_id_prefix<
 ///
 /// - Will return a `IdPrefixFetchError` if the provided account id string can't be parsed as an
 /// `AccountId` and does not correspond to an account tracked by the client either.
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn parse_account_id<
     N: NodeRpcClient,
     R: FeltRng,
@@ -366,6 +517,27 @@ pub(crate) fn parse_account_id<
     Ok(account_id)
 }
 
+#[cfg(target_arch = "wasm32")]
+pub async fn parse_account_id<
+    N: NodeRpcClient,
+    R: FeltRng,
+    S: Store,
+    A: TransactionAuthenticator,
+>(
+    client: &Client<N, R, S, A>,
+    account_id: &str,
+) -> Result<AccountId, String> {
+    if let Ok(account_id) = AccountId::from_hex(account_id) {
+        return Ok(account_id);
+    }
+
+    let account_id = get_account_with_id_prefix(client, account_id).await
+        .map_err(|_err| "Input account ID {account_id} is neither a valid Account ID nor a prefix of a known Account ID")?
+        .id();
+    Ok(account_id)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 pub(crate) fn update_config(config_path: &Path, client_config: ClientConfig) -> Result<(), String> {
     let config_as_toml_string = toml::to_string_pretty(&client_config)
         .map_err(|err| format!("error formatting config: {err}"))?;

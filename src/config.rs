@@ -1,3 +1,6 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(target_arch = "wasm32"))]
+
 use core::fmt;
 use std::path::PathBuf;
 

@@ -1,3 +1,7 @@
+
+#[cfg(target_arch = "wasm32")]
+use async_std::task;
+
 use alloc::rc::Rc;
 use core::cell::RefCell;
 
@@ -9,7 +13,7 @@ use miden_objects::{
 use miden_tx::{AuthenticationError, TransactionAuthenticator};
 use rand::Rng;
 
-use crate::store::Store;
+use crate::{errors::StoreError, store::Store};
 
 /// Represents an authenticator based on a [Store]
 pub struct StoreAuthenticator<R, S> {
@@ -23,6 +27,7 @@ impl<R: Rng, S: Store> StoreAuthenticator<R, S> {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
 impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
     /// Gets a signature over a message, given a public key.
     ///
@@ -42,6 +47,36 @@ impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
         let secret_key = self
             .store
             .get_account_auth_by_pub_key(pub_key)
+            .map_err(|_| AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key))))?;
+
+        let AuthSecretKey::RpoFalcon512(k) = secret_key;
+        get_falcon_signature(&k, message, &mut *rng)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
+    /// Gets a signature over a message, given a public key.
+    ///
+    /// The pub key should correspond to one of the keys tracked by the authenticator's store.
+    ///
+    /// # Errors
+    /// If the public key is not found in the store, [AuthenticationError::UnknownKey] is
+    /// returned.
+    fn get_signature(
+        &self,
+        pub_key: Word,
+        message: Word,
+        _account_delta: &AccountDelta,
+    ) -> Result<Vec<Felt>, AuthenticationError> {
+        // Explicitly annotate the return type of task::block_on to ensure correct handling
+        let mut rng = self.rng.borrow_mut();
+
+        let result: Result<AuthSecretKey, StoreError> = task::block_on(self.store.get_account_auth_by_pub_key(pub_key));
+
+        let secret_key = self
+            .store
+            .get_account_auth_by_pub_key(pub_key).await
             .map_err(|_| AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key))))?;
 
         let AuthSecretKey::RpoFalcon512(k) = secret_key;
