@@ -1,3 +1,6 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+
 use std::time::Duration;
 
 use async_trait::async_trait;

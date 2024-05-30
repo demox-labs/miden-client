@@ -1,7 +1,9 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
 use std::{fs::File, io::Write, path::PathBuf};
 
 use clap::Parser;
-use miden_client::config::{ClientConfig, Endpoint};
+use crate::config::{ClientConfig, Endpoint};
 
 // Init COMMAND
 // ================================================================================================

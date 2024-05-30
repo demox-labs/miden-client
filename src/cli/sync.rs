@@ -1,4 +1,6 @@
-use miden_client::{
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+use crate::{
     client::{rpc::NodeRpcClient, Client},
     store::Store,
 };

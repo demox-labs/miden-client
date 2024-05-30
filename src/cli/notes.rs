@@ -1,6 +1,10 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+use std::collections::{HashMap, HashSet};
+
 use clap::ValueEnum;
-use comfy_table::{presets, Attribute, Cell, ContentArrangement, Table};
-use miden_client::{
+use comfy_table::{presets, Attribute, Cell, ContentArrangement};
+use crate::{
     client::{
         rpc::NodeRpcClient,
         transactions::transaction_request::known_script_roots::{P2ID, P2IDR, SWAP},
@@ -105,19 +109,29 @@ fn list_notes<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticato
     client: Client<N, R, S, A>,
     filter: ClientNoteFilter,
 ) -> Result<(), String> {
-    let input_notes = client
-        .get_input_notes(filter.clone())?
-        .into_iter()
-        .map(|input_note_record| note_summary(Some(&input_note_record), None))
-        .collect::<Result<Vec<CliNoteSummary>, String>>()?;
-    let output_notes = client
-        .get_output_notes(filter.clone())?
-        .into_iter()
-        .map(|output_note_record| note_summary(None, Some(&output_note_record)))
-        .collect::<Result<Vec<CliNoteSummary>, String>>()?;
+    let input_notes = client.get_input_notes(filter.clone())?;
+    let output_notes = client.get_output_notes(filter.clone())?;
 
-    print_notes_summary(input_notes, "Input Notes")?;
-    print_notes_summary(output_notes, "Output Notes")
+    let mut all_note_ids = HashSet::new();
+    let mut input_note_records = HashMap::new();
+    let mut output_note_records = HashMap::new();
+
+    for note in input_notes {
+        all_note_ids.insert(note.id().to_hex());
+        input_note_records.insert(note.id().to_hex(), note);
+    }
+
+    for note in output_notes {
+        all_note_ids.insert(note.id().to_hex());
+        output_note_records.insert(note.id().to_hex(), note);
+    }
+
+    let zipped_notes = all_note_ids
+        .iter()
+        .map(|note_id| (input_note_records.get(note_id), output_note_records.get(note_id)));
+
+    print_notes_summary(zipped_notes)?;
+    Ok(())
 }
 
 // SHOW NOTE
@@ -292,20 +306,50 @@ fn list_consumable_notes<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionA
 
 // HELPERS
 // ================================================================================================
-fn print_notes_summary<I>(notes: I, header: &str) -> Result<(), String>
+fn print_notes_summary<'a, I>(notes: I) -> Result<(), String>
 where
-    I: IntoIterator<Item = CliNoteSummary>,
+    I: IntoIterator<Item = (Option<&'a InputNoteRecord>, Option<&'a OutputNoteRecord>)>,
 {
-    let mut table = Table::new();
-    table
-        .load_preset(presets::UTF8_NO_BORDERS)
-        .set_content_arrangement(ContentArrangement::DynamicFullWidth);
-    table.set_header(vec![Cell::new(header).add_attribute(Attribute::Bold)]);
-    println!("\n{table}");
+    let mut table = create_dynamic_table(&[
+        "Note ID",
+        "Script Hash",
+        "Assets Hash",
+        "Inputs Hash",
+        "Serial Num",
+        "Type",
+        "Status",
+        "Exportable?",
+    ]);
 
-    for summary in notes {
-        println!(" {} {}", summary.id, summary.status);
+    for (input_note_record, output_note_record) in notes {
+        let CliNoteSummary {
+            id,
+            script_hash,
+            assets_hash,
+            inputs_commitment,
+            serial_num,
+            note_type,
+            status,
+            tag: _tag,
+            sender: _sender,
+            exportable,
+        } = note_summary(input_note_record, output_note_record)?;
+
+        let exportable = if exportable { "✔" } else { "✘" };
+
+        table.add_row(vec![
+            id,
+            script_hash,
+            assets_hash,
+            inputs_commitment,
+            serial_num,
+            note_type,
+            status,
+            exportable.to_string(),
+        ]);
     }
+
+    println!("{table}");
 
     Ok(())
 }
@@ -466,7 +510,7 @@ fn note_summary(
 mod tests {
     use std::env::temp_dir;
 
-    use miden_client::{
+    use crate::{
         client::transactions::transaction_request::TransactionTemplate,
         errors::IdPrefixFetchError,
         mock::{
@@ -551,9 +595,7 @@ mod tests {
         let transaction_request = client.build_transaction_request(transaction_template).unwrap();
         let transaction = client.new_transaction(transaction_request).unwrap();
         let created_note = transaction.created_notes().get_note(0).clone();
-        let proven_transaction =
-            client.prove_transaction(transaction.executed_transaction().clone()).unwrap();
-        client.submit_transaction(transaction, proven_transaction).await.unwrap();
+        client.submit_transaction(transaction).await.unwrap();
 
         // Ensure client has no input notes and one output note
         assert!(client.get_input_notes(NoteFilter::All).unwrap().is_empty());

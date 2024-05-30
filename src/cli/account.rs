@@ -1,8 +1,12 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+use std::path::PathBuf;
+
 use clap::Parser;
 use comfy_table::{presets, Attribute, Cell, ContentArrangement, Table};
-use miden_client::{
+use crate::{
     client::{rpc::NodeRpcClient, Client},
-    config::CliConfig,
+    config::{CliConfig, ClientConfig},
     store::Store,
 };
 use miden_objects::{
@@ -16,7 +20,7 @@ use miden_tx::{
     TransactionAuthenticator,
 };
 
-use super::utils::{load_config_file, parse_account_id, update_config};
+use super::{load_config, parse_account_id, update_config, CLIENT_CONFIG_FILE_NAME};
 use crate::cli::create_dynamic_table;
 
 // ACCOUNT COMMAND
@@ -110,10 +114,21 @@ fn list_accounts<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthentic
 ) -> Result<(), String> {
     let accounts = client.get_account_stubs()?;
 
-    let mut table = create_dynamic_table(&["Account ID", "Type", "Storage Mode", "Nonce"]);
+    let mut table = create_dynamic_table(&[
+        "Account ID",
+        "Code Root",
+        "Vault Root",
+        "Storage Root",
+        "Type",
+        "Storage mode",
+        "Nonce",
+    ]);
     accounts.iter().for_each(|(acc, _acc_seed)| {
         table.add_row(vec![
             acc.id().to_string(),
+            acc.code_root().to_string(),
+            acc.vault_root().to_string(),
+            acc.storage_root().to_string(),
             account_type_display_name(&acc.id().account_type()),
             storage_type_display_name(&acc.id()),
             acc.nonce().as_int().to_string(),
@@ -289,4 +304,15 @@ fn display_default_account_id() -> Result<(), String> {
     )?;
     println!("Current default account ID: {default_account}");
     Ok(())
+}
+
+/// Loads config file from current directory and default filename and returns it alongside its path
+fn load_config_file() -> Result<(ClientConfig, PathBuf), String> {
+    let mut current_dir = std::env::current_dir().map_err(|err| err.to_string())?;
+    current_dir.push(CLIENT_CONFIG_FILE_NAME);
+    let config_path = current_dir.as_path();
+
+    let client_config = load_config(config_path)?;
+
+    Ok((client_config, config_path.into()))
 }

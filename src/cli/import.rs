@@ -1,10 +1,12 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
 use std::{
     fs::{self, File},
     io::Read,
     path::PathBuf,
 };
 
-use miden_client::{
+use crate::{
     client::{rpc::NodeRpcClient, Client},
     store::{InputNoteRecord, Store},
 };
@@ -118,7 +120,7 @@ fn validate_paths(paths: &[PathBuf]) -> Result<(), String> {
 mod tests {
     use std::env::temp_dir;
 
-    use miden_client::{
+    use crate::{
         client::transactions::transaction_request::TransactionTemplate,
         errors::IdPrefixFetchError,
         mock::{
@@ -184,10 +186,7 @@ mod tests {
         let transaction_request = client.build_transaction_request(transaction_template).unwrap();
         let transaction = client.new_transaction(transaction_request).unwrap();
         let created_note = transaction.created_notes().get_note(0).clone();
-        let proven_transaction =
-            client.prove_transaction(transaction.executed_transaction().clone()).unwrap();
-
-        client.submit_transaction(transaction, proven_transaction).await.unwrap();
+        client.submit_transaction(transaction).await.unwrap();
 
         // Ensure client has no input notes and one output note
         assert!(client.get_input_notes(NoteFilter::All).unwrap().is_empty());

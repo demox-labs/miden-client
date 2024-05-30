@@ -5,7 +5,10 @@ use miden_objects::{
     Felt,
 };
 use miden_tx::{TransactionAuthenticator, TransactionExecutor};
+#[cfg(not(feature = "wasm32"))]
 use rand::Rng;
+#[cfg(feature = "wasm32")]
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use tracing::info;
 
 use crate::store::{data_store::ClientDataStore, Store};
@@ -14,10 +17,10 @@ pub mod rpc;
 use rpc::NodeRpcClient;
 
 pub mod accounts;
-#[cfg(test)]
-mod chain_data;
-mod note_screener;
-mod notes;
+#[cfg(any(test, feature = "wasm32"))]
+pub mod chain_data;
+pub mod note_screener;
+pub mod notes;
 pub mod store_authenticator;
 pub mod sync;
 pub mod transactions;
@@ -84,14 +87,19 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Self { store, rng, rpc_api: api, tx_executor }
     }
 
-    #[cfg(any(test, feature = "test_utils"))]
+    #[cfg(any(test, feature = "test_utils", feature = "wasm32"))]
     pub fn rpc_api(&mut self) -> &mut N {
         &mut self.rpc_api
     }
 
-    #[cfg(any(test, feature = "test_utils"))]
+    #[cfg(any(test, feature = "test_utils", feature = "wasm32"))]
     pub fn store(&mut self) -> &S {
         &self.store
+    }
+
+    #[cfg(any(test, feature = "test_utils", feature = "wasm32"))]
+    pub fn rng(&mut self) -> &mut R {
+        &mut self.rng
     }
 }
 
@@ -99,9 +107,20 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 // --------------------------------------------------------------------------------------------
 
 /// Gets [RpoRandomCoin] from the client
+#[cfg(not(feature = "wasm32"))]
 pub fn get_random_coin() -> RpoRandomCoin {
     // TODO: Initialize coin status once along with the client and persist status for retrieval
     let mut rng = rand::thread_rng();
+    let coin_seed: [u64; 4] = rng.gen();
+
+    RpoRandomCoin::new(coin_seed.map(Felt::new))
+}
+
+/// Gets [RpoRandomCoin] from the client. Uses StdRng for wasm32 target
+#[cfg(feature = "wasm32")]
+pub fn get_random_coin() -> RpoRandomCoin {
+    // TODO: Initialize coin status once along with the client and persist status for retrieval
+    let mut rng = StdRng::from_entropy();
     let coin_seed: [u64; 4] = rng.gen();
 
     RpoRandomCoin::new(coin_seed.map(Felt::new))

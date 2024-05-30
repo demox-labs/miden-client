@@ -1,6 +1,8 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
 use std::fs;
 
-use miden_client::{
+use crate::{
     client::{rpc::NodeRpcClient, Client},
     config::ClientConfig,
     store::{NoteFilter, Store},

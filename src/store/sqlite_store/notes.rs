@@ -1,3 +1,5 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
 use alloc::rc::Rc;
 use std::fmt;
 
@@ -335,29 +337,18 @@ pub fn update_note_consumer_tx_id(
     note_id: NoteId,
     consumer_tx_id: TransactionId,
 ) -> Result<(), StoreError> {
-    const UPDATE_INPUT_NOTES_QUERY: &str = "UPDATE input_notes SET consumer_transaction_id = :consumer_transaction_id WHERE note_id = :note_id;";
+    const QUERY: &str = "UPDATE input_notes SET consumer_transaction_id = :consumer_transaction_id WHERE note_id = :note_id;
+                         UPDATE output_notes SET consumer_transaction_id = :consumer_transaction_id WHERE note_id = :note_id;";
 
     tx.execute(
-        UPDATE_INPUT_NOTES_QUERY,
+        QUERY,
         named_params! {
             ":note_id": note_id.inner().to_string(),
             ":consumer_transaction_id": consumer_tx_id.to_string(),
         },
     )
-    .map_err(|err| StoreError::QueryError(err.to_string()))?;
-
-    const UPDATE_OUTPUT_NOTES_QUERY: &str = "UPDATE output_notes SET consumer_transaction_id = :consumer_transaction_id WHERE note_id = :note_id;";
-
-    tx.execute(
-        UPDATE_OUTPUT_NOTES_QUERY,
-        named_params! {
-            ":note_id": note_id.inner().to_string(),
-            ":consumer_transaction_id": consumer_tx_id.to_string(),
-        },
-    )
-    .map_err(|err| StoreError::QueryError(err.to_string()))?;
-
-    Ok(())
+    .map_err(|err| StoreError::QueryError(err.to_string()))
+    .map(|_| ())
 }
 
 /// Parse input note columns from the provided row into native types.

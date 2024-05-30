@@ -1,4 +1,6 @@
-use miden_client::{client::rpc::NodeRpcClient, store::Store};
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+use crate::{client::rpc::NodeRpcClient, store::Store};
 use miden_objects::{
     crypto::rand::FeltRng,
     notes::{NoteExecutionHint, NoteTag},

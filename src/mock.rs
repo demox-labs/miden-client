@@ -1,3 +1,6 @@
+// Exclude this file when the target is wasm32
+#![cfg(not(feature = "wasm32"))]
+
 use alloc::collections::BTreeMap;
 use std::{env::temp_dir, rc::Rc};
 
@@ -523,14 +526,8 @@ pub async fn create_mock_transaction(client: &mut MockClient) {
 
     let transaction_request = client.build_transaction_request(transaction_template).unwrap();
     let transaction_execution_result = client.new_transaction(transaction_request).unwrap();
-    let proven_transaction = client
-        .prove_transaction(transaction_execution_result.executed_transaction().clone())
-        .unwrap();
 
-    client
-        .submit_transaction(transaction_execution_result, proven_transaction)
-        .await
-        .unwrap();
+    client.submit_transaction(transaction_execution_result).await.unwrap();
 }
 
 pub fn mock_fungible_faucet_account(
