@@ -2,6 +2,12 @@
 #[cfg(feature = "wasm")]
 use async_std::task;
 
+#[cfg(feature = "wasm")]
+use futures::executor::block_on;
+
+#[cfg(feature = "wasm")]
+use async_trait::async_trait;
+
 use alloc::rc::Rc;
 use core::cell::RefCell;
 
@@ -55,6 +61,7 @@ impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
 }
 
 #[cfg(feature = "wasm")]
+// #[async_trait(?Send)]
 impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
     /// Gets a signature over a message, given a public key.
     ///
@@ -69,23 +76,17 @@ impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
         message: Word,
         _account_delta: &AccountDelta,
     ) -> Result<Vec<Felt>, AuthenticationError> {
-        // Explicitly annotate the return type of task::block_on to ensure correct handling
         let mut rng = self.rng.borrow_mut();
 
-        // Use block_on to run the async block
-        let secret_key_result: Result<AuthSecretKey, StoreError> = task::block_on(async {
-            self.store.get_account_auth_by_pub_key(pub_key).await
-        });
-
-        let secret_key = match secret_key_result {
-            Ok(secret_key) => secret_key,
-            Err(_) => return Err(AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key)))),
-        };
-
-        match secret_key {
-            AuthSecretKey::RpoFalcon512(k) => get_falcon_signature(&k, message, &mut *rng),
-            _ => Err(AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key)))),
-        }
+        let secret_key = block_on(async {
+            self.store
+                .get_account_auth_by_pub_key(pub_key)
+                .await
+                .map_err(|_| AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key))))
+        })?;
+        
+        let AuthSecretKey::RpoFalcon512(k) = secret_key;
+        return get_falcon_signature(&k, message, &mut *rng);
     }
 }
 // HELPER FUNCTIONS

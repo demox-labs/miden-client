@@ -106,7 +106,7 @@ impl<S: Store> DataStore for ClientDataStore<S> {
 }
 
 #[cfg(feature = "wasm")]
-#[async_trait(?Send)]
+// #[async_trait(?Send)]
 impl<S: Store> DataStore for ClientDataStore<S> {
     async fn get_transaction_inputs(
         &self,

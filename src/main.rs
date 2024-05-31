@@ -1,7 +1,11 @@
 #[cfg(not(feature = "wasm"))]
 use clap::Parser;
 
+extern crate alloc;
 mod cli;
+pub mod client;
+pub mod store;
+pub mod errors;
 #[cfg(not(feature = "wasm"))]
 use cli::Cli;
 

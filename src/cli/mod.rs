@@ -13,6 +13,7 @@ use figment::{
     Figment,
 };
 
+#[cfg(not(feature = "wasm"))]
 use super::{
     client::{
         get_random_coin,
@@ -24,6 +25,20 @@ use super::{
     errors::{ClientError, IdPrefixFetchError},
     store::{
         sqlite_store::SqliteStore, InputNoteRecord, NoteFilter as ClientNoteFilter,
+        OutputNoteRecord, Store,
+    },
+};
+#[cfg(feature = "wasm")]
+use super::{
+    client::{
+        get_random_coin,
+        rpc::NodeRpcClient,
+        store_authenticator::StoreAuthenticator,
+        Client,
+    },
+    errors::{ClientError, IdPrefixFetchError},
+    store::{
+        InputNoteRecord, NoteFilter as ClientNoteFilter,
         OutputNoteRecord, Store,
     },
 };
@@ -256,7 +271,7 @@ pub async fn get_input_note_with_id_prefix<
     S: Store,
     A: TransactionAuthenticator,
 >(
-    client: &Client<N, R, S, A>,
+    client: &mut Client<N, R, S, A>,
     note_id_prefix: &str,
 ) -> Result<InputNoteRecord, IdPrefixFetchError> {
     let mut input_note_records = client
@@ -354,7 +369,7 @@ pub async fn get_output_note_with_id_prefix<
     S: Store,
     A: TransactionAuthenticator,
 >(
-    client: &Client<N, R, S, A>,
+    client: &mut Client<N, R, S, A>,
     note_id_prefix: &str,
 ) -> Result<OutputNoteRecord, IdPrefixFetchError> {
     let mut output_note_records = client
@@ -450,7 +465,7 @@ async fn get_account_with_id_prefix<
     S: Store,
     A: TransactionAuthenticator,
 >(
-    client: &Client<N, R, S, A>,
+    client: &mut Client<N, R, S, A>,
     account_id_prefix: &str,
 ) -> Result<AccountStub, IdPrefixFetchError> {
     let mut accounts = client
@@ -524,7 +539,7 @@ pub async fn parse_account_id<
     S: Store,
     A: TransactionAuthenticator,
 >(
-    client: &Client<N, R, S, A>,
+    client: &mut Client<N, R, S, A>,
     account_id: &str,
 ) -> Result<AccountId, String> {
     if let Ok(account_id) = AccountId::from_hex(account_id) {

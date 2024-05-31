@@ -248,7 +248,7 @@ pub trait Store {
 }
 
 #[cfg(feature = "wasm")]
-#[async_trait(?Send)]
+// #[async_trait(?Send)]
 pub trait Store {
     // TRANSACTIONS
     // --------------------------------------------------------------------------------------------
