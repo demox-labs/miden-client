@@ -1,20 +1,26 @@
 use std::collections::BTreeMap;
 
-use crate::native_code::{
+use miden_client::{
+    client::transactions::{notes_from_output, TransactionRecord, TransactionResult, TransactionStatus},
     errors::StoreError,
-    store::{
-        note_record::{
-            InputNoteRecord, 
-            OutputNoteRecord
-        }, TransactionFilter
-    }, transactions::{
-    TransactionRecord, 
-    TransactionResult, TransactionStatus
-}
+    store::{OutputNoteRecord, TransactionFilter},
 };
+// use crate::native_code::{
+//     errors::StoreError,
+//     store::{
+//         note_record::{
+//             InputNoteRecord, 
+//             OutputNoteRecord
+//         }, TransactionFilter
+//     }, transactions::{
+//     TransactionRecord, 
+//     TransactionResult, TransactionStatus
+// }
+// };
 use crate::web_client::store::notes::utils::{
     insert_input_note_tx, 
-    insert_output_note_tx
+    insert_output_note_tx,
+    update_note_consumer_tx_id
 };
 
 use miden_objects::{accounts::AccountId, assembly::ProgramAst, transaction::{OutputNotes, TransactionId, TransactionScript}, Digest, Felt};
@@ -113,9 +119,10 @@ impl WebStore {
     }
 
     pub async fn apply_transaction(
-        &mut self,
+        &self,
         tx_result: TransactionResult
     ) -> Result<(), StoreError> {
+        let transaction_id = tx_result.executed_transaction().id();
         let account_id = tx_result.executed_transaction().account_id();
         let account_delta = tx_result.account_delta();
 
@@ -123,41 +130,42 @@ impl WebStore {
 
         account.apply_delta(account_delta).map_err(StoreError::AccountError)?;
 
-        let created_input_notes = tx_result
-            .relevant_notes()
-            .into_iter()
-            .map(|note| InputNoteRecord::from(note.clone()))
+        // Save only input notes that we care for (based on the note screener assessment)
+        let created_input_notes = tx_result.relevant_notes().to_vec();
+
+        // Save all output notes
+        let created_output_notes = notes_from_output(tx_result.created_notes())
+            .cloned()
+            .map(OutputNoteRecord::from)
             .collect::<Vec<_>>();
 
-        let created_output_notes = tx_result
-            .created_notes()
-            .iter()
-            .map(|note| OutputNoteRecord::from(note.clone()))
-            .collect::<Vec<_>>();
+        let consumed_note_ids =
+            tx_result.consumed_notes().iter().map(|note| note.id()).collect::<Vec<_>>();
 
         // Transaction Data
         insert_proven_transaction_data(tx_result).await.unwrap();
 
         // Account Data
-        update_account(account).await.unwrap();
+        update_account(&account).await.unwrap();
 
         // Updates for notes
-
-        // TODO: see if we should filter the input notes we store to keep notes we can consume with
-        // existing accounts
-        for note in &created_input_notes {
-            insert_input_note_tx(note).await.unwrap();
+        for note in created_input_notes {
+            insert_input_note_tx(&note).await?;
         }
 
         for note in &created_output_notes {
-            insert_output_note_tx(note).await.unwrap();
+            insert_output_note_tx(note).await?;
+        }
+
+        for note_id in consumed_note_ids {
+            update_note_consumer_tx_id(note_id, transaction_id).await?;
         }
 
         Ok(())
     }
 
     pub(crate) async fn mark_transactions_as_committed(
-        &mut self,
+        &self,
         block_num: u32,
         transactions_to_commit: &[TransactionId]
     ) -> Result<usize, StoreError> {

@@ -235,8 +235,43 @@ export async function getAccountAuth(
             auth_info: authInfoBase64
         };
     } catch (err) {
-        console.error('Error fetching account auth:', error);
-        throw error; // Re-throw the error for further handling
+        console.error('Error fetching account auth:', err);
+        throw err; // Re-throw the error for further handling
+    }
+}
+
+export async function getAccountAuthByPubKey(
+    pubKey
+) {
+    try {
+        let pubKeyArray = new Uint8Array(pubKey);
+        let pubKeyBase64 = uint8ArrayToBase64(pubKeyArray);
+
+        // Fetch all records matching the given id
+        const allMatchingRecords = await accountAuths
+            .where('pubKey')
+            .equals(pubKeyBase64)
+            .toArray();
+
+        if (allMatchingRecords.length === 0) {
+            console.log('No records found for given account ID.');
+            return null; // No records found
+        }
+
+        // The first record is the only one due to the uniqueness constraint
+        const authRecord = allMatchingRecords[0];
+
+        // Convert the authInfo Blob to an ArrayBuffer
+        const authInfoArrayBuffer = await authRecord.authInfo.arrayBuffer();
+        const authInfoArray = new Uint8Array(authInfoArrayBuffer);
+        const authInfoBase64 = uint8ArrayToBase64(authInfoArray);
+        return {
+            id: authRecord.accountId,
+            auth_info: authInfoBase64
+        };
+    } catch (err) {
+        console.error('Error fetching account auth by public key:', err);
+        throw err; // Re-throw the error for further handling
     }
 }
 
@@ -343,15 +378,19 @@ export async function insertAccountRecord(
 
 export async function insertAccountAuth(
     accountId, 
-    authInfo
+    authInfo,
+    pubKey
 ) {
     try {
         let authInfoBlob = new Blob([new Uint8Array(authInfo)]);
+        let pubKeyArray = new Uint8Array(pubKey);
+        let pubKeyBase64 = uint8ArrayToBase64(pubKeyArray);
 
         // Prepare the data object to insert
         const data = {
             accountId: accountId, // Using accountId as the key
             authInfo: authInfoBlob,
+            pubKey: pubKeyBase64
         };
 
         // Perform the insert using Dexie

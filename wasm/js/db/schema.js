@@ -49,7 +49,7 @@ db.version(1).stores({
   [Table.AccountCode]: indexes('root'),
   [Table.AccountStorage]: indexes('root'),
   [Table.AccountVaults]: indexes('root'),
-  [Table.AccountAuth]: indexes('accountId'),
+  [Table.AccountAuth]: indexes('accountId', 'pubKey'),
   [Table.Accounts]: indexes('[id+nonce]', 'codeRoot', 'storageRoot', 'vaultRoot'),
   [Table.Transactions]: indexes('id'),
   [Table.TransactionScripts]: indexes('scriptHash'),

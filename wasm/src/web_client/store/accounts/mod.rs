@@ -1,16 +1,20 @@
-use miden_lib::transaction::TransactionKernel;
 use serde::{Serialize, Deserialize};
 use serde_wasm_bindgen::from_value;
 use wasm_bindgen_futures::*;
-use web_sys::console;
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
+use miden_lib::transaction::TransactionKernel;
 use miden_objects::{
-    accounts::{Account, AccountCode, AccountId, AccountStorage, AccountStub}, assembly::ModuleAst, assets::{Asset, AssetVault}, Digest, Felt, Word
+    accounts::{Account, AccountCode, AccountId, AccountStorage, AccountStub, AuthSecretKey}, 
+    assembly::ModuleAst, 
+    assets::{Asset, AssetVault}, 
+    Digest, Felt, Word
 };
-use miden_objects::utils::Deserializable;
+use miden_tx::utils::{Deserializable, Serializable};
+use miden_client::errors::StoreError;
 
-use crate::native_code::{errors::StoreError, store::{AuthInfo, NoteFilter, Store}}; 
+// use crate::native_code::{errors::StoreError, store::{NoteFilter, Store}}; 
 
 use super::WebStore;
 
@@ -35,7 +39,7 @@ impl WebStore {
             AccountId::from_hex(&id).unwrap()
         }).collect();
         
-        return Ok(native_account_ids);
+        Ok(native_account_ids)
     }
 
     pub(super) async fn get_account_stubs(
@@ -43,25 +47,14 @@ impl WebStore {
     ) -> Result<Vec<(AccountStub, Option<Word>)>, StoreError> {
         let promise = idxdb_get_account_stubs();
         let js_value = JsFuture::from(promise).await.unwrap();
-        let account_stubs_idxdb: Vec<AccountRecordIdxdbOjbect> = from_value(js_value).unwrap();
+        let account_stubs_idxdb: Vec<AccountRecordIdxdbOjbect> = from_value(js_value)?;
         
-        let account_stubs: Vec<(AccountStub, Option<Word>)> = account_stubs_idxdb.into_iter().map(|record| {
-            let native_account_id: AccountId = AccountId::from_hex(&record.id).unwrap();
-            let native_nonce: u64 = record.nonce.parse::<u64>().unwrap();
-            let account_seed = record.account_seed.map(|seed| Word::read_from_bytes(&seed)).transpose().unwrap();
-            
-            let account_stub = AccountStub::new(
-                native_account_id,
-                Felt::new(native_nonce),
-                Digest::try_from(&record.vault_root).unwrap(),
-                Digest::try_from(&record.storage_root).unwrap(),
-                Digest::try_from(&record.code_root).unwrap(),
-            );
+        let account_stubs: Result<Vec<(AccountStub, Option<Word>)>, StoreError> = account_stubs_idxdb
+            .into_iter()
+            .map(|stub| parse_account_record_idxdb_object(stub))
+            .collect(); // Collect results into a single Result
 
-            (account_stub, account_seed) // Adjust this as needed based on how you derive Word from your data
-        }).collect();
-
-        Ok(account_stubs)
+        account_stubs
     }
 
     pub(crate) async fn get_account_stub(
@@ -72,22 +65,9 @@ impl WebStore {
         
         let promise = idxdb_get_account_stub(account_id_str);
         let js_value = JsFuture::from(promise).await.unwrap();
-        let account_stub_idxdb: AccountRecordIdxdbOjbect = from_value(js_value).unwrap();
+        let account_stub_idxdb: AccountRecordIdxdbOjbect = from_value(js_value)?;
 
-        let native_account_id: AccountId = AccountId::from_hex(&account_stub_idxdb.id).unwrap();
-        let native_nonce: u64 = account_stub_idxdb.nonce.parse::<u64>().unwrap();
-        let account_seed = account_stub_idxdb.account_seed.map(|seed| Word::read_from_bytes(&seed)).transpose().unwrap();
-
-        Ok((
-            AccountStub::new(
-                native_account_id,
-                Felt::new(native_nonce),
-                Digest::try_from(&account_stub_idxdb.vault_root).unwrap(),
-                Digest::try_from(&account_stub_idxdb.storage_root).unwrap(),
-                Digest::try_from(&account_stub_idxdb.code_root).unwrap(),
-            ),
-            account_seed,
-        ))
+        parse_account_record_idxdb_object(account_stub_idxdb)
     }
 
     pub(crate) async fn get_account(
@@ -161,7 +141,7 @@ impl WebStore {
     pub(crate) async fn get_account_auth(
         &self,
         account_id: AccountId
-    ) -> Result<AuthInfo, StoreError> {
+    ) -> Result<AuthSecretKey, StoreError> {
         let account_id_str = account_id.to_string();
 
         let promise = idxdb_get_account_auth(account_id_str);
@@ -169,23 +149,37 @@ impl WebStore {
         let auth_info_idxdb: AccountAuthIdxdbObject = from_value(js_value).unwrap();
         
         // Convert the auth_info to the appropriate AuthInfo enum variant
-        let auth_info = AuthInfo::read_from_bytes(&auth_info_idxdb.auth_info).unwrap();
+        let auth_info = AuthSecretKey::read_from_bytes(&auth_info_idxdb.auth_info)?;
 
         Ok(auth_info)
     }
 
     pub(crate) async fn insert_account(
-        &mut self,
+        &self,
         account: &Account,
         account_seed: Option<Word>,
-        auth_info: &AuthInfo,
+        auth_info: &AuthSecretKey,
     ) -> Result<(), StoreError> {
-        insert_account_code(account.code()).await;
-        insert_account_storage(account.storage()).await;
-        insert_account_asset_vault(account.vault()).await;
-        insert_account_record(account, account_seed).await;
-        insert_account_auth(account.id(), auth_info).await;
+        insert_account_code(account.code()).await?;
+        insert_account_storage(account.storage()).await?;
+        insert_account_asset_vault(account.vault()).await?;
+        insert_account_record(account, account_seed).await?;
+        insert_account_auth(account.id(), auth_info).await?;
 
         Ok(())
+    }
+
+    /// Returns an [AuthSecretKey] by a public key represented by a [Word]
+    pub async fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError> {
+        let pub_key_bytes = pub_key.to_bytes();
+
+        let promise = idxdb_get_account_auth_by_pub_key(pub_key_bytes);
+        let js_value = JsFuture::from(promise).await.unwrap();
+        let account_auth_idxdb: AccountAuthIdxdbObject = from_value(js_value).unwrap();
+
+        // Convert the auth_info to the appropriate AuthInfo enum variant
+        let auth_info = AuthSecretKey::read_from_bytes(&account_auth_idxdb.auth_info)?;
+
+        Ok(auth_info)
     }
 }

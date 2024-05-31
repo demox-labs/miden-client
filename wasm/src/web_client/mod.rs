@@ -1,15 +1,17 @@
+use alloc::rc::Rc;
 use wasm_bindgen::prelude::*;
 use miden_objects::crypto::rand::RpoRandomCoin;
-
-use crate::native_code::{
-    Client,
-    get_random_coin
-};
+use miden_tx::TransactionAuthenticator;
+use miden_client::client::{Client, get_random_coin, store_authenticator::StoreAuthenticator};
 
 pub mod account;
+pub mod export;
+pub mod import;
+pub mod new_account;
+pub mod new_transactions;
 pub mod notes;
-pub mod transactions;
 pub mod sync;
+pub mod transactions;
 pub mod store;
 pub mod rpc;
 pub mod models;
@@ -23,7 +25,7 @@ use rpc::WebRpcClient;
 
 #[wasm_bindgen]
 pub struct WebClient {
-    inner: Option<Client<WebRpcClient, RpoRandomCoin, WebStore>>
+    inner: Option<Client<WebRpcClient, RpoRandomCoin, WebStore, StoreAuthenticator<RpoRandomCoin, WebStore>>>
 }
 
 #[wasm_bindgen]
@@ -34,7 +36,7 @@ impl WebClient {
     }
 
     // Getter for the inner client, used internally for operations
-    pub(crate) fn get_mut_inner(&mut self) -> Option<&mut Client<WebRpcClient, RpoRandomCoin, WebStore>> {
+    pub(crate) fn get_mut_inner(&mut self) -> Option<&mut Client<WebRpcClient, RpoRandomCoin, WebStore, StoreAuthenticator<RpoRandomCoin, WebStore>>> {
         self.inner.as_mut()
     }
 
@@ -45,10 +47,11 @@ impl WebClient {
     ) -> Result<JsValue, JsValue> {
         let rng = get_random_coin();
         let web_store: WebStore = WebStore::new().await.map_err(|_| JsValue::from_str("Failed to initialize WebStore"))?;
+        let web_store = Rc::new(web_store);
+        let authenticator: StoreAuthenticator<RpoRandomCoin, WebStore> = StoreAuthenticator::new_with_rng(web_store.clone(), rng);
         let web_rpc_client = WebRpcClient::new(&node_url.unwrap_or_else(|| "http://localhost:57291".to_string()));
-        let executor_store = WebStore::new().await.map_err(|_| JsValue::from_str("Failed to initialize ExecutorStore"))?;
 
-        self.inner = Some(Client::new(web_rpc_client, rng, web_store, executor_store));
+        self.inner = Some(Client::new(web_rpc_client, rng, web_store, authenticator, false));
 
         Ok(JsValue::from_str("Client created successfully"))
     }

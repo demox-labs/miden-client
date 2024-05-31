@@ -30,8 +30,11 @@ extern "C" {
         has_client_notes: bool,
         serialized_node_ids: Vec<String>,
         serialized_nodes: Vec<String>,
-        note_ids: Vec<String>,
-        inclusion_proofs: Vec<String>,
+        output_note_ids: Vec<String>,
+        output_note_inclusion_proofs: Vec<String>,
+        input_note_ids: Vec<String>,
+        input_note_inclusion_proofs: Vec<String>,
+        input_note_metadatas: Vec<String>,
         transactions_to_commit: Vec<String>,
     ) -> js_sys::Promise;
 }

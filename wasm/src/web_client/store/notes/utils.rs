@@ -1,9 +1,19 @@
-use miden_objects::notes::NoteInclusionProof;
+use miden_objects::{
+    accounts::AccountId,
+    notes::{NoteAssets, NoteId, NoteInclusionProof, NoteMetadata, NoteScript},
+    transaction::TransactionId,
+    Digest
+};
 use miden_tx::utils::Serializable;
 use wasm_bindgen_futures::*;
 
-use crate::native_code::{errors::StoreError, store::note_record::{InputNoteRecord, NoteStatus, OutputNoteRecord}};
+use miden_client::{
+    store::{NoteStatus, NoteRecordDetails, InputNoteRecord, OutputNoteRecord},
+    errors::StoreError
+};
+// use crate::native_code::{errors::StoreError, store::note_record::{InputNoteRecord, NoteStatus, OutputNoteRecord}};
 
+use crate::web_client::store::notes::{InputNoteIdxdbObject, OutputNoteIdxdbObject};
 use super::js_bindings::*;
 
 // TYPES
@@ -34,6 +44,19 @@ type SerializedOutputNoteData = (
 );
 
 // ================================================================================================
+
+pub(crate) async fn update_note_consumer_tx_id(
+    note_id: NoteId,
+    consumer_tx_id: TransactionId,
+) -> Result<(), StoreError> {
+    let serialized_note_id = note_id.inner().to_string();
+    let serialized_consumer_tx_id = consumer_tx_id.to_string();
+
+    let promise = idxdb_update_note_consumer_tx_id(serialized_note_id, serialized_consumer_tx_id);
+    let result = JsFuture::from(promise).await?;
+
+    Ok(())
+}
 
 pub(crate) fn serialize_input_note(
     note: &InputNoteRecord
@@ -218,4 +241,121 @@ pub async fn insert_output_note_tx(
         Ok(_) => Ok(()),
         Err(_) => Err(StoreError::QueryError("Failed to insert output note".to_string())),
     }
+}
+
+pub fn parse_input_note_idxdb_object(
+    note_idxdb: InputNoteIdxdbObject
+) -> Result<InputNoteRecord, StoreError> {
+    // Merge the info that comes from the input notes table and the notes script table
+    let note_script = NoteScript::read_from_bytes(&note_idxdb.serialized_note_script)?;
+    let note_details: NoteRecordDetails =
+        serde_json::from_str(&note_idxdb.details).map_err(StoreError::JsonDataDeserializationError)?;
+    let note_details = NoteRecordDetails::new(
+        note_details.nullifier().to_string(),
+        note_script,
+        note_details.inputs().clone(),
+        note_details.serial_num(),
+    );
+
+    let note_metadata: Option<NoteMetadata> = if let Some(metadata_as_json_str) = note_idxdb.metadata {
+        Some(
+            serde_json::from_str(&metadata_as_json_str)
+                .map_err(StoreError::JsonDataDeserializationError)?,
+        )
+    } else {
+        None
+    };
+
+    let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
+
+    let inclusion_proof = match note_idxdb.inclusion_proof {
+        Some(note_inclusion_proof) => {
+            let note_inclusion_proof: NoteInclusionProof =
+                serde_json::from_str(&note_inclusion_proof)
+                    .map_err(StoreError::JsonDataDeserializationError)?;
+
+            Some(note_inclusion_proof)
+        },
+        _ => None,
+    };
+
+    let recipient = Digest::try_from(note_idxdb.recipient)?;
+    let id = NoteId::new(recipient, note_assets.commitment());
+    let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
+        .map_err(StoreError::JsonDataDeserializationError)?;
+    let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
+        Some(account_id) => Some(AccountId::from_hex(&account_id)?),
+        None => None,
+    };
+
+    Ok(InputNoteRecord::new(
+        id,
+        recipient,
+        note_assets,
+        status,
+        note_metadata,
+        inclusion_proof,
+        note_details,
+        consumer_account_id
+    ))
+}
+
+pub fn parse_output_note_idxdb_object(
+    note_idxdb: OutputNoteIdxdbObject
+) -> Result<OutputNoteRecord, StoreError> {
+    let note_details: Option<NoteRecordDetails> = if let Some(details_as_json_str) = note_idxdb.details {
+        // Merge the info that comes from the input notes table and the notes script table
+        let serialized_note_script = note_idxdb.serialized_note_script
+            .expect("Has note details so it should have the serialized script");
+        let note_script = NoteScript::read_from_bytes(&serialized_note_script)?;
+        let note_details: NoteRecordDetails = serde_json::from_str(&details_as_json_str)
+            .map_err(StoreError::JsonDataDeserializationError)?;
+        let note_details = NoteRecordDetails::new(
+            note_details.nullifier().to_string(),
+            note_script,
+            note_details.inputs().clone(),
+            note_details.serial_num(),
+        );
+
+        Some(note_details)
+    } else {
+        None
+    };
+
+    let note_metadata: NoteMetadata =
+        serde_json::from_str(&note_idxdb.metadata).map_err(StoreError::JsonDataDeserializationError)?;
+
+    let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
+
+    let inclusion_proof = match note_idxdb.inclusion_proof {
+        Some(note_inclusion_proof) => {
+            let note_inclusion_proof: NoteInclusionProof =
+                serde_json::from_str(&note_inclusion_proof)
+                    .map_err(StoreError::JsonDataDeserializationError)?;
+
+            Some(note_inclusion_proof)
+        },
+        _ => None,
+    };
+
+    let recipient = Digest::try_from(note_idxdb.recipient)?;
+    let id = NoteId::new(recipient, note_assets.commitment());
+    let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
+        .map_err(StoreError::JsonDataDeserializationError)?;
+
+    let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
+        Some(account_id) => Some(AccountId::try_from(account_id as u64)?),
+        None => None,
+    };
+
+    Ok(OutputNoteRecord::new(
+        id,
+        recipient,
+        note_assets,
+        status,
+        note_metadata,
+        inclusion_proof,
+        note_details,
+        consumer_account_id,
+    ))
 }

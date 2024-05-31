@@ -37,6 +37,11 @@ extern "C" {
         account_id: String
     ) -> js_sys::Promise;
 
+    #[wasm_bindgen(js_name = getAccountAuthByPubKey)]
+    pub fn idxdb_get_account_auth_by_pub_key(
+        pub_key: Vec<u8>
+    ) -> js_sys::Promise;
+
     // INSERTS
     // ================================================================================================
 
@@ -73,6 +78,7 @@ extern "C" {
     #[wasm_bindgen(js_name = insertAccountAuth)]
     pub fn idxdb_insert_account_auth(
         id: String,
-        auth_info: Vec<u8>
+        auth_info: Vec<u8>,
+        pub_key: Vec<u8>
     ) -> js_sys::Promise;
 }

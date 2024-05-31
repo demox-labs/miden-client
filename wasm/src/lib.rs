@@ -1,6 +1,5 @@
 extern crate alloc;
 
-pub mod native_code;
 pub mod web_client;
 
 use wasm_bindgen::prelude::*;

@@ -5,14 +5,18 @@ use serde_wasm_bindgen::from_value;
 use wasm_bindgen_futures::*;
 
 use super::WebStore;
-use crate::native_code::errors::StoreError;
-use crate::native_code::store::note_record::{
-    InputNoteRecord, 
-    NoteRecordDetails, 
-    NoteStatus, 
-    OutputNoteRecord
+use miden_client::{
+    errors::StoreError,
+    store::{InputNoteRecord, NoteFilter, OutputNoteRecord}
 };
-use crate::native_code::store::NoteFilter;
+// use crate::native_code::errors::StoreError;
+// use crate::native_code::store::note_record::{
+//     InputNoteRecord, 
+//     NoteRecordDetails, 
+//     NoteStatus, 
+//     OutputNoteRecord
+// };
+// use crate::native_code::store::NoteFilter;
 use crate::web_client::notes::WebClientNoteFilter;
 
 mod js_bindings;
@@ -29,204 +33,113 @@ impl WebStore {
         &self,
         filter: NoteFilter
     ) -> Result<Vec<InputNoteRecord>, StoreError> {
-        let filter_as_str = match filter {
-            NoteFilter::Pending => "Pending",
-            NoteFilter::Committed => "Committed",
-            NoteFilter::Consumed => "Consumed",
-            NoteFilter::All => "All", 
+        let promise = match filter {
+            NoteFilter::All | NoteFilter::Consumed | NoteFilter::Committed | NoteFilter::Pending => {
+                let filter_as_str = match filter {
+                    NoteFilter::All => "All",
+                    NoteFilter::Consumed => "Consumed",
+                    NoteFilter::Committed => "Committed",
+                    NoteFilter::Pending => "Pending",
+                    _ => unreachable!(), // Safety net, should never be reached
+                };
+    
+                // Assuming `js_fetch_notes` is your JavaScript function that handles simple string filters
+                idxdb_get_input_notes(filter_as_str.to_string())
+            },
+            NoteFilter::List(ids) => {
+                let note_ids_as_str: Vec<String> = ids.into_iter().map(|id| id.inner().to_string()).collect();
+                idxdb_get_input_notes_from_ids(ids)
+            },
+            NoteFilter::Unique(id) => {
+                let note_id_as_str = id.inner().to_string();
+                let note_ids = vec![note_id_as_str];
+                idxdb_get_input_notes_from_ids(note_ids)
+            }
         };
 
-        let promise = idxdb_get_input_notes(filter_as_str.to_string());
         let js_value = JsFuture::from(promise).await.unwrap();
         let input_notes_idxdb: Vec<InputNoteIdxdbObject> = from_value(js_value).unwrap();
-  
-        let native_input_notes: Result<Vec<InputNoteRecord>, StoreError> = input_notes_idxdb.into_iter().map(|note_idxdb| {
 
-            // Merge the info that comes from the input notes table and the notes script table
-            let note_script = NoteScript::read_from_bytes(&note_idxdb.serialized_note_script)?;
-            let note_details: NoteRecordDetails =
-                serde_json::from_str(&note_idxdb.details).map_err(StoreError::JsonDataDeserializationError)?;
-            let note_details = NoteRecordDetails::new(
-                note_details.nullifier().to_string(),
-                note_script,
-                note_details.inputs().clone(),
-                note_details.serial_num(),
-            );
+        let native_input_notes: Result<Vec<InputNoteRecord>, StoreError> = input_notes_idxdb
+            .into_iter()
+            .map(|note| parse_input_note_idxdb_object(note))
+            .collect(); // Collect results into a single Result
 
-            let note_metadata: Option<NoteMetadata> = if let Some(metadata_as_json_str) = note_idxdb.metadata {
-                Some(
-                    serde_json::from_str(&metadata_as_json_str)
-                        .map_err(StoreError::JsonDataDeserializationError)?,
-                )
-            } else {
-                None
-            };
-
-            let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
-
-            let inclusion_proof = match note_idxdb.inclusion_proof {
-                Some(note_inclusion_proof) => {
-                    let note_inclusion_proof: NoteInclusionProof =
-                        serde_json::from_str(&note_inclusion_proof)
-                            .map_err(StoreError::JsonDataDeserializationError)?;
-
-                    Some(note_inclusion_proof)
-                },
-                _ => None,
-            };
-
-            let recipient = Digest::try_from(note_idxdb.recipient)?;
-            let id = NoteId::new(recipient, note_assets.commitment());
-            let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
-                .map_err(StoreError::JsonDataDeserializationError)?;
-
-            Ok(InputNoteRecord::new(
-                id,
-                recipient,
-                note_assets,
-                status,
-                note_metadata,
-                inclusion_proof,
-                note_details,
-            ))
-        }).collect();
-        
-        return native_input_notes;
-    }
-
-    pub(crate) async fn get_input_note(
-        &self,
-        note_id: NoteId
-    ) -> Result<InputNoteRecord, StoreError> {
-        let note_id_str = &note_id.inner().to_string();
-
-        let promise = idxdb_get_input_note(note_id_str.to_string());
-        let js_value = JsFuture::from(promise).await.unwrap();
-        let input_note_idxdb: InputNoteIdxdbObject = from_value(js_value).unwrap();
-
-        // Merge the info that comes from the input notes table and the notes script table
-        let note_script = NoteScript::read_from_bytes(&input_note_idxdb.serialized_note_script)?;
-        let note_details: NoteRecordDetails =
-            serde_json::from_str(&input_note_idxdb.details).map_err(StoreError::JsonDataDeserializationError)?;
-        let note_details = NoteRecordDetails::new(
-            note_details.nullifier().to_string(),
-            note_script,
-            note_details.inputs().clone(),
-            note_details.serial_num(),
-        );
-
-        let note_metadata: Option<NoteMetadata> = if let Some(metadata_as_json_str) = input_note_idxdb.metadata {
-            Some(
-                serde_json::from_str(&metadata_as_json_str)
-                    .map_err(StoreError::JsonDataDeserializationError)?,
-            )
-        } else {
-            None
-        };
-
-        let note_assets = NoteAssets::read_from_bytes(&input_note_idxdb.assets)?;
-
-        let inclusion_proof = match input_note_idxdb.inclusion_proof {
-            Some(note_inclusion_proof) => {
-                let note_inclusion_proof: NoteInclusionProof =
-                    serde_json::from_str(&note_inclusion_proof)
-                        .map_err(StoreError::JsonDataDeserializationError)?;
-
-                Some(note_inclusion_proof)
+        match filter {
+            NoteFilter::Unique(note_id) if native_input_notes.is_empty() => {
+                return Err(StoreError::NoteNotFound(note_id));
             },
-            _ => None,
-        };
+            NoteFilter::List(note_ids) if note_ids.len() != native_input_notes.len() => {
+                let missing_note_id = note_ids
+                    .iter()
+                    .find(|&note_id| !native_input_notes.iter().any(|note_record| note_record.id() == *note_id))
+                    .expect("should find one note id that wasn't retrieved by the db");
+                return Err(StoreError::NoteNotFound(*missing_note_id));
+            },
+            _ => {},
+        }
 
-        let recipient = Digest::try_from(input_note_idxdb.recipient)?;
-        let id = NoteId::new(recipient, note_assets.commitment());
-        let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", input_note_idxdb.status))
-            .map_err(StoreError::JsonDataDeserializationError)?;
-
-        Ok(InputNoteRecord::new(
-            id,
-            recipient,
-            note_assets,
-            status,
-            note_metadata,
-            inclusion_proof,
-            note_details,
-        ))
-    }
-
-    pub(crate) async fn insert_input_note(
-        &mut self,
-        note: &InputNoteRecord
-    ) -> Result<(), StoreError> {
-        insert_input_note_tx(note).await
+        native_input_notes
     }
 
     pub(crate) async fn get_output_notes(
-        &self,
+        &self, 
         filter: NoteFilter
     ) -> Result<Vec<OutputNoteRecord>, StoreError> {
-        let filter_as_str = match filter {
-            NoteFilter::Pending => "Pending",
-            NoteFilter::Committed => "Committed",
-            NoteFilter::Consumed => "Consumed",
-            NoteFilter::All => "All", 
+        let promise = match filter {
+            NoteFilter::All | NoteFilter::Consumed | NoteFilter::Committed | NoteFilter::Pending => {
+                let filter_as_str = match filter {
+                    NoteFilter::All => "All",
+                    NoteFilter::Consumed => "Consumed",
+                    NoteFilter::Committed => "Committed",
+                    NoteFilter::Pending => "Pending",
+                    _ => unreachable!(), // Safety net, should never be reached
+                };
+    
+                // Assuming `js_fetch_notes` is your JavaScript function that handles simple string filters
+                idxdb_get_output_notes(filter_as_str.to_string())
+            },
+            NoteFilter::List(ids) => {
+                let note_ids_as_str: Vec<String> = ids.into_iter().map(|id| id.inner().to_string()).collect();
+                idxdb_get_output_notes_from_ids(ids)
+            },
+            NoteFilter::Unique(id) => {
+                let note_id_as_str = id.inner().to_string();
+                let note_ids = vec![note_id_as_str];
+                idxdb_get_output_notes_from_ids(note_ids)
+            }
         };
 
-        let promise = idxdb_get_output_notes(filter_as_str.to_string());
         let js_value = JsFuture::from(promise).await.unwrap();
         let output_notes_idxdb: Vec<OutputNoteIdxdbObject> = from_value(js_value).unwrap();
-  
-        let native_output_notes: Result<Vec<OutputNoteRecord>, StoreError> = output_notes_idxdb.into_iter().map(|note_idxdb| {
-            let note_details: Option<NoteRecordDetails> = if let Some(details_as_json_str) = note_idxdb.details {
-                // Merge the info that comes from the input notes table and the notes script table
-                let serialized_note_script = note_idxdb.serialized_note_script
-                    .expect("Has note details so it should have the serialized script");
-                let note_script = NoteScript::read_from_bytes(&serialized_note_script)?;
-                let note_details: NoteRecordDetails = serde_json::from_str(&details_as_json_str)
-                    .map_err(StoreError::JsonDataDeserializationError)?;
-                let note_details = NoteRecordDetails::new(
-                    note_details.nullifier().to_string(),
-                    note_script,
-                    note_details.inputs().clone(),
-                    note_details.serial_num(),
-                );
-        
-                Some(note_details)
-            } else {
-                None
-            };
-        
-            let note_metadata: NoteMetadata =
-                serde_json::from_str(&note_idxdb.metadata).map_err(StoreError::JsonDataDeserializationError)?;
-            let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
-        
-            let inclusion_proof = match note_idxdb.inclusion_proof {
-                Some(note_inclusion_proof) => {
-                    let note_inclusion_proof: NoteInclusionProof =
-                        serde_json::from_str(&note_inclusion_proof)
-                            .map_err(StoreError::JsonDataDeserializationError)?;
-        
-                    Some(note_inclusion_proof)
-                },
-                _ => None,
-            };
-        
-            let recipient = Digest::try_from(note_idxdb.recipient)?;
-            let id = NoteId::new(recipient, note_assets.commitment());
-            let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
-                .map_err(StoreError::JsonDataDeserializationError)?;
-        
-            Ok(OutputNoteRecord::new(
-                id,
-                recipient,
-                note_assets,
-                status,
-                note_metadata,
-                inclusion_proof,
-                note_details,
-            ))
-        }).collect(); // Collect into a Result<Vec<AccountId>, ()>
-        
-        return native_output_notes;
+
+        let native_output_notes: Result<Vec<OutputNoteRecord>, StoreError> = output_notes_idxdb
+            .into_iter()
+            .map(|note| parse_output_note_idxdb_object(note))
+            .collect(); // Collect results into a single Result
+
+        match filter {
+            NoteFilter::Unique(note_id) if native_output_notes.is_empty() => {
+                return Err(StoreError::NoteNotFound(note_id));
+            },
+            NoteFilter::List(note_ids) if note_ids.len() != native_output_notes.len() => {
+                let missing_note_id = note_ids
+                    .iter()
+                    .find(|&note_id| !native_output_notes.iter().any(|note_record| note_record.id() == *note_id))
+                    .expect("should find one note id that wasn't retrieved by the db");
+                return Err(StoreError::NoteNotFound(*missing_note_id));
+            },
+            _ => {},
+        }
+
+        native_output_notes
+    }
+
+    pub(crate) async fn insert_input_note(
+        &self,
+        note: &InputNoteRecord
+    ) -> Result<(), StoreError> {
+        insert_input_note_tx(note).await
     }
 
     pub(crate) async fn get_unspent_input_note_nullifiers(

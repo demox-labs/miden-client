@@ -58,8 +58,11 @@ export async function applyStateSync(
     hasClientNotes,
     nodeIndices,
     nodes,
-    noteIds,
-    inclusionProofs,
+    outputNoteIds,
+    outputNoteInclusionProofs,
+    inputNoteIds,
+    inputNoteInluclusionProofs,
+    inputeNoteMetadatas,
     transactionIds,
 ) {
     return db.transaction('rw', stateSync, inputNotes, outputNotes, transactions, blockHeaders, chainMmrNodes, async (tx) => {
@@ -67,7 +70,7 @@ export async function applyStateSync(
         await updateSpentNotes(tx, nullifiers);
         await updateBlockHeader(tx, blockNum, blockHeader, chainMmrPeaks, hasClientNotes);
         await updateChainMmrNodes(tx, nodeIndices, nodes);
-        await updateCommittedNotes(tx, noteIds, inclusionProofs);
+        await updateCommittedNotes(tx, outputNoteIds, outputNoteInclusionProofs, inputNoteIds, inputNoteInluclusionProofs, inputeNoteMetadatas);
         await updateCommittedTransactions(tx, blockNum, transactionIds);
     });
 }
@@ -180,32 +183,50 @@ async function updateChainMmrNodes(
 
 async function updateCommittedNotes(
     tx, 
-    noteIds, 
-    inclusionProofs
+    outputNoteIds, 
+    outputNoteInclusionProofs,
+    inputNoteIds,
+    inputNoteInclusionProofs,
+    inputNoteMetadatas
 ) {
     try {
-        if (noteIds.length !== inclusionProofs.length) {
-            throw new Error("Arrays noteIds and inclusionProofs must be of the same length");
-        }
-
-        if (noteIds.length === 0) {
+        if (outputNoteIds.length === 0 || inputNoteIds.length === 0) {
             return;
         }
 
-        for (let i = 0; i < noteIds.length; i++) {
-            const noteId = noteIds[i];
-            const inclusionProof = inclusionProofs[i];
+        if (outputNoteIds.length !== outputNoteInclusionProofs.length) {
+            throw new Error("Arrays outputNoteIds and outputNoteInclusionProofs must be of the same length");
+        }
 
-            // Update input notes
-            await tx.inputNotes.where({ noteId: noteId }).modify({
-                status: 'Committed',
-                inclusionProof: inclusionProof
-            });
+        if (
+            inputNoteIds.length !== inputNoteInclusionProofs.length && 
+            inputNoteIds.length !== inputNoteMetadatas.length && 
+            inputNoteInclusionProofs.length !== inputNoteMetadatas.length
+        ) {
+            throw new Error("Arrays inputNoteIds and inputNoteInclusionProofs and inputNoteMetadatas must be of the same length");
+        }
+
+        for (let i = 0; i < outputNoteIds.length; i++) {
+            const noteId = outputNoteIds[i];
+            const inclusionProof = outputNoteInclusionProofs[i];
 
             // Update output notes
             await tx.outputNotes.where({ noteId: noteId }).modify({
                 status: 'Committed',
                 inclusionProof: inclusionProof
+            });
+        }
+
+        for (let i = 0; i < inputNoteIds.length; i++) {
+            const noteId = inputNoteIds[i];
+            const inclusionProof = inputNoteInclusionProofs[i];
+            const metadata = inputNoteMetadatas[i];
+
+            // Update input notes
+            await tx.inputNotes.where({ noteId: noteId }).modify({
+                status: 'Committed',
+                inclusionProof: inclusionProof,
+                metadata: metadata
             });
         }
     } catch (error) {
