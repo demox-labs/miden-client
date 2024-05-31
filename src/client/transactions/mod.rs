@@ -356,7 +356,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ) -> Result<TransactionResult, ClientError> {
         let account_id = transaction_request.account_id();
         self.tx_executor
-            .load_account(account_id).await
+            .load_account(account_id)
             .map_err(ClientError::TransactionExecutorError)?;
 
         let block_num = self.store().get_sync_height().await?;
@@ -371,7 +371,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             block_num,
             &note_ids,
             transaction_request.into(),
-        ).await?;
+        )?;
 
         // Check that the expected output notes matches the transaction outcome.
         // We comprare authentication hashes where possible since that involves note IDs + metadata
@@ -676,7 +676,6 @@ pub fn notes_from_output(output_notes: &OutputNotes) -> impl Iterator<Item = &No
             // partial details of the note
             OutputNote::Header(_) => {
                 todo!("For now, all details should be held in OutputNote::Fulls")
-            },
-            OutputNote::Partial(_) => todo!(),
+            }
         })
 }

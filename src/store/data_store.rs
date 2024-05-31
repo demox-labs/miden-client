@@ -1,6 +1,9 @@
 #[cfg(feature = "wasm")]
 use async_trait::async_trait;
 
+#[cfg(feature = "wasm")]
+use futures::executor::block_on;
+
 use alloc::{collections::BTreeSet, rc::Rc};
 
 use miden_objects::{
@@ -108,19 +111,19 @@ impl<S: Store> DataStore for ClientDataStore<S> {
 #[cfg(feature = "wasm")]
 // #[async_trait(?Send)]
 impl<S: Store> DataStore for ClientDataStore<S> {
-    async fn get_transaction_inputs(
+    fn get_transaction_inputs(
         &self,
         account_id: AccountId,
         block_num: u32,
         notes: &[NoteId],
     ) -> Result<TransactionInputs, DataStoreError> {
         // First validate that no note has already been consumed
-        let unspent_notes = self
-            .store
-            .get_input_notes(NoteFilter::Committed).await?
-            .iter()
-            .map(|note_record| note_record.id())
-            .collect::<Vec<_>>();
+        let unspent_notes = block_on(async {
+            match self.store.get_input_notes(NoteFilter::Committed).await {
+                Ok(notes) => Ok(notes.iter().map(|note_record| note_record.id()).collect::<Vec<_>>()),
+                Err(e) => Err(e),
+            }
+        })?;
 
         for note_id in notes {
             if !unspent_notes.contains(note_id) {
@@ -129,15 +132,15 @@ impl<S: Store> DataStore for ClientDataStore<S> {
         }
 
         // Construct Account
-        let (account, seed) = self.store.get_account(account_id).await?;
+        let (account, seed) = block_on(async {self.store.get_account(account_id).await})?;
 
         // Get header data
-        let (block_header, _had_notes) = self.store.get_block_header_by_num(block_num).await?;
+        let (block_header, _had_notes) = block_on(async {self.store.get_block_header_by_num(block_num).await})?;
 
         let mut list_of_notes = vec![];
 
         let mut notes_blocks: Vec<u32> = vec![];
-        let input_note_records = self.store.get_input_notes(NoteFilter::List(notes)).await?;
+        let input_note_records = block_on(async {self.store.get_input_notes(NoteFilter::List(notes)).await})?;
 
         for note_record in input_note_records {
             let input_note: InputNote = note_record
@@ -153,15 +156,15 @@ impl<S: Store> DataStore for ClientDataStore<S> {
             }
         }
 
-        let notes_blocks: Vec<BlockHeader> = self
-            .store
-            .get_block_headers(&notes_blocks).await?
-            .iter()
-            .map(|(header, _has_notes)| *header)
-            .collect();
+        let notes_blocks: Vec<BlockHeader> = block_on(async {
+            match self.store.get_block_headers(&notes_blocks).await {
+                Ok(headers) => Ok(headers.iter().map(|(header, _has_notes)| *header).collect::<Vec<_>>()),
+                Err(e) => Err(e),
+            }
+        })?;
 
         let partial_mmr =
-            build_partial_mmr_with_paths(self.store.as_ref(), block_num, &notes_blocks).await?;
+            block_on(async {build_partial_mmr_with_paths(self.store.as_ref(), block_num, &notes_blocks).await})?;
         let chain_mmr = ChainMmr::new(partial_mmr, notes_blocks)
             .map_err(|err| DataStoreError::InternalError(err.to_string()))?;
 
@@ -172,8 +175,8 @@ impl<S: Store> DataStore for ClientDataStore<S> {
             .map_err(DataStoreError::InvalidTransactionInput)
     }
 
-    async fn get_account_code(&self, account_id: AccountId) -> Result<ModuleAst, DataStoreError> {
-        let (account, _seed) = self.store.get_account(account_id).await?;
+    fn get_account_code(&self, account_id: AccountId) -> Result<ModuleAst, DataStoreError> {
+        let (account, _seed) = block_on(async {self.store.get_account(account_id).await})?;
         let module_ast = account.code().module().clone();
 
         Ok(module_ast)
