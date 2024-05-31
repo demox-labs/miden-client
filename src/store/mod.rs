@@ -1,9 +1,9 @@
 use alloc::collections::BTreeMap;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use async_trait::async_trait;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use clap::error::Result;
 use miden_objects::{
     accounts::{Account, AccountId, AccountStub, AuthSecretKey},
@@ -21,7 +21,7 @@ use crate::{
 };
 
 pub mod data_store;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub mod sqlite_store;
 
 mod note_record;
@@ -40,7 +40,7 @@ pub use note_record::{InputNoteRecord, NoteRecordDetails, NoteStatus, OutputNote
 /// Because the [Store]'s ownership is shared between the executor and the client, interior
 /// mutability is expected to be implemented, which is why all methods receive `&self` and
 /// not `&mut self`.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub trait Store {
     // TRANSACTIONS
     // --------------------------------------------------------------------------------------------
@@ -247,7 +247,7 @@ pub trait Store {
     fn apply_state_sync(&self, state_sync_update: StateSyncUpdate) -> Result<(), StoreError>;
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 #[async_trait(?Send)]
 pub trait Store {
     // TRANSACTIONS
@@ -276,7 +276,7 @@ pub trait Store {
     /// # Errors
     ///
     /// Returns a [StoreError::NoteNotFound] if the filter is [NoteFilter::Unique] and there is no Note with the provided ID
-    fn get_input_notes(&self, filter: NoteFilter) -> Result<Vec<InputNoteRecord>, StoreError>;
+    async fn get_input_notes(&self, filter: NoteFilter) -> Result<Vec<InputNoteRecord>, StoreError>;
 
     /// Retrieves the output notes from the store
     ///
@@ -290,7 +290,7 @@ pub trait Store {
     /// The default implementation of this method uses [Store::get_input_notes].
     async fn get_unspent_input_note_nullifiers(&self) -> Result<Vec<Nullifier>, StoreError> {
         let nullifiers = self
-            .get_input_notes(NoteFilter::Committed)?
+            .get_input_notes(NoteFilter::Committed).await?
             .iter()
             .map(|input_note| Ok(Nullifier::from(Digest::try_from(input_note.nullifier())?)))
             .collect::<Result<Vec<_>, _>>();
@@ -311,7 +311,7 @@ pub trait Store {
     ///
     /// For each block header an additional boolean value is returned representing whether the block
     /// contains notes relevant to the client.
-    fn get_block_headers(
+    async fn get_block_headers(
         &self,
         block_numbers: &[u32],
     ) -> Result<Vec<(BlockHeader, bool)>, StoreError>;
@@ -323,11 +323,11 @@ pub trait Store {
     ///
     /// # Errors
     /// Returns a [StoreError::BlockHeaderNotFound] if the block was not found.
-    fn get_block_header_by_num(
+    async fn get_block_header_by_num(
         &self,
         block_number: u32,
     ) -> Result<(BlockHeader, bool), StoreError> {
-        self.get_block_headers(&[block_number])
+        self.get_block_headers(&[block_number]).await
             .map(|block_headers_list| block_headers_list.first().cloned())
             .and_then(|block_header| {
                 block_header.ok_or(StoreError::BlockHeaderNotFound(block_number))
@@ -338,7 +338,7 @@ pub trait Store {
     async fn get_tracked_block_headers(&self) -> Result<Vec<BlockHeader>, StoreError>;
 
     /// Retrieves all MMR authentication nodes based on [ChainMmrNodeFilter].
-    fn get_chain_mmr_nodes(
+    async fn get_chain_mmr_nodes(
         &self,
         filter: ChainMmrNodeFilter,
     ) -> Result<BTreeMap<InOrderIndex, Digest>, StoreError>;
@@ -351,7 +351,7 @@ pub trait Store {
     /// Returns peaks information from the blockchain by a specific block number.
     ///
     /// If there is no chain MMR info stored for the provided block returns an empty [MmrPeaks]
-    fn get_chain_mmr_peaks_by_block_num(&self, block_num: u32) -> Result<MmrPeaks, StoreError>;
+    async fn get_chain_mmr_peaks_by_block_num(&self, block_num: u32) -> Result<MmrPeaks, StoreError>;
 
     /// Inserts a block header into the store, alongside peaks information at the block's height.
     ///
@@ -399,7 +399,7 @@ pub trait Store {
     /// # Errors
     ///
     /// Returns a `StoreError::AccountDataNotFound` if there is no account for the provided ID
-    fn get_account(&self, account_id: AccountId) -> Result<(Account, Option<Word>), StoreError>;
+    async fn get_account(&self, account_id: AccountId) -> Result<(Account, Option<Word>), StoreError>;
 
     /// Retrieves an account's [AuthSecretKey], utilized to authenticate the account.
     ///
@@ -414,7 +414,7 @@ pub trait Store {
     /// # Errors
     ///
     /// Returns a `StoreError::AccountKeyNotFound` if there is no account for the provided key
-    fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError>;
+    async fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError>;
 
     /// Inserts an [Account] along with the seed used to create it and its [AuthSecretKey]
     async fn insert_account(

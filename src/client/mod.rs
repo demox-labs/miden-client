@@ -5,19 +5,22 @@ use miden_objects::{
     Felt,
 };
 use miden_tx::{TransactionAuthenticator, TransactionExecutor};
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use rand::Rng;
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use tracing::info;
 
-use crate::store::{data_store::ClientDataStore, Store};
+use crate::{
+    errors::IdPrefixFetchError,
+    store::{data_store::ClientDataStore, InputNoteRecord, NoteFilter as ClientNoteFilter, Store}
+};
 
 pub mod rpc;
 use rpc::NodeRpcClient;
 
 pub mod accounts;
-#[cfg(any(test, target_arch = "wasm32"))]
+#[cfg(any(test, feature = "wasm"))]
 pub mod chain_data;
 pub mod note_screener;
 pub mod notes;
@@ -87,17 +90,17 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Self { store, rng, rpc_api: api, tx_executor }
     }
 
-    #[cfg(any(test, feature = "test_utils", target_arch = "wasm32"))]
+    #[cfg(any(test, feature = "test_utils", feature = "wasm"))]
     pub fn rpc_api(&mut self) -> &mut N {
         &mut self.rpc_api
     }
 
-    #[cfg(any(test, feature = "test_utils", target_arch = "wasm32"))]
+    #[cfg(any(test, feature = "test_utils", feature = "wasm"))]
     pub fn store(&mut self) -> &S {
         &self.store
     }
 
-    #[cfg(any(test, feature = "test_utils", target_arch = "wasm32"))]
+    #[cfg(any(test, feature = "test_utils", feature = "wasm"))]
     pub fn rng(&mut self) -> &mut R {
         &mut self.rng
     }
@@ -107,7 +110,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 // --------------------------------------------------------------------------------------------
 
 /// Gets [RpoRandomCoin] from the client
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub fn get_random_coin() -> RpoRandomCoin {
     // TODO: Initialize coin status once along with the client and persist status for retrieval
     let mut rng = rand::thread_rng();
@@ -117,11 +120,56 @@ pub fn get_random_coin() -> RpoRandomCoin {
 }
 
 /// Gets [RpoRandomCoin] from the client. Uses StdRng for wasm32 target
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 pub fn get_random_coin() -> RpoRandomCoin {
     // TODO: Initialize coin status once along with the client and persist status for retrieval
     let mut rng = StdRng::from_entropy();
     let coin_seed: [u64; 4] = rng.gen();
 
     RpoRandomCoin::new(coin_seed.map(Felt::new))
+}
+
+#[cfg(feature = "wasm")]
+pub async fn get_input_note_with_id_prefix<
+    N: NodeRpcClient,
+    R: FeltRng,
+    S: Store,
+    A: TransactionAuthenticator,
+>(
+    client: &mut Client<N, R, S, A>,
+    note_id_prefix: &str,
+) -> Result<InputNoteRecord, IdPrefixFetchError> {
+    let mut input_note_records = client
+        .get_input_notes(ClientNoteFilter::All).await
+        .map_err(|err| {
+            tracing::error!("Error when fetching all notes from the store: {err}");
+            IdPrefixFetchError::NoMatch(format!("note ID prefix {note_id_prefix}").to_string())
+        })?
+        .into_iter()
+        .filter(|note_record| note_record.id().to_hex().starts_with(note_id_prefix))
+        .collect::<Vec<_>>();
+
+    if input_note_records.is_empty() {
+        return Err(IdPrefixFetchError::NoMatch(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+    if input_note_records.len() > 1 {
+        let input_note_record_ids = input_note_records
+            .iter()
+            .map(|input_note_record| input_note_record.id())
+            .collect::<Vec<_>>();
+        tracing::error!(
+            "Multiple notes found for the prefix {}: {:?}",
+            note_id_prefix,
+            input_note_record_ids
+        );
+        return Err(IdPrefixFetchError::MultipleMatches(
+            format!("note ID prefix {note_id_prefix}").to_string(),
+        ));
+    }
+
+    Ok(input_note_records
+        .pop()
+        .expect("input_note_records should always have one element"))
 }

@@ -41,7 +41,7 @@ impl<S: Store> NoteScreener<S> {
     /// Does a fast check for known scripts (P2ID, P2IDR, SWAP). We're currently
     /// unable to execute notes that are not committed so a slow check for other scripts is currently
     /// not available.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn check_relevance(
         &self,
         note: &Note,
@@ -59,7 +59,7 @@ impl<S: Store> NoteScreener<S> {
         Ok(note_relevance)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn check_relevance(
         &self,
         note: &Note,
@@ -141,7 +141,7 @@ impl<S: Store> NoteScreener<S> {
     /// load the account's vaults, or even have a function in the `Store` to do this.
     ///
     /// TODO: test/revisit this in the future
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     fn check_swap_relevance(
         &self,
         note: &Note,
@@ -190,7 +190,7 @@ impl<S: Store> NoteScreener<S> {
         Ok(accounts_with_relevance)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn check_swap_relevance(
         &self,
         note: &Note,
@@ -212,7 +212,7 @@ impl<S: Store> NoteScreener<S> {
         let mut accounts_with_relevance = Vec::new();
 
         for account_id in account_ids {
-            let (account, _) = self.store.get_account(*account_id)?;
+            let (account, _) = self.store.get_account(*account_id).await?;
 
             // Check that the account can cover the demanded asset
             match asset {

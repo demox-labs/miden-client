@@ -47,7 +47,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     // --------------------------------------------------------------------------------------------
 
     /// Creates a new [Account] based on an [AccountTemplate] and saves it in the store
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn new_account(
         &mut self,
         template: AccountTemplate,
@@ -67,7 +67,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(account_and_seed)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn new_account(
         &mut self,
         template: AccountTemplate,
@@ -97,7 +97,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// Will panic when trying to import a non-new account without a seed since this functionality
     /// is not currently implemented
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn import_account(&mut self, account_data: AccountData) -> Result<(), ClientError> {
         let account_seed = if !account_data.account.is_new() && account_data.account_seed.is_some()
         {
@@ -115,7 +115,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         self.insert_account(&account_data.account, account_seed, &account_data.auth_secret_key)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn import_account(&mut self, account_data: AccountData) -> Result<(), ClientError> {
         let account_seed = if !account_data.account.is_new() && account_data.account_seed.is_some()
         {
@@ -134,7 +134,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     }
 
     /// Creates a new regular account and saves it in the store along with its seed and auth data
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     fn new_basic_wallet(
         &mut self,
         mutable_code: bool,
@@ -168,7 +168,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok((account, seed))
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn new_basic_wallet(
         &mut self,
         mutable_code: bool,
@@ -202,7 +202,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok((account, seed))
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     fn new_fungible_faucet(
         &mut self,
         token_symbol: TokenSymbol,
@@ -232,7 +232,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok((account, seed))
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn new_fungible_faucet(
         &mut self,
         token_symbol: TokenSymbol,
@@ -268,7 +268,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// If an account is new and no seed is provided, the function errors out because the client
     /// cannot execute transactions against new accounts for which it does not know the seed.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn insert_account(
         &mut self,
         account: &Account,
@@ -284,7 +284,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .map_err(ClientError::StoreError)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn insert_account(
         &mut self,
         account: &Account,
@@ -304,18 +304,18 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     // --------------------------------------------------------------------------------------------
 
     /// Returns summary info about the accounts managed by this client.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_account_stubs(&self) -> Result<Vec<(AccountStub, Option<Word>)>, ClientError> {
         self.store.get_account_stubs().map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_account_stubs(&mut self) -> Result<Vec<(AccountStub, Option<Word>)>, ClientError> {
         self.store().get_account_stubs().await.map_err(|err| err.into())
     }
 
     /// Returns summary info about the specified account.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_account(
         &self,
         account_id: AccountId,
@@ -323,16 +323,16 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         self.store.get_account(account_id).map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
-    pub fn get_account(
+    #[cfg(feature = "wasm")]
+    pub async fn get_account(
         &mut self,
         account_id: AccountId,
     ) -> Result<(Account, Option<Word>), ClientError> {
-        self.store().get_account(account_id).map_err(|err| err.into())
+        self.store().get_account(account_id).await.map_err(|err| err.into())
     }
 
     /// Returns summary info about the specified account.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_account_stub_by_id(
         &self,
         account_id: AccountId,
@@ -341,7 +341,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     }
 
     /// Returns summary info about the specified account.
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_account_stub_by_id(
         &mut self,
         account_id: AccountId,
@@ -355,12 +355,12 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// Returns a [ClientError::StoreError] with a [StoreError::AccountDataNotFound](crate::errors::StoreError::AccountDataNotFound) if the provided ID does
     /// not correspond to an existing account.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_account_auth(&self, account_id: AccountId) -> Result<AuthSecretKey, ClientError> {
         self.store.get_account_auth(account_id).map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_account_auth(&mut self, account_id: AccountId) -> Result<AuthSecretKey, ClientError> {
         self.store().get_account_auth(account_id).await.map_err(|err| err.into())
     }
@@ -369,7 +369,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 // TESTS
 // ================================================================================================
 
-#[cfg(all(test, not(target_arch = "wasm32")))]
+#[cfg(all(test, not(feature = "wasm")))]
 pub mod tests {
     use miden_objects::{
         accounts::{Account, AccountData, AccountId, AuthSecretKey},

@@ -1,5 +1,5 @@
 // Exclude this file when the target is wasm32
-#![cfg(not(target_arch = "wasm32"))]
+#![cfg(not(feature = "wasm"))]
 use clap::error::Result;
 use miden_lib::transaction::TransactionKernel;
 use miden_objects::{

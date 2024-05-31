@@ -1,5 +1,5 @@
 // Exclude this file when the target is wasm32
-#![cfg(not(target_arch = "wasm32"))]
+#![cfg(not(feature = "wasm"))]
 use std::collections::{HashMap, HashSet};
 
 use clap::ValueEnum;

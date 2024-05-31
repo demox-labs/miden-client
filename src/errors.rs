@@ -1,15 +1,15 @@
 use core::fmt;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use thiserror::Error;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use std::any::type_name;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use miden_node_proto::errors::ConversionError;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use miden_objects::crypto::merkle::{SmtLeafError, SmtProofError};
 
 use miden_objects::{
@@ -21,7 +21,7 @@ use miden_tx::{
     DataStoreError, TransactionExecutorError, TransactionProverError,
 };
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum ConversionError {
     #[error("Hex error: {0}")]
@@ -43,15 +43,15 @@ pub enum ConversionError {
     },
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 impl Eq for ConversionError {}
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 pub trait MissingFieldHelper {
     fn missing_field(field_name: &'static str) -> ConversionError;
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 impl<T: prost::Message> MissingFieldHelper for T {
     fn missing_field(field_name: &'static str) -> ConversionError {
         ConversionError::MissingFieldInProtobufRepresentation {
@@ -183,7 +183,7 @@ impl From<ScreenerError> for ClientError {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 impl From<rusqlite::Error> for ClientError {
     fn from(err: rusqlite::Error) -> Self {
         Self::StoreError(StoreError::from(err))
@@ -241,14 +241,14 @@ impl From<AccountError> for StoreError {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 impl From<rusqlite_migration::Error> for StoreError {
     fn from(value: rusqlite_migration::Error) -> Self {
         StoreError::DatabaseError(value.to_string())
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 impl From<rusqlite::Error> for StoreError {
     fn from(value: rusqlite::Error) -> Self {
         match value {

@@ -1,4 +1,4 @@
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use async_trait::async_trait;
 
 use alloc::{collections::BTreeSet, rc::Rc};
@@ -31,7 +31,7 @@ impl<S: Store> ClientDataStore<S> {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(not(feature = "wasm"))]
 impl<S: Store> DataStore for ClientDataStore<S> {
     fn get_transaction_inputs(
         &self,
@@ -105,7 +105,7 @@ impl<S: Store> DataStore for ClientDataStore<S> {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "wasm")]
 #[async_trait(?Send)]
 impl<S: Store> DataStore for ClientDataStore<S> {
     async fn get_transaction_inputs(
@@ -185,7 +185,7 @@ impl<S: Store> DataStore for ClientDataStore<S> {
 ///
 /// `authenticated_blocks` cannot contain `forest`. For authenticating the last block we have,
 /// the kernel extends the MMR which is why it's not needed here.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 fn build_partial_mmr_with_paths<S: Store>(
     store: &S,
     forest: u32,
@@ -211,14 +211,14 @@ fn build_partial_mmr_with_paths<S: Store>(
     Ok(partial_mmr)
 }
 
-#[cfg(target_arch = "wasm32")]
-fn build_partial_mmr_with_paths<S: Store>(
+#[cfg(feature = "wasm")]
+async fn build_partial_mmr_with_paths<S: Store>(
     store: &S,
     forest: u32,
     authenticated_blocks: &[BlockHeader],
 ) -> Result<PartialMmr, DataStoreError> {
     let mut partial_mmr: PartialMmr = {
-        let current_peaks = store.get_chain_mmr_peaks_by_block_num(forest)?;
+        let current_peaks = store.get_chain_mmr_peaks_by_block_num(forest).await?;
 
         PartialMmr::from_peaks(current_peaks)
     };
@@ -226,7 +226,7 @@ fn build_partial_mmr_with_paths<S: Store>(
     let block_nums: Vec<u32> = authenticated_blocks.iter().map(|b| b.block_num()).collect();
 
     let authentication_paths =
-        get_authentication_path_for_blocks(store, &block_nums, partial_mmr.forest())?;
+        get_authentication_path_for_blocks(store, &block_nums, partial_mmr.forest()).await?;
 
     for (header, path) in authenticated_blocks.iter().zip(authentication_paths.iter()) {
         partial_mmr
@@ -241,7 +241,7 @@ fn build_partial_mmr_with_paths<S: Store>(
 /// constructs the path for each of them.
 ///
 /// This method assumes `block_nums` cannot contain `forest`.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub fn get_authentication_path_for_blocks<S: Store>(
     store: &S,
     block_nums: &[u32],
@@ -284,8 +284,8 @@ pub fn get_authentication_path_for_blocks<S: Store>(
     Ok(authentication_paths)
 }
 
-#[cfg(target_arch = "wasm32")]
-pub fn get_authentication_path_for_blocks<S: Store>(
+#[cfg(feature = "wasm")]
+pub async fn get_authentication_path_for_blocks<S: Store>(
     store: &S,
     block_nums: &[u32],
     forest: usize,
@@ -308,7 +308,7 @@ pub fn get_authentication_path_for_blocks<S: Store>(
     let node_indices: Vec<InOrderIndex> = node_indices.into_iter().collect();
 
     let filter = ChainMmrNodeFilter::List(&node_indices);
-    let mmr_nodes = store.get_chain_mmr_nodes(filter)?;
+    let mmr_nodes = store.get_chain_mmr_nodes(filter).await?;
 
     // Construct authentication paths
     let mut authentication_paths = vec![];

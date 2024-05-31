@@ -12,7 +12,7 @@ use crate::{
 
 #[cfg(test)]
 impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client<N, R, S, A> {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_block_headers_in_range(
         &self,
         start: u32,
@@ -23,7 +23,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .map_err(ClientError::StoreError)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_block_headers_in_range(
         &self,
         start: u32,
@@ -34,7 +34,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .map_err(ClientError::StoreError)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_block_headers(
         &self,
         block_numbers: &[u32],
@@ -42,7 +42,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         self.store.get_block_headers(block_numbers).map_err(ClientError::StoreError)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_block_headers(
         &self,
         block_numbers: &[u32],

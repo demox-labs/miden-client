@@ -158,12 +158,12 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     // --------------------------------------------------------------------------------------------
 
     /// Returns the block number of the last state sync block.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_sync_height(&self) -> Result<u32, ClientError> {
         self.store.get_sync_height().map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_sync_height(&mut self) -> Result<u32, ClientError> {
         self.store().get_sync_height().await.map_err(|err| err.into())
     }
@@ -173,18 +173,18 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     /// When syncing the state with the node, these tags will be added to the sync request and note-related information will be retrieved for notes that have matching tags.
     ///
     /// Note: Tags for accounts that are being tracked by the client are managed automatically by the client and do not need to be added here. That is, notes for managed accounts will be retrieved automatically by the client when syncing.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_note_tags(&self) -> Result<Vec<NoteTag>, ClientError> {
         self.store.get_note_tags().map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_note_tags(&mut self) -> Result<Vec<NoteTag>, ClientError> {
         self.store().get_note_tags().await.map_err(|err| err.into())
     }
 
     /// Adds a note tag for the client to track.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn add_note_tag(&mut self, tag: NoteTag) -> Result<(), ClientError> {
         match self.store.add_note_tag(tag).map_err(|err| err.into()) {
             Ok(true) => Ok(()),
@@ -196,7 +196,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn add_note_tag(&mut self, tag: NoteTag) -> Result<(), ClientError> {
         match self.store().add_note_tag(tag).await.map_err(|err| err.into()) {
             Ok(true) => Ok(()),
@@ -209,7 +209,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     }
 
     /// Removes a note tag for the client to track.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn remove_note_tag(&mut self, tag: NoteTag) -> Result<(), ClientError> {
         match self.store.remove_note_tag(tag)? {
             true => Ok(()),
@@ -220,7 +220,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn remove_note_tag(&mut self, tag: NoteTag) -> Result<(), ClientError> {
         match self.store().remove_note_tag(tag).await? {
             true => Ok(()),
@@ -254,7 +254,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Attempts to retrieve the genesis block from the store. If not found,
     /// it requests it from the node and store it.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn ensure_genesis_in_place(&mut self) -> Result<(), ClientError> {
         let genesis = self.store.get_block_header_by_num(0);
 
@@ -265,9 +265,9 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn ensure_genesis_in_place(&mut self) -> Result<(), ClientError> {
-        let genesis = self.store().get_block_header_by_num(0);
+        let genesis = self.store().get_block_header_by_num(0).await;
 
         match genesis {
             Ok(_) => Ok(()),
@@ -278,7 +278,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Calls `get_block_header_by_number` requesting the genesis block and storing it
     /// in the local database
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn retrieve_and_store_genesis(&mut self) -> Result<(), ClientError> {
         let (genesis_block, _) = self.rpc_api.get_block_header_by_number(Some(0), false).await?;
 
@@ -290,7 +290,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn retrieve_and_store_genesis(&mut self) -> Result<(), ClientError> {
         let (genesis_block, _) = self.rpc_api().get_block_header_by_number(Some(0), false)?;
 
@@ -302,7 +302,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(())
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn sync_state_once(&mut self) -> Result<SyncStatus, ClientError> {
         let current_block_num = self.store.get_sync_height()?;
 
@@ -452,7 +452,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn sync_state_once(&mut self) -> Result<SyncStatus, ClientError> {
         let current_block_num = self.store().get_sync_height().await?;
 
@@ -474,7 +474,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
         let uncommited_note_tags: Vec<NoteTag> = self
             .store()
-            .get_input_notes(NoteFilter::Pending)?
+            .get_input_notes(NoteFilter::Pending).await?
             .iter()
             .filter_map(|note| note.metadata().map(|metadata| metadata.tag()))
             .collect();
@@ -536,7 +536,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             let current_partial_mmr = self.build_current_partial_mmr().await?;
 
             let (current_block, has_relevant_notes) =
-                self.store().get_block_header_by_num(current_block_num)?;
+                self.store().get_block_header_by_num(current_block_num).await?;
 
             apply_mmr_changes(
                 current_partial_mmr,
@@ -607,7 +607,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Extracts information about notes that the client is interested in, creating the note inclusion
     /// proof in order to correctly update store data
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn get_note_details(
         &mut self,
         committed_notes: Vec<CommittedNote>,
@@ -695,7 +695,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         ))
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn get_note_details(
         &mut self,
         committed_notes: Vec<CommittedNote>,
@@ -711,7 +711,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
         let pending_input_notes: BTreeMap<NoteId, InputNoteRecord> = self
             .store()
-            .get_input_notes(NoteFilter::Pending)?
+            .get_input_notes(NoteFilter::Pending).await?
             .into_iter()
             .map(|n| (n.id(), n))
             .collect();
@@ -787,7 +787,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// The client can receive metadata for private notes that it's not tracking. In this case,
     /// notes are ignored for now as they become useless until details are imported.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn fetch_public_note_details(
         &mut self,
         query_notes: &[NoteId],
@@ -825,7 +825,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(return_notes)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn fetch_public_note_details(
         &mut self,
         query_notes: &[NoteId],
@@ -865,7 +865,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Extracts information about notes that the client is interested in, creating the note inclusion
     /// proof in order to correctly update store data
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn check_block_relevance(
         &mut self,
         committed_notes: &SyncedNewNotes,
@@ -891,7 +891,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(false)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn check_block_relevance(
         &mut self,
         committed_notes: &SyncedNewNotes,
@@ -923,7 +923,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// As part of the syncing process, we add the current block number so we don't need to
     /// track it here.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub(crate) fn build_current_partial_mmr(&self) -> Result<PartialMmr, ClientError> {
         let current_block_num = self.store.get_sync_height()?;
 
@@ -943,15 +943,15 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(PartialMmr::from_parts(current_peaks, tracked_nodes, track_latest))
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub(crate) async fn build_current_partial_mmr(&mut self) -> Result<PartialMmr, ClientError> {
         let current_block_num = self.store().get_sync_height().await?;
 
-        let tracked_nodes = self.store().get_chain_mmr_nodes(ChainMmrNodeFilter::All)?;
-        let current_peaks = self.store().get_chain_mmr_peaks_by_block_num(current_block_num)?;
+        let tracked_nodes = self.store().get_chain_mmr_nodes(ChainMmrNodeFilter::All).await?;
+        let current_peaks = self.store().get_chain_mmr_peaks_by_block_num(current_block_num).await?;
 
         let track_latest = if current_block_num != 0 {
-            match self.store().get_block_header_by_num(current_block_num - 1) {
+            match self.store().get_block_header_by_num(current_block_num - 1).await {
                 Ok((_, previous_block_had_notes)) => Ok(previous_block_had_notes),
                 Err(StoreError::BlockHeaderNotFound(_)) => Ok(false),
                 Err(err) => Err(ClientError::StoreError(err)),
@@ -965,7 +965,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Extracts information about nullifiers for unspent input notes that the client is tracking
     /// from the received [SyncStateResponse]
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     fn get_new_nullifiers(&self, new_nullifiers: Vec<Digest>) -> Result<Vec<Digest>, ClientError> {
         // Get current unspent nullifiers
         let nullifiers = self
@@ -983,7 +983,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(new_nullifiers)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn get_new_nullifiers(&mut self, new_nullifiers: Vec<Digest>) -> Result<Vec<Digest>, ClientError> {
         // Get current unspent nullifiers
         let nullifiers = self
@@ -1001,7 +1001,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(new_nullifiers)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn get_updated_onchain_accounts(
         &mut self,
         account_updates: &[(AccountId, Digest)],
@@ -1030,7 +1030,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(accounts_to_update)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn get_updated_onchain_accounts(
         &mut self,
         account_updates: &[(AccountId, Digest)],
@@ -1080,7 +1080,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     }
 
     /// Retrieves and stores a [BlockHeader] by number, and stores its authentication data as well.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub(crate) async fn get_and_store_authenticated_block(
         &mut self,
         block_num: u32,
@@ -1128,7 +1128,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(block_header)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub(crate) async fn get_and_store_authenticated_block(
         &mut self,
         block_num: u32,
@@ -1137,7 +1137,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
         if current_partial_mmr.is_tracked(block_num as usize) {
             warn!("Current partial MMR already contains the requested data");
-            let (block_header, _) = self.store().get_block_header_by_num(block_num)?;
+            let (block_header, _) = self.store().get_block_header_by_num(block_num).await?;
             return Ok(block_header);
         }
 

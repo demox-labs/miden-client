@@ -11,9 +11,9 @@ use miden_objects::{
 
 use crate::errors::NodeRpcClientError;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 mod tonic_client;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub use tonic_client::TonicRpcClient;
 
 // NOTE DETAILS
@@ -76,7 +76,7 @@ impl NoteInclusionDetails {
 /// The implementers are responsible for connecting to the Miden node, handling endpoint
 /// requests/responses, and translating responses into domain objects relevant for each of the
 /// endpoints.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 #[async_trait]
 pub trait NodeRpcClient {
     /// Given a Proven Transaction, send it to the node for it to be included in a future block
@@ -136,7 +136,7 @@ pub trait NodeRpcClient {
     ) -> Result<AccountDetails, NodeRpcClientError>;
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 #[async_trait(?Send)]
 pub trait NodeRpcClient {
     /// Given a Proven Transaction, send it to the node for it to be included in a future block

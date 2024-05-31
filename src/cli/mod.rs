@@ -1,19 +1,19 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use std::{env, fs::File, io::Write, path::Path, rc::Rc};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use clap::Parser;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use comfy_table::{presets, Attribute, Cell, ContentArrangement, Table};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use figment::{
     providers::{Format, Toml},
     Figment,
 };
 
-use miden_client::{
+use super::{
     client::{
         get_random_coin,
         rpc::{NodeRpcClient, TonicRpcClient},
@@ -33,10 +33,10 @@ use miden_objects::{
 };
 use miden_tx::TransactionAuthenticator;
 use tracing::info;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use transactions::TransactionCmd;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use self::{
     account::AccountCmd,
     export::ExportCmd,
@@ -67,7 +67,7 @@ const CLIENT_CONFIG_FILE_NAME: &str = "miden-client.toml";
 pub const CLIENT_BINARY_NAME: &str = "miden";
 
 /// Root CLI struct
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 #[derive(Parser, Debug)]
 #[clap(name = "Miden", about = "Miden client", version, rename_all = "kebab-case")]
 pub struct Cli {
@@ -81,7 +81,7 @@ pub struct Cli {
 }
 
 /// CLI actions
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 #[derive(Debug, Parser)]
 pub enum Command {
     Account(AccountCmd),
@@ -105,7 +105,7 @@ pub enum Command {
 }
 
 /// CLI entry point
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 impl Cli {
     pub async fn execute(&self) -> Result<(), String> {
         let mut current_dir = std::env::current_dir().map_err(|err| err.to_string())?;
@@ -173,14 +173,14 @@ impl Cli {
 ///
 /// This function will look for the configuration file at the provided path. If the path is
 /// relative, searches in parent directories all the way to the root as well.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub fn load_config(config_file: &Path) -> Result<ClientConfig, String> {
     Figment::from(Toml::file(config_file))
         .extract()
         .map_err(|err| format!("Failed to load {} config file: {err}", config_file.display()))
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub fn create_dynamic_table(headers: &[&str]) -> Table {
     let header_cells = headers
         .iter()
@@ -204,7 +204,7 @@ pub fn create_dynamic_table(headers: &[&str]) -> Table {
 /// `note_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one note found
 /// where `note_id_prefix` is a prefix of its id.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub(crate) fn get_input_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -249,7 +249,7 @@ pub(crate) fn get_input_note_with_id_prefix<
         .expect("input_note_records should always have one element"))
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 pub async fn get_input_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -302,7 +302,7 @@ pub async fn get_input_note_with_id_prefix<
 /// `note_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one note found
 /// where `note_id_prefix` is a prefix of its id.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub(crate) fn get_output_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -347,7 +347,7 @@ pub(crate) fn get_output_note_with_id_prefix<
         .expect("input_note_records should always have one element"))
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 pub async fn get_output_note_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -400,7 +400,7 @@ pub async fn get_output_note_with_id_prefix<
 /// `account_id_prefix` is a prefix of its id.
 /// - Returns [IdPrefixFetchError::MultipleMatches] if there were more than one account found
 /// where `account_id_prefix` is a prefix of its id.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 fn get_account_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -443,7 +443,7 @@ fn get_account_with_id_prefix<
     Ok(accounts.pop().expect("account_ids should always have one element"))
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 async fn get_account_with_id_prefix<
     N: NodeRpcClient,
     R: FeltRng,
@@ -497,7 +497,7 @@ async fn get_account_with_id_prefix<
 ///
 /// - Will return a `IdPrefixFetchError` if the provided account id string can't be parsed as an
 /// `AccountId` and does not correspond to an account tracked by the client either.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub(crate) fn parse_account_id<
     N: NodeRpcClient,
     R: FeltRng,
@@ -517,7 +517,7 @@ pub(crate) fn parse_account_id<
     Ok(account_id)
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 pub async fn parse_account_id<
     N: NodeRpcClient,
     R: FeltRng,
@@ -537,7 +537,7 @@ pub async fn parse_account_id<
     Ok(account_id)
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 pub(crate) fn update_config(config_path: &Path, client_config: ClientConfig) -> Result<(), String> {
     let config_as_toml_string = toml::to_string_pretty(&client_config)
         .map_err(|err| format!("error formatting config: {err}"))?;

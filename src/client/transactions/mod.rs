@@ -14,9 +14,9 @@ use miden_objects::{
     Digest, Felt, Word,
 };
 use miden_tx::{ProvingOptions, ScriptTarget, TransactionAuthenticator, TransactionProver};
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use rand::Rng;
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use tracing::info;
 
@@ -48,7 +48,7 @@ pub struct TransactionResult {
 
 impl TransactionResult {
     /// Screens the output notes to store and track the relevant ones, and instantiates a [TransactionResult]
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn new<S: Store>(
         transaction: ExecutedTransaction,
         note_screener: NoteScreener<S>,
@@ -72,7 +72,7 @@ impl TransactionResult {
         Ok(tx_result)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn new<S: Store>(
         transaction: ExecutedTransaction,
         note_screener: NoteScreener<S>,
@@ -195,7 +195,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     // --------------------------------------------------------------------------------------------
 
     /// Retrieves tracked transactions, filtered by [TransactionFilter].
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn get_transactions(
         &self,
         filter: TransactionFilter,
@@ -203,12 +203,12 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         self.store.get_transactions(filter).map_err(|err| err.into())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn get_transactions(
-        &mut self,
+        &self,
         filter: TransactionFilter,
     ) -> Result<Vec<TransactionRecord>, ClientError> {
-        self.store().get_transactions(filter).await.map_err(|err| err.into())
+        self.store.get_transactions(filter).await.map_err(|err| err.into())
     }
 
     // TRANSACTION
@@ -216,7 +216,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Compiles a [TransactionTemplate] into a [TransactionRequest] that can be then executed by the
     /// client
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn build_transaction_request(
         &mut self,
         transaction_template: TransactionTemplate,
@@ -254,7 +254,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn build_transaction_request(
         &mut self,
         transaction_template: TransactionTemplate,
@@ -300,7 +300,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     /// - Returns [ClientError::MissingOutputNotes] if the [TransactionRequest] ouput notes are
     ///   not a subset of executor's output notes
     /// - Returns a [ClientError::TransactionExecutorError] if the execution fails
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub fn new_transaction(
         &mut self,
         transaction_request: TransactionRequest,
@@ -349,7 +349,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         TransactionResult::new(executed_transaction, screener, partial_notes)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn new_transaction(
         &mut self,
         transaction_request: TransactionRequest,
@@ -400,7 +400,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     /// Proves the specified transaction witness, submits it to the node, and stores the transaction in
     /// the local database for tracking.
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     pub async fn submit_transaction(
         &mut self,
         tx_result: TransactionResult,
@@ -420,7 +420,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(())
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     pub async fn submit_transaction(
         &mut self,
         tx_result: TransactionResult,
@@ -457,7 +457,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .map_err(ClientError::TransactionExecutorError)
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     async fn submit_proven_transaction_request(
         &mut self,
         proven_transaction: ProvenTransaction,
@@ -465,7 +465,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         Ok(self.rpc_api.submit_proven_transaction(proven_transaction).await?)
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     async fn submit_proven_transaction_request(
         &mut self,
         proven_transaction: ProvenTransaction,
@@ -477,7 +477,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     // --------------------------------------------------------------------------------------------
 
     /// Gets [RpoRandomCoin] from the client
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(not(feature = "wasm"))]
     fn get_random_coin(&self) -> RpoRandomCoin {
         // TODO: Initialize coin status once along with the client and persist status for retrieval
         let mut rng = rand::thread_rng();
@@ -486,7 +486,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         RpoRandomCoin::new(coin_seed.map(Felt::new))
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(feature = "wasm")]
     fn get_random_coin(&self) -> RpoRandomCoin {
         // TODO: Initialize coin status once along with the client and persist status for retrieval
         let mut rng = StdRng::from_entropy();
@@ -666,7 +666,7 @@ pub(crate) fn prepare_word(word: &Word) -> String {
 /// Used for:
 /// - checking the relevance of notes to save them as input notes
 /// - validate hashes versus expected output notes after a transaction is executed
-pub(crate) fn notes_from_output(output_notes: &OutputNotes) -> impl Iterator<Item = &Note> {
+pub fn notes_from_output(output_notes: &OutputNotes) -> impl Iterator<Item = &Note> {
     output_notes
         .iter()
         .filter(|n| matches!(n, OutputNote::Full(_)))

@@ -1,5 +1,5 @@
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 use async_std::task;
 
 use alloc::rc::Rc;
@@ -27,7 +27,7 @@ impl<R: Rng, S: Store> StoreAuthenticator<R, S> {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(not(feature = "wasm"))]
 impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
     /// Gets a signature over a message, given a public key.
     ///
@@ -54,7 +54,7 @@ impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(feature = "wasm")]
 impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
     /// Gets a signature over a message, given a public key.
     ///
@@ -72,15 +72,20 @@ impl<R: Rng, S: Store> TransactionAuthenticator for StoreAuthenticator<R, S> {
         // Explicitly annotate the return type of task::block_on to ensure correct handling
         let mut rng = self.rng.borrow_mut();
 
-        let result: Result<AuthSecretKey, StoreError> = task::block_on(self.store.get_account_auth_by_pub_key(pub_key));
+        // Use block_on to run the async block
+        let secret_key_result: Result<AuthSecretKey, StoreError> = task::block_on(async {
+            self.store.get_account_auth_by_pub_key(pub_key).await
+        });
 
-        let secret_key = self
-            .store
-            .get_account_auth_by_pub_key(pub_key).await
-            .map_err(|_| AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key))))?;
+        let secret_key = match secret_key_result {
+            Ok(secret_key) => secret_key,
+            Err(_) => return Err(AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key)))),
+        };
 
-        let AuthSecretKey::RpoFalcon512(k) = secret_key;
-        get_falcon_signature(&k, message, &mut *rng)
+        match secret_key {
+            AuthSecretKey::RpoFalcon512(k) => get_falcon_signature(&k, message, &mut *rng),
+            _ => Err(AuthenticationError::UnknownKey(format!("{}", Digest::from(pub_key)))),
+        }
     }
 }
 // HELPER FUNCTIONS

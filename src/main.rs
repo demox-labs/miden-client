@@ -1,11 +1,11 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use clap::Parser;
 
 mod cli;
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 use cli::Cli;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(feature = "wasm"))]
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
@@ -18,6 +18,6 @@ async fn main() {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(feature = "wasm")]
 fn main() {
 }
