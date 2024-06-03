@@ -19,6 +19,12 @@ use miden_tx::{DataStore, DataStoreError, TransactionInputs};
 use super::{ChainMmrNodeFilter, NoteFilter, Store};
 use crate::errors::{ClientError, StoreError};
 
+use wasm_bindgen::*;
+use std::sync::{Arc, Mutex, Condvar};
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
+use web_sys::console;
+
 // DATA STORE
 // ================================================================================================
 
@@ -176,7 +182,9 @@ impl<S: Store> DataStore for ClientDataStore<S> {
     }
 
     fn get_account_code(&self, account_id: AccountId) -> Result<ModuleAst, DataStoreError> {
+        web_sys::console::log_1(&JsValue::from_str("get_account_code called"));
         let (account, _seed) = block_on(async {self.store.get_account(account_id).await})?;
+        web_sys::console::log_1(&JsValue::from_str("get_account_code 2"));
         let module_ast = account.code().module().clone();
 
         Ok(module_ast)

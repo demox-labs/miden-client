@@ -23,6 +23,8 @@ use crate::{
     store::{ChainMmrNodeFilter, InputNoteRecord, NoteFilter, Store, TransactionFilter},
 };
 
+use wasm_bindgen::*;
+
 /// Contains stats about the sync operation
 pub struct SyncSummary {
     /// Block number up to which the client has been synced
@@ -267,6 +269,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     #[cfg(feature = "wasm")]
     async fn ensure_genesis_in_place(&mut self) -> Result<(), ClientError> {
+        web_sys::console::log_1(&JsValue::from_str("ensure_genesis_in_place called"));
         let genesis = self.store().get_block_header_by_num(0).await;
 
         match genesis {
@@ -292,7 +295,8 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     #[cfg(feature = "wasm")]
     async fn retrieve_and_store_genesis(&mut self) -> Result<(), ClientError> {
-        let (genesis_block, _) = self.rpc_api().get_block_header_by_number(Some(0), false)?;
+        web_sys::console::log_1(&JsValue::from_str("retrieve_and_store_genesis called"));
+        let (genesis_block, _) = self.rpc_api().get_block_header_by_number(Some(0), false).await?;
 
         let blank_mmr_peaks =
             MmrPeaks::new(0, vec![]).expect("Blank MmrPeaks should not fail to instantiate");
@@ -454,6 +458,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
 
     #[cfg(feature = "wasm")]
     async fn sync_state_once(&mut self) -> Result<SyncStatus, ClientError> {
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once called"));
         let current_block_num = self.store().get_sync_height().await?;
 
         let accounts: Vec<AccountStub> = self
@@ -462,6 +467,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .into_iter()
             .map(|(acc_stub, _)| acc_stub)
             .collect();
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 2"));
 
         let account_note_tags: Vec<NoteTag> = accounts
             .iter()
@@ -470,7 +476,11 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             })
             .collect::<Result<Vec<_>, _>>()?;
 
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 3"));
+
         let stored_note_tags: Vec<NoteTag> = self.store().get_note_tags().await?;
+
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 4"));
 
         let uncommited_note_tags: Vec<NoteTag> = self
             .store()
@@ -479,12 +489,16 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .filter_map(|note| note.metadata().map(|metadata| metadata.tag()))
             .collect();
 
+            web_sys::console::log_1(&JsValue::from_str("sync_state_once 5"));
+
         let note_tags: Vec<NoteTag> = [account_note_tags, stored_note_tags, uncommited_note_tags]
             .concat()
             .into_iter()
             .collect::<BTreeSet<NoteTag>>()
             .into_iter()
             .collect();
+
+            web_sys::console::log_1(&JsValue::from_str("sync_state_once 6"));
 
         // To receive information about added nullifiers, we reduce them to the higher 16 bits
         // Note that besides filtering by nullifier prefixes, the node also filters by block number
@@ -496,12 +510,16 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             .map(|nullifier| (nullifier.inner()[3].as_int() >> FILTER_ID_SHIFT) as u16)
             .collect();
 
+            web_sys::console::log_1(&JsValue::from_str("sync_state_once 7"));
+
         // Send request
         let account_ids: Vec<AccountId> = accounts.iter().map(|acc| acc.id()).collect();
         let response = self
             .rpc_api()
             .sync_state(current_block_num, &account_ids, &note_tags, &nullifiers_tags)
             .await?;
+
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 8"));
 
         // We don't need to continue if the chain has not advanced, there are no new changes
         if response.block_header.block_num() == current_block_num {
@@ -517,8 +535,12 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         let new_note_details =
             self.get_note_details(response.note_inclusions, &response.block_header).await?;
 
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 9"));
+
         let incoming_block_has_relevant_notes =
             self.check_block_relevance(&new_note_details).await?;
+        
+            web_sys::console::log_1(&JsValue::from_str("sync_state_once 10"));
 
         let (onchain_accounts, offchain_accounts): (Vec<_>, Vec<_>) =
             accounts.into_iter().partition(|account_stub| account_stub.id().is_on_chain());
@@ -526,10 +548,14 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         let updated_onchain_accounts = self
             .get_updated_onchain_accounts(&response.account_hash_updates, &onchain_accounts)
             .await?;
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 11"));
         self.validate_local_account_hashes(&response.account_hash_updates, &offchain_accounts)?;
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 12"));
 
         // Derive new nullifiers data
         let new_nullifiers = self.get_new_nullifiers(response.nullifiers).await?;
+
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 13"));
 
         // Build PartialMmr with current data and apply updates
         let (new_peaks, new_authentication_nodes) = {
@@ -545,9 +571,12 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
                 has_relevant_notes,
             )?
         };
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 14"));
 
         let uncommitted_transactions =
             self.store().get_transactions(TransactionFilter::Uncomitted).await?;
+        
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 15"));
 
         let transactions_to_commit = get_transactions_to_commit(
             &uncommitted_transactions,
@@ -555,6 +584,8 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             &new_nullifiers,
             &response.account_hash_updates,
         );
+
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 16"));
 
         let num_new_notes = new_note_details.new_public_notes.len();
         let updated_ids: BTreeSet<NoteId> = new_note_details
@@ -575,11 +606,14 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             updated_onchain_accounts: updated_onchain_accounts.clone(),
             block_has_relevant_notes: incoming_block_has_relevant_notes,
         };
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 17"));
 
         // Apply received and computed updates to the store
         self.store()
             .apply_state_sync(state_sync_update).await
             .map_err(ClientError::StoreError)?;
+
+        web_sys::console::log_1(&JsValue::from_str("sync_state_once 18"));
 
         if response.chain_tip == response.block_header.block_num() {
             Ok(SyncStatus::SyncedToLastBlock(SyncSummary::new(
@@ -1142,7 +1176,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         }
 
         let Ok((block_header, mmr_proof)) =
-            self.rpc_api().get_block_header_by_number(Some(block_num), true) else { todo!() };
+            self.rpc_api().get_block_header_by_number(Some(block_num), true).await else { todo!() };
 
         let mut path_nodes: Vec<(InOrderIndex, Digest)> = vec![];
 

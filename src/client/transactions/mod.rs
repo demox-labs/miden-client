@@ -32,6 +32,8 @@ use crate::{
 
 pub mod transaction_request;
 
+use wasm_bindgen::*;
+
 // TRANSACTION RESULT
 // --------------------------------------------------------------------------------------------
 
@@ -354,16 +356,22 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         &mut self,
         transaction_request: TransactionRequest,
     ) -> Result<TransactionResult, ClientError> {
+        web_sys::console::log_1(&JsValue::from_str("new_transaction called"));
         let account_id = transaction_request.account_id();
         self.tx_executor
             .load_account(account_id)
             .map_err(ClientError::TransactionExecutorError)?;
+        web_sys::console::log_1(&JsValue::from_str("new_transaction 2"));
 
         let block_num = self.store().get_sync_height().await?;
+
+        web_sys::console::log_1(&JsValue::from_str("new_transaction 2"));
 
         let note_ids = transaction_request.get_input_note_ids();
         let output_notes = transaction_request.expected_output_notes().to_vec();
         let partial_notes = transaction_request.expected_partial_notes().to_vec();
+
+        web_sys::console::log_1(&JsValue::from_str("new_transaction 3"));
 
         // Execute the transaction and get the witness
         let executed_transaction = self.tx_executor.execute_transaction(
@@ -372,6 +380,8 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             &note_ids,
             transaction_request.into(),
         )?;
+
+        web_sys::console::log_1(&JsValue::from_str("new_transaction 4"));
 
         // Check that the expected output notes matches the transaction outcome.
         // We comprare authentication hashes where possible since that involves note IDs + metadata

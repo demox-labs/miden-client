@@ -36,6 +36,8 @@ pub enum ConversionError {
     InsufficientData { expected: usize, got: usize },
     #[error("Value is not in the range 0..MODULUS")]
     NotAValidFelt,
+    #[error("Invalid note type value: {0}")]
+    NoteTypeError(#[from] NoteError),
     #[error("Field `{field_name}` required to be filled in protobuf representation of {entity}")]
     MissingFieldInProtobufRepresentation {
         entity: &'static str,

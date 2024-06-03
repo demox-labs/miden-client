@@ -152,7 +152,7 @@ pub trait NodeRpcClient {
     /// of the return tuple should always be Some(MmrProof)   
     ///
     /// When `None` is provided, returns info regarding the latest block
-    fn get_block_header_by_number(
+    async fn get_block_header_by_number(
         &mut self,
         block_num: Option<u32>,
         include_mmr_proof: bool,
