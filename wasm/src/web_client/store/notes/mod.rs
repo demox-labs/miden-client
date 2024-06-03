@@ -31,7 +31,7 @@ use utils::*;
 impl WebStore {
     pub(crate) async fn get_input_notes(
         &self,
-        filter: NoteFilter
+        filter: NoteFilter<'_>
     ) -> Result<Vec<InputNoteRecord>, StoreError> {
         let promise = match filter {
             NoteFilter::All | NoteFilter::Consumed | NoteFilter::Committed | NoteFilter::Pending => {
@@ -48,7 +48,7 @@ impl WebStore {
             },
             NoteFilter::List(ids) => {
                 let note_ids_as_str: Vec<String> = ids.into_iter().map(|id| id.inner().to_string()).collect();
-                idxdb_get_input_notes_from_ids(ids)
+                idxdb_get_input_notes_from_ids(note_ids_as_str)
             },
             NoteFilter::Unique(id) => {
                 let note_id_as_str = id.inner().to_string();
@@ -62,21 +62,24 @@ impl WebStore {
 
         let native_input_notes: Result<Vec<InputNoteRecord>, StoreError> = input_notes_idxdb
             .into_iter()
-            .map(|note| parse_input_note_idxdb_object(note))
-            .collect(); // Collect results into a single Result
+            .map(parse_input_note_idxdb_object) // Simplified closure
+            .collect::<Result<Vec<_>, _>>(); // Collect results into a single Result
 
-        match filter {
-            NoteFilter::Unique(note_id) if native_input_notes.is_empty() => {
-                return Err(StoreError::NoteNotFound(note_id));
+        match native_input_notes {
+            Ok(ref notes) => match filter {
+                NoteFilter::Unique(note_id) if notes.is_empty() => {
+                    return Err(StoreError::NoteNotFound(note_id));
+                },
+                NoteFilter::List(note_ids) if note_ids.len() != notes.len() => {
+                    let missing_note_id = note_ids
+                        .iter()
+                        .find(|&&note_id| !notes.iter().any(|note_record| note_record.id() == note_id))
+                        .expect("should find one note id that wasn't retrieved by the db");
+                    return Err(StoreError::NoteNotFound(*missing_note_id));
+                },
+                _ => {},
             },
-            NoteFilter::List(note_ids) if note_ids.len() != native_input_notes.len() => {
-                let missing_note_id = note_ids
-                    .iter()
-                    .find(|&note_id| !native_input_notes.iter().any(|note_record| note_record.id() == *note_id))
-                    .expect("should find one note id that wasn't retrieved by the db");
-                return Err(StoreError::NoteNotFound(*missing_note_id));
-            },
-            _ => {},
+            Err(e) => return Err(e),
         }
 
         native_input_notes
@@ -84,7 +87,7 @@ impl WebStore {
 
     pub(crate) async fn get_output_notes(
         &self, 
-        filter: NoteFilter
+        filter: NoteFilter<'_>
     ) -> Result<Vec<OutputNoteRecord>, StoreError> {
         let promise = match filter {
             NoteFilter::All | NoteFilter::Consumed | NoteFilter::Committed | NoteFilter::Pending => {
@@ -101,7 +104,7 @@ impl WebStore {
             },
             NoteFilter::List(ids) => {
                 let note_ids_as_str: Vec<String> = ids.into_iter().map(|id| id.inner().to_string()).collect();
-                idxdb_get_output_notes_from_ids(ids)
+                idxdb_get_output_notes_from_ids(note_ids_as_str)
             },
             NoteFilter::Unique(id) => {
                 let note_id_as_str = id.inner().to_string();
@@ -115,21 +118,24 @@ impl WebStore {
 
         let native_output_notes: Result<Vec<OutputNoteRecord>, StoreError> = output_notes_idxdb
             .into_iter()
-            .map(|note| parse_output_note_idxdb_object(note))
-            .collect(); // Collect results into a single Result
+            .map(parse_output_note_idxdb_object) // Simplified closure
+            .collect::<Result<Vec<_>, _>>(); // Collect results into a single Result
 
-        match filter {
-            NoteFilter::Unique(note_id) if native_output_notes.is_empty() => {
-                return Err(StoreError::NoteNotFound(note_id));
+        match native_output_notes {
+            Ok(ref notes) => match filter {
+                NoteFilter::Unique(note_id) if notes.is_empty() => {
+                    return Err(StoreError::NoteNotFound(note_id));
+                },
+                NoteFilter::List(note_ids) if note_ids.len() != notes.len() => {
+                    let missing_note_id = note_ids
+                        .iter()
+                        .find(|&&note_id| !notes.iter().any(|note_record| note_record.id() == note_id))
+                        .expect("should find one note id that wasn't retrieved by the db");
+                    return Err(StoreError::NoteNotFound(*missing_note_id));
+                },
+                _ => {},
             },
-            NoteFilter::List(note_ids) if note_ids.len() != native_output_notes.len() => {
-                let missing_note_id = note_ids
-                    .iter()
-                    .find(|&note_id| !native_output_notes.iter().any(|note_record| note_record.id() == *note_id))
-                    .expect("should find one note id that wasn't retrieved by the db");
-                return Err(StoreError::NoteNotFound(*missing_note_id));
-            },
-            _ => {},
+            Err(e) => return Err(e),
         }
 
         native_output_notes

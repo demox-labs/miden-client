@@ -28,8 +28,8 @@ impl WebStore {
     pub(crate) async fn get_note_tags(
         &self
     ) -> Result<Vec<NoteTag>, StoreError>{
-        let promsie = idxdb_get_note_tags();
-        let js_value = JsFuture::from(promsie).await.unwrap();
+        let promise = idxdb_get_note_tags();
+        let js_value = JsFuture::from(promise).await.unwrap();
         let tags_idxdb: NoteTagsIdxdbObject = from_value(js_value).unwrap();
 
         let tags: Vec<NoteTag> = serde_json::from_str(&tags_idxdb.tags).unwrap();
@@ -50,7 +50,7 @@ impl WebStore {
 
     pub(super) async fn add_note_tag(
         &self,
-        tag: u64
+        tag: NoteTag
     ) -> Result<bool, StoreError> {
         let mut tags = self.get_note_tags().await.unwrap();
         if tags.contains(&tag) {

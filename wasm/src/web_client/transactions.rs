@@ -40,6 +40,7 @@ impl WebClient {
     pub async fn get_transactions(
         &mut self
     ) -> Result<JsValue, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("get_transactions called"));
         if let Some(client) = self.get_mut_inner() {
 
             let transactions: Vec<TransactionRecord> = client

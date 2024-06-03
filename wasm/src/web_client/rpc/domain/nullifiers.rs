@@ -2,9 +2,7 @@ use miden_objects::{
     crypto::{hash::rpo::RpoDigest, merkle::SmtProof},
     notes::Nullifier,
 };
-use miden_client::errors::ConversionError;
-
-// use crate::native_code::errors::{ConversionError, MissingFieldHelper};
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 
 use crate::web_client::rpc::client_grpc::{digest::Digest, responses::NullifierBlockInputRecord};
 

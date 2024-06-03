@@ -6,7 +6,7 @@ use miden_objects::{
     accounts::AccountData,
     utils::Deserializable
 };
-use miden_client::store::note_record::InputNoteRecord;
+use miden_client::store::InputNoteRecord;
 
 use crate::web_client::WebClient;
 

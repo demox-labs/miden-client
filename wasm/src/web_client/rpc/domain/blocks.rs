@@ -1,7 +1,6 @@
 use miden_objects::BlockHeader;
-use miden_client::errors::ConversionError;
 
-// use crate::native_code::errors::{ConversionError, MissingFieldHelper};
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 use crate::web_client::rpc::client_grpc::block_header;
 
 // BLOCK HEADER

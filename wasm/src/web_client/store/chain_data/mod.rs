@@ -165,6 +165,7 @@ impl WebStore {
     }
 
     pub(crate) async fn insert_chain_mmr_nodes(
+        &self,
         nodes: &[(InOrderIndex, Digest)],
     ) -> Result<(), StoreError> {
         let mut serialized_node_ids = Vec::new();

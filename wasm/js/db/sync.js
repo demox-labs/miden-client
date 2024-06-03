@@ -12,7 +12,10 @@ export async function getNoteTags() {
     try {
         const record = await stateSync.get(1);  // Since id is the primary key and always 1
         if (record) {
-            return record.tags;
+            let data = {
+                tags: JSON.stringify(record.tags)
+            }
+            return data;
         } else {
             return null;
         }

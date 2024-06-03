@@ -62,6 +62,22 @@ export async function getInputNotesFromIds(
     }
 }
 
+export async function getOutputNotesFromIds(
+    noteIds
+) {
+    try {
+        let notes;
+
+        // Fetch the records based on a list of IDs
+        notes = await outputNotes.where('noteId').anyOf(noteIds).toArray();
+
+        return await processOutputNotes(notes);
+    } catch (err) {
+        console.error("Failed to get input notes: ", err);
+        throw err;
+    }
+}
+
 export async function getUnspentInputNoteNullifiers() {
     try {
         const notes = await db.InputNotes.where('status').equals('Committed').toArray();

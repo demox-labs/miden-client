@@ -3,11 +3,9 @@ use miden_objects::{
     Digest, Word,
 };
 
-use miden_client::errors::ConversionError;
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 
 use super::{convert, try_convert};
-
-// use crate::native_code::errors::{ConversionError, MissingFieldHelper};
 
 use crate::web_client::rpc::client_grpc;
 

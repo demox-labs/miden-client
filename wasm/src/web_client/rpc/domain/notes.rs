@@ -2,9 +2,7 @@ use miden_objects::{
     notes::{NoteMetadata, NoteTag, NoteType},
     Felt,
 };
-use miden_client::errors::ConversionError;
-
-// use crate::native_code::errors::{ConversionError, MissingFieldHelper};
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 
 impl TryFrom<crate::web_client::rpc::client_grpc::note::NoteMetadata> for NoteMetadata {
     type Error = ConversionError;

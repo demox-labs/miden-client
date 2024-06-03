@@ -8,9 +8,7 @@ use miden_objects::{
     Digest,
 };
 
-use miden_client::errors::ConversionError;
-// use crate::native_code::errors::{ConversionError, MissingFieldHelper};
-
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 use crate::web_client::rpc::client_grpc::{
     account::{
         AccountId as AccountIdPb,

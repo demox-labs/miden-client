@@ -3,7 +3,10 @@ use wasm_bindgen::prelude::*;
 
 use miden_objects::{
     accounts::AccountId,
-    assets::FungibleAsset,
+    assets::{
+        FungibleAsset,
+        Asset::Fungible
+    },
     notes::{NoteId, NoteType as MidenNoteType}
 };
 use miden_client::client::{
@@ -23,6 +26,7 @@ impl WebClient {
         note_type: String,
         amount: String,
     ) -> Result<NewTransactionResult, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("new_mint_transaction called"));
         if let Some(client) = self.get_mut_inner() {
             let target_account_id = AccountId::from_hex(&target_account_id).unwrap();
             let faucet_id = AccountId::from_hex(&faucet_id).unwrap();
@@ -40,14 +44,19 @@ impl WebClient {
                 note_type
             );
 
+            web_sys::console::log_1(&JsValue::from_str("new_mint_transaction 2"));
+
             let mint_transaction_request = client.build_transaction_request(mint_transaction_template.clone()).await.unwrap();
+            web_sys::console::log_1(&JsValue::from_str("new_mint_transaction 3"));
             let mint_transaction_execution_result = client.new_transaction(mint_transaction_request).await.unwrap();
+            web_sys::console::log_1(&JsValue::from_str("new_mint_transaction 4"));
             let result = NewTransactionResult::new(
                 mint_transaction_execution_result.executed_transaction().id().to_string(),
                 mint_transaction_execution_result.created_notes().iter().map(|note| note.id().to_string()).collect()
             );
-
+            web_sys::console::log_1(&JsValue::from_str("new_mint_transaction 5"));
             client.submit_transaction(mint_transaction_execution_result).await.unwrap();
+            web_sys::console::log_1(&JsValue::from_str("new_mint_transaction 6"));
             
             Ok(result)
         } else {
@@ -64,6 +73,7 @@ impl WebClient {
         amount: String,
         recall_height: Option<String>
     ) -> Result<NewTransactionResult, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("new_send_transaction called"));
         if let Some(client) = self.get_mut_inner() {
             let sender_account_id = AccountId::from_hex(&sender_account_id).unwrap();
             let target_account_id = AccountId::from_hex(&target_account_id).unwrap();
@@ -75,13 +85,15 @@ impl WebClient {
                 "Private" => MidenNoteType::OffChain,
                 _ => MidenNoteType::OffChain
             };
-            let payment_transaction = PaymentTransactionData::new(fungible_asset, sender_account_id, target_account_id);
+            let asset = Fungible(fungible_asset);
+            let payment_transaction = PaymentTransactionData::new(asset, sender_account_id, target_account_id);
             
             let send_transaction_template: TransactionTemplate;
             if let Some(recall_height) = recall_height {
+                let recall_height_as_u32: u32 = recall_height.parse::<u32>().map_err(|err| err.to_string())?;
                 send_transaction_template = TransactionTemplate::PayToIdWithRecall(
                     payment_transaction,
-                    recall_height,
+                    recall_height_as_u32,
                     note_type,
                 );
             } else {
@@ -111,18 +123,26 @@ impl WebClient {
         account_id: String,
         list_of_notes: Vec<String>,
     ) -> Result<NewTransactionResult, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("new_consume_transaction called"));
         if let Some(client) = self.get_mut_inner() {
             let account_id = AccountId::from_hex(&account_id).unwrap();
-            let list_of_notes = list_of_notes
-                .iter()
-                .map(|note_id| {
-                    get_input_note_with_id_prefix(client, note_id)
-                        .map(|note_record| note_record.id())
-                        .map_err(|err| err.to_string())
-                })
-                .collect::<Result<Vec<NoteId>, _>>()?;
+            let mut result = Vec::new();
+            for note_id in list_of_notes {
+                match get_input_note_with_id_prefix(client, &note_id).await {
+                    Ok(note_record) => result.push(note_record.id()),
+                    Err(err) => return Err(JsValue::from_str(&err.to_string())),
+                }
+            }
+            // let list_of_notes = list_of_notes
+            //     .iter()
+            //     .map(|note_id| {
+            //         get_input_note_with_id_prefix(client, note_id).await
+            //             .map(|note_record| note_record.id())
+            //             .map_err(|err| err.to_string())
+            //     })
+            //     .collect::<Result<Vec<NoteId>, _>>()?;
             
-            let consume_transaction_template = TransactionTemplate::ConsumeNotes(account_id, list_of_notes);
+            let consume_transaction_template = TransactionTemplate::ConsumeNotes(account_id, result);
 
             let consume_transaction_request = client.build_transaction_request(consume_transaction_template.clone()).await.unwrap();
             let consume_transaction_execution_result = client.new_transaction(consume_transaction_request).await.unwrap();
@@ -148,6 +168,7 @@ impl WebClient {
         requested_asset_amount: String,
         note_type: String,
     ) -> Result<NewTransactionResult, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("new_swap_transaction called"));
         if let Some(client) = self.get_mut_inner() {
             let sender_account_id = AccountId::from_hex(&sender_account_id).unwrap();
             let offered_asset_faucet_id = AccountId::from_hex(&offered_asset_faucet_id).unwrap();

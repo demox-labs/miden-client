@@ -12,7 +12,8 @@ use miden_objects::{
     BlockHeader, Digest, Word
 };
 use miden_client::{
-    store::{ChainMmrNodeFilter, InputNoteRecord, NoteFilter, OutputNoteRecord, Store, StoreError, TransactionFilter},
+    errors::StoreError,
+    store::{ChainMmrNodeFilter, InputNoteRecord, NoteFilter, OutputNoteRecord, Store, TransactionFilter},
     client::{
         sync::StateSyncUpdate,
         transactions::{TransactionRecord, TransactionResult}
@@ -51,7 +52,7 @@ impl WebStore {
     }
 }
 
-#[async_trait(?Send)]
+// #[async_trait(?Send)]
 impl Store for WebStore {
     // SYNC
     // --------------------------------------------------------------------------------------------
@@ -111,14 +112,14 @@ impl Store for WebStore {
 
     async fn get_input_notes(
         &self,
-        filter: NoteFilter,
+        filter: NoteFilter<'_>,
     ) -> Result<Vec<InputNoteRecord>, StoreError> {
         self.get_input_notes(filter).await
     }
 
     async fn get_output_notes(
         &self,
-        note_filter: NoteFilter,
+        note_filter: NoteFilter<'_>,
     ) -> Result<Vec<OutputNoteRecord>, StoreError> {
         self.get_output_notes(note_filter).await
     }

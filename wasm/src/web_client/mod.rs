@@ -45,6 +45,7 @@ impl WebClient {
         &mut self,
         node_url: Option<String>
     ) -> Result<JsValue, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("create_client called"));
         let rng = get_random_coin();
         let web_store: WebStore = WebStore::new().await.map_err(|_| JsValue::from_str("Failed to initialize WebStore"))?;
         let web_store = Rc::new(web_store);

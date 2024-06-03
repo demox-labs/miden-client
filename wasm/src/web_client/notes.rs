@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 use serde_wasm_bindgen::from_value;
 use web_sys::console;
 
-use miden_client::store::InputNoteRecord;
+use miden_client::store::{InputNoteRecord, OutputNoteRecord};
 use miden_client::store::NoteFilter;
 
 use super::WebClient;
@@ -74,7 +74,7 @@ impl WebClient {
                 WebClientNoteFilter::All => NoteFilter::All
             };
 
-            let notes: Vec<InputNoteRecord> = client.get_output_notes(native_filter).await.unwrap();
+            let notes: Vec<OutputNoteRecord> = client.get_output_notes(native_filter).await.unwrap();
             let note_ids = notes.iter().map(|note| 
                 note.id().to_string()
             ).collect::<Vec<String>>();
@@ -94,7 +94,7 @@ impl WebClient {
             let note_id: NoteId = Digest::try_from(note_id)
                 .map_err(|err| format!("Failed to parse output note id: {}", err))?
                 .into();
-            let note: InputNoteRecord = client.get_output_note(note_id).await.unwrap();
+            let note: OutputNoteRecord = client.get_output_note(note_id).await.unwrap();
 
             serde_wasm_bindgen::to_value(&note.id().to_string()).map_err(|e| JsValue::from_str(&e.to_string()))
         } else {

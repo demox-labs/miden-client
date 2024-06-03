@@ -6,6 +6,7 @@ use miden_objects::{
     accounts::{Account, AccountCode, AccountId, AccountStorage, AccountStub, AuthSecretKey}, 
     assembly::AstSerdeOptions, 
     assets::{Asset, AssetVault}, 
+    utils::Deserializable,
     Felt, Digest, Word
 };
 use miden_tx::utils::Serializable;
@@ -98,14 +99,14 @@ pub async fn insert_account_record(
 pub fn parse_account_record_idxdb_object(
     account_stub_idxdb: AccountRecordIdxdbOjbect
 ) -> Result<(AccountStub, Option<Word>), StoreError> {
-    let native_account_id: AccountId = AccountId::from_hex(&account_stub_idxdb.id)?;
-    let native_nonce: u64 = account_stub_idxdb.nonce.parse::<u64>()?;
+    let native_account_id: AccountId = AccountId::from_hex(&account_stub_idxdb.id).unwrap();
+    let native_nonce: u64 = account_stub_idxdb.nonce.parse::<u64>().map_err(|err| StoreError::ParsingError(err.to_string()))?;
     let account_seed = account_stub_idxdb.account_seed.map(|seed| Word::read_from_bytes(&seed)).transpose()?;
     
     let account_stub = AccountStub::new(
         native_account_id,
         Felt::new(native_nonce),
-        serde_json::from_str(&account_stub_idxdb.vault_root)?,
+        serde_json::from_str(&account_stub_idxdb.vault_root).map_err(StoreError::InputSerializationError)?,
         Digest::try_from(&account_stub_idxdb.storage_root)?,
         Digest::try_from(&account_stub_idxdb.code_root)?,
     );

@@ -8,7 +8,11 @@ use wasm_bindgen_futures::*;
 use miden_objects::{
     accounts::{Account, AccountId},
     crypto::merkle::{MerklePath, MmrProof},
-    notes::{Note, NoteId, NoteMetadata, NoteTag, NoteType},
+    notes::{
+        NoteMetadata,
+        NoteId,
+        Note, NoteTag, NoteType
+    },
     transaction::ProvenTransaction,
     utils::Deserializable,
     BlockHeader, Digest, Felt,
@@ -88,7 +92,7 @@ impl NodeRpcClient for WebRpcClient {
         &mut self,
         block_num: Option<u32>,
         include_mmr_proof: bool,
-    ) -> Result<BlockHeader, NodeRpcClientError> {
+    ) -> Result<(BlockHeader, Option<MmrProof>), NodeRpcClientError> {
         let mut query_client = self.build_api_client();
 
         let request = GetBlockHeaderByNumberRequest {
@@ -253,11 +257,10 @@ impl NodeRpcClient for WebRpcClient {
     async fn get_account_update(
         &mut self,
         account_id: AccountId
-    ) -> Result<Account, NodeRpcClientError> {
+    ) -> Result<AccountDetails, NodeRpcClientError> {
         let mut query_client = self.build_api_client();
 
-        let account_id = account_id.into();
-        let request = GetAccountDetailsRequest { account_id: Some(account_id) };
+        let request = GetAccountDetailsRequest { account_id: Some(account_id.into()) };
 
         let response = query_client.get_account_details(request).await.map_err(|err| {
             NodeRpcClientError::RequestError(

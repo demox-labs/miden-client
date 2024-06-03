@@ -71,6 +71,7 @@ export async function getAccountStub(
     accountId
 ) {
     try {
+        let allRecords = await accounts.toArray();
         // Fetch all records matching the given id
         const allMatchingRecords = await accounts
           .where('id')
@@ -159,7 +160,7 @@ export async function getAccountStorage(
             .toArray();
 
         if (allMatchingRecords.length === 0) {
-            console.log('No records found for given code root.');
+            console.log('No records found for given storage root.');
             return null; // No records found
         }
 
@@ -191,7 +192,7 @@ export async function getAccountAssetVault(
             .toArray();
 
         if (allMatchingRecords.length === 0) {
-            console.log('No records found for given code root.');
+            console.log('No records found for given vault root.');
             return null; // No records found
         }
 

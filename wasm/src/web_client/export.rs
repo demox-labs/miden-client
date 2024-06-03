@@ -2,7 +2,10 @@ use wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 use miden_client::store::{InputNoteRecord, NoteFilter};
-use miden_objects::Digest;
+use miden_objects::{
+    utils::Serializable,
+    Digest
+};
 
 use crate::web_client::WebClient;
 
@@ -18,9 +21,8 @@ impl WebClient {
                 .into();
 
             let output_note = client
-                .get_output_notes(NoteFilter::Unique(note_id))?
-                .pop()
-                .expect("should have an output note");
+                .get_output_notes(NoteFilter::Unique(note_id)).await.unwrap()
+                .pop().unwrap();
 
             // Convert output note into InputNoteRecord before exporting
             let input_note: InputNoteRecord = output_note
@@ -29,7 +31,10 @@ impl WebClient {
 
             let input_note_bytes = input_note.to_bytes();
 
-            Ok(input_note_bytes)
+            let serialized_input_note_bytes = serde_wasm_bindgen::to_value(&input_note_bytes)
+                .unwrap_or_else(|_| wasm_bindgen::throw_val(JsValue::from_str("Serialization error")));
+
+            Ok(serialized_input_note_bytes)
         } else {
             Err(JsValue::from_str("Client not initialized"))
         }

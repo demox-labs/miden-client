@@ -43,6 +43,7 @@ impl WebClient {
     pub async fn get_accounts(
         &mut self
     ) -> Result<JsValue, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("new_wallet called"));
         if let Some(client) = self.get_mut_inner() {
             let account_tuples = client.get_account_stubs().await.unwrap();
             let accounts: Vec<SerializedAccountStub> = account_tuples.into_iter().map(|(account, _)| {
@@ -68,6 +69,7 @@ impl WebClient {
         &mut self,
         account_id: String
     ) -> Result<JsValue, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("get_account called"));
         if let Some(client) = self.get_mut_inner() {
             let native_account_id = AccountId::from_hex(&account_id).unwrap();
 

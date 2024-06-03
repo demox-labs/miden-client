@@ -2,6 +2,7 @@ use miden_objects::{
     accounts::AccountId,
     notes::{NoteAssets, NoteId, NoteInclusionProof, NoteMetadata, NoteScript},
     transaction::TransactionId,
+    utils::Deserializable,
     Digest
 };
 use miden_tx::utils::Serializable;
@@ -53,7 +54,7 @@ pub(crate) async fn update_note_consumer_tx_id(
     let serialized_consumer_tx_id = consumer_tx_id.to_string();
 
     let promise = idxdb_update_note_consumer_tx_id(serialized_note_id, serialized_consumer_tx_id);
-    let result = JsFuture::from(promise).await?;
+    let result = JsFuture::from(promise).await.unwrap();
 
     Ok(())
 }
@@ -344,7 +345,7 @@ pub fn parse_output_note_idxdb_object(
         .map_err(StoreError::JsonDataDeserializationError)?;
 
     let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
-        Some(account_id) => Some(AccountId::try_from(account_id as u64)?),
+        Some(account_id) => Some(AccountId::try_from(account_id.parse::<u64>().unwrap())?),
         None => None,
     };
 

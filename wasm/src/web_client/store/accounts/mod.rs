@@ -47,7 +47,7 @@ impl WebStore {
     ) -> Result<Vec<(AccountStub, Option<Word>)>, StoreError> {
         let promise = idxdb_get_account_stubs();
         let js_value = JsFuture::from(promise).await.unwrap();
-        let account_stubs_idxdb: Vec<AccountRecordIdxdbOjbect> = from_value(js_value)?;
+        let account_stubs_idxdb: Vec<AccountRecordIdxdbOjbect> = from_value(js_value).unwrap();
         
         let account_stubs: Result<Vec<(AccountStub, Option<Word>)>, StoreError> = account_stubs_idxdb
             .into_iter()
@@ -65,7 +65,7 @@ impl WebStore {
         
         let promise = idxdb_get_account_stub(account_id_str);
         let js_value = JsFuture::from(promise).await.unwrap();
-        let account_stub_idxdb: AccountRecordIdxdbOjbect = from_value(js_value)?;
+        let account_stub_idxdb: AccountRecordIdxdbOjbect = from_value(js_value).unwrap();
 
         parse_account_record_idxdb_object(account_stub_idxdb)
     }
@@ -128,7 +128,7 @@ impl WebStore {
         &self,
         root: Digest
     ) -> Result<Vec<Asset>, StoreError> {
-        let root_serialized = root.to_string();
+        let root_serialized = serde_json::to_string(&root.to_string()).unwrap();
 
         let promise = idxdb_get_account_asset_vault(root_serialized);
         let js_value = JsFuture::from(promise).await.unwrap();
@@ -160,11 +160,11 @@ impl WebStore {
         account_seed: Option<Word>,
         auth_info: &AuthSecretKey,
     ) -> Result<(), StoreError> {
-        insert_account_code(account.code()).await?;
-        insert_account_storage(account.storage()).await?;
-        insert_account_asset_vault(account.vault()).await?;
-        insert_account_record(account, account_seed).await?;
-        insert_account_auth(account.id(), auth_info).await?;
+        insert_account_code(account.code()).await.unwrap();
+        insert_account_storage(account.storage()).await.unwrap();
+        insert_account_asset_vault(account.vault()).await.unwrap();
+        insert_account_record(account, account_seed).await.unwrap();
+        insert_account_auth(account.id(), auth_info).await.unwrap();
 
         Ok(())
     }
