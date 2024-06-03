@@ -181,9 +181,28 @@ impl<S: Store> DataStore for ClientDataStore<S> {
             .map_err(DataStoreError::InvalidTransactionInput)
     }
 
+    // fn get_account_code(&self, account_id: AccountId) -> Result<ModuleAst, DataStoreError> {
+    //     let my_fut = async {
+    //         self.store.get_account(account_id).await
+    //     };
+    
+    //     let result = pollster::block_on(my_fut);
+    //     match result {
+    //         Ok((account, _seed)) => {
+    //             // Handle the successful case
+    //             let module_ast = account.code().module().clone();
+    //             Ok(module_ast) // Ensure to return Ok(module_ast)
+    //         },
+    //         Err(e) => {
+    //             // Handle the error case
+    //             Err(e.into()) // Ensure to return the error
+    //         },
+    //     }
+    // }
+
     fn get_account_code(&self, account_id: AccountId) -> Result<ModuleAst, DataStoreError> {
         web_sys::console::log_1(&JsValue::from_str("get_account_code called"));
-        let (account, _seed) = block_on(async {self.store.get_account(account_id).await})?;
+        let (account, _seed) = self.store.get_account(account_id).await?;
         web_sys::console::log_1(&JsValue::from_str("get_account_code 2"));
         let module_ast = account.code().module().clone();
 
