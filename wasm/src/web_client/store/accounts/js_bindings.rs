@@ -40,6 +40,11 @@ extern "C" {
     #[wasm_bindgen(js_name = getAccountAuthByPubKey)]
     pub fn idxdb_get_account_auth_by_pub_key(
         pub_key: Vec<u8>
+    ) -> JsValue;
+
+    #[wasm_bindgen(js_name = fetchAndCacheAccountAuthByPubKey)]
+    pub fn idxdb_fetch_and_cache_account_auth_by_pub_key(
+        pub_key: Vec<u8>
     ) -> js_sys::Promise;
 
     // INSERTS

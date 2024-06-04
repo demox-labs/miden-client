@@ -241,7 +241,27 @@ export async function getAccountAuth(
     }
 }
 
-export async function getAccountAuthByPubKey(
+export function getAccountAuthByPubKey(
+    pubKey
+) {
+    // Try to get the account auth from the cache
+    let pubKeyArray = new Uint8Array(pubKey);
+    let pubKeyBase64 = uint8ArrayToBase64(pubKeyArray);
+    let cachedAccountAuth = ACCOUNT_AUTH_MAP.get(pubKeyBase64);
+    // Print the cache for debugging
+    console.log('PubKey', pubKeyBase64);
+    console.log('ACCOUNT_AUTH_MAP', ACCOUNT_AUTH_MAP);
+
+    // If it's not in the cache, throw an error
+    if (!cachedAccountAuth) {
+        throw new Error('Account auth not found in cache.');
+    }
+
+    return cachedAccountAuth;
+}
+
+var ACCOUNT_AUTH_MAP = new Map();
+export async function fetchAndCacheAccountAuthByPubKey(
     pubKey
 ) {
     try {
@@ -253,6 +273,7 @@ export async function getAccountAuthByPubKey(
             .where('pubKey')
             .equals(pubKeyBase64)
             .toArray();
+        console.log('allMatchingRecords', allMatchingRecords);
 
         if (allMatchingRecords.length === 0) {
             console.log('No records found for given account ID.');
@@ -264,8 +285,17 @@ export async function getAccountAuthByPubKey(
 
         // Convert the authInfo Blob to an ArrayBuffer
         const authInfoArrayBuffer = await authRecord.authInfo.arrayBuffer();
+        console.log('authInfoArrayBuffer', authInfoArrayBuffer);
         const authInfoArray = new Uint8Array(authInfoArrayBuffer);
         const authInfoBase64 = uint8ArrayToBase64(authInfoArray);
+
+        // Store the auth info in the map
+        console.log('fetchAndCacheAccountAuthByPubKey', pubKeyBase64);
+        ACCOUNT_AUTH_MAP.set(pubKeyBase64, {
+            id: authRecord.accountId,
+            auth_info: authInfoBase64
+        });
+
         return {
             id: authRecord.accountId,
             auth_info: authInfoBase64

@@ -15,11 +15,12 @@ export default [
         },
         plugins: [
             rust({
-                debug: true,
+                // debug: true,
                 cargoArgs: [
                     // This enables multi-threading
                     // "--features", "testing", // Add this line to include the concurrent feature
-                    "--config", `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296", "-C", "debuginfo=2"]`,
+                    "--config", `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
+                    // "--config", `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296", "-C", "debuginfo=2"]`,
                     "--no-default-features",
                     "-Z", "build-std=panic_abort,std",
                 ],

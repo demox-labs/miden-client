@@ -93,6 +93,33 @@
             }
         }
 
+        function base64ToUint8Array(base64) {
+            // Decode the base64 string to a binary string
+            const binaryString = atob(base64);
+            
+            // Create a Uint8Array and assign the binary string's character codes to it
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            return bytes;
+        }
+
+        async function getAccountAuthByPubKey(pubKeyAsString) {
+            const webClient = await createMidenWebClient();
+            try {
+                // create bytes from string
+                let pubKeyAsBytes = base64ToUint8Array(pubKeyAsString);
+                let result = webClient.get_account_auth_by_pub_key(pubKeyAsBytes);
+                console.log(result);
+                return result;
+            } catch (error) {
+                console.error('Failed to call get account:', error);
+            }
+        }
+
         async function createNewFaucet(
             webClient,
             storageMode,
@@ -382,7 +409,10 @@
             }
             await syncState(webClient);
             await new Promise(r => setTimeout(r, 10000));
-
+            // Call getAccountAuthByPubKey first to set the account auth
+            let pubKeyAsString = "YR2+eK/dug5TsPsq/DXl3FKFuLe5MsQhXai8Zb6gC0I=";
+            let pubKeyAsBytes = base64ToUint8Array(pubKeyAsString);
+            await webClient.fetch_and_cache_account_auth_by_pub_key(pubKeyAsBytes);
             let result = await createNewMintTransaction(
                 webClient,
                 targetAccountId,
@@ -774,11 +804,13 @@
             // await syncState(webClient);
         }
 
+        // await getAccountAuthByPubKey();
+
         // await testCreateNewWallet();
         // await testCreateNewFaucet();
         // await testGetAccounts(false);
         // await testGetAccount(false, "0x8add712899d6ab76");
-        await testNewMintTransaction(false,  "0x8add712899d6ab76", "0x20421649f243d662");
+        await testNewMintTransaction(false,  "0x8add712899d6ab76", "0x248226f3436b0068");
         // await testNewConsumeTransaction();
         // await testNewSendTransaction();
         // await testNewSendTransactionWithRecallHeight();

@@ -170,10 +170,25 @@ impl WebStore {
     }
 
     /// Returns an [AuthSecretKey] by a public key represented by a [Word]
-    pub async fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError> {
+    pub(crate) fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError> {
         let pub_key_bytes = pub_key.to_bytes();
 
-        let promise = idxdb_get_account_auth_by_pub_key(pub_key_bytes);
+        let js_value = idxdb_get_account_auth_by_pub_key(pub_key_bytes);
+        let account_auth_idxdb: AccountAuthIdxdbObject = from_value(js_value).unwrap();
+
+        // Convert the auth_info to the appropriate AuthInfo enum variant
+        let auth_info = AuthSecretKey::read_from_bytes(&account_auth_idxdb.auth_info)?;
+
+        Ok(auth_info)
+    }
+
+    /// Fetches an [AuthSecretKey] by a public key represented by a [Word] and caches it in the store
+    pub(crate) async fn fetch_and_cache_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError> {
+        // Print to console for debugging
+        console::log_1(&JsValue::from_str("fetch_and_cache_account_auth_by_pub_key called inner"));
+        let pub_key_bytes = pub_key.to_bytes();
+
+        let promise = idxdb_fetch_and_cache_account_auth_by_pub_key(pub_key_bytes);
         let js_value = JsFuture::from(promise).await.unwrap();
         let account_auth_idxdb: AccountAuthIdxdbObject = from_value(js_value).unwrap();
 

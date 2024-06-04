@@ -81,4 +81,40 @@ impl WebClient {
             Err(JsValue::from_str("Client not initialized"))
         }
     }
+
+    pub fn get_account_auth_by_pub_key(
+        &mut self,
+        pub_key_bytes: JsValue
+    ) -> Result<JsValue, JsValue> {
+        use miden_objects::Word;
+        web_sys::console::log_1(&JsValue::from_str("get_account_auth_by_pub_key called"));
+        if let Some(client) = self.get_mut_inner() {
+            let pub_key_bytes_result: Vec<u8> = from_value(pub_key_bytes).unwrap();
+            let pub_key_as_word = Word::read_from_bytes(pub_key_bytes_result.as_slice()).unwrap();
+
+            let result = client.store().get_account_auth_by_pub_key(pub_key_as_word).unwrap();
+
+            Ok(JsValue::from_str("Okay, it worked"))
+        } else {
+            Err(JsValue::from_str("Client not initialized"))
+        }
+    }
+
+    pub async fn fetch_and_cache_account_auth_by_pub_key(
+        &mut self,
+        pub_key_bytes: JsValue
+    ) -> Result<JsValue, JsValue> {
+        use miden_objects::Word;
+        web_sys::console::log_1(&JsValue::from_str("fetch_and_cache_account_auth_by_pub_key called"));
+        if let Some(client) = self.get_mut_inner() {
+            let pub_key_bytes_result: Vec<u8> = from_value(pub_key_bytes).unwrap();
+            let pub_key_as_word = Word::read_from_bytes(pub_key_bytes_result.as_slice()).unwrap();
+
+            let result = client.store().fetch_and_cache_account_auth_by_pub_key(pub_key_as_word).await.unwrap();
+
+            Ok(JsValue::from_str("Okay, it worked"))
+        } else {
+            Err(JsValue::from_str("Client not initialized"))
+        }
+    }
 }

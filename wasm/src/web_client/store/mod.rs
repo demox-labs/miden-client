@@ -222,10 +222,10 @@ impl Store for WebStore {
         self.get_account_auth(account_id).await
     }
 
-    async fn get_account_auth_by_pub_key(
+    fn get_account_auth_by_pub_key(
         &self, 
         pub_key: Word
     ) -> Result<AuthSecretKey, StoreError> {
-        self.get_account_auth_by_pub_key(pub_key).await
+        self.get_account_auth_by_pub_key(pub_key)
     }
 }
