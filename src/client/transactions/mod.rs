@@ -359,7 +359,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
         web_sys::console::log_1(&JsValue::from_str("new_transaction called"));
         let account_id = transaction_request.account_id();
         self.tx_executor
-            .load_account(account_id)
+            .load_account(account_id).await
             .map_err(ClientError::TransactionExecutorError)?;
         web_sys::console::log_1(&JsValue::from_str("new_transaction 2"));
 
@@ -379,7 +379,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
             block_num,
             &note_ids,
             transaction_request.into(),
-        )?;
+        ).await?;
 
         web_sys::console::log_1(&JsValue::from_str("new_transaction 4"));
 
