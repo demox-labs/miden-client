@@ -24,8 +24,8 @@ base64 = "0.13"
 futures = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 hex = { version = "0.4" }
-miden-lib = { path="../../demox-miden-base/miden-lib", default-features = false }
-miden-objects = { path="../../demox-miden-base/objects", features = ["serde"] }
+miden-lib = { path="../../demox-miden-base/miden-lib", default-features = false, features = ["testing"] }
+miden-objects = { path="../../demox-miden-base/objects", features = ["serde", "testing"] }
 miden-tx = { path="../../demox-miden-base/miden-tx", default-features = false }
 rand = { version = "0.8.5" }
 prost = { version = "0.12.3" }
@@ -39,6 +39,7 @@ tracing = { version = "0.1" }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["console"] }
+console_error_panic_hook = "0.1.6"
 
 [build-dependencies]
 tonic-build = { version="0.11.0", default-features = false, features = ["prost"]}

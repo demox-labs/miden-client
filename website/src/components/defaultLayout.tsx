@@ -1,4 +1,4 @@
-import Sidebar from "./sidebar";
+import Sidebar from "../layouts/dashboard/_sidebar";
 
 const DefaultLayout = ({ children }: {children: React.ReactNode}) => (
   <div style={{ display: 'flex' }}>

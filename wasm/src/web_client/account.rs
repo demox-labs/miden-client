@@ -14,6 +14,8 @@ use serde::{Serialize, Deserialize};
 use serde_wasm_bindgen::from_value;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
+use std::panic;
+use serde_wasm_bindgen::Serializer;
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -72,6 +74,7 @@ impl WebClient {
     ) -> Result<JsValue, JsValue> {
         if let Some(ref mut client) = self.get_mut_inner() {
             let account_template_result: Result<AccountTemplate, _> = from_value(template);
+            web_sys::console::log_1(&"Creating account with account template".into());
             match account_template_result {
                 Ok(account_template) => {
                     let client_template = match account_template {
@@ -182,13 +185,22 @@ impl WebClient {
         &mut self,
         account_id: String
     ) -> Result<JsValue, JsValue> {
+      panic::set_hook(Box::new(console_error_panic_hook::hook));
         if let Some(ref mut client) = self.get_mut_inner() {
+            web_sys::console::log_1(&"Getting account stub".into());
             let native_account_id = AccountId::from_hex(&account_id).unwrap();
 
             let result = client.get_account_stub_by_id(native_account_id).await.unwrap();
+            web_sys::console::log_1(&"Got account stub".into());
+            web_sys::console::log_1(&format!("Account stub: {:?}", result.0).into());
+            let mut serializer = Serializer::new().serialize_large_number_types_as_bigints(true);
+            let js_value = result.0.serialize(&serializer).unwrap();
+            web_sys::console::log_1(&js_value.clone().into());
+            // web_sys::console::log_1(&serde_wasm_bindgen::to_value(&result.0).unwrap().into());
             
             let word = result.1.map_or("No word".to_string(), |w| w[0].to_string());
-            Ok(JsValue::from_str(&format!("ID: {}, Word: {}", result.0.id().to_string(), word)))
+            // Ok(JsValue::from_str(&format!("ID: {}, Word: {}", result.0.id().to_string(), word)))
+            Ok(js_value)
         } else {
             Err(JsValue::from_str("Client not initialized"))
         }

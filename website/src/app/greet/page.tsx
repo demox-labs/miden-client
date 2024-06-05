@@ -1,12 +1,13 @@
 'use client'
 
-import init, { greet } from 'wasm';
+import init, { serialize_test, greet } from 'wasm';
 
 export default function Greet() {
 
   async function greetFromWasm() {
     await init();
     greet();
+    console.log('serialze: ', serialize_test())
   }
 
   return (

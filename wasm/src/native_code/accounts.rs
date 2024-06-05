@@ -129,6 +129,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
         mutable_code: bool,
         account_storage_mode: AccountStorageMode,
     ) -> Result<(Account, Word), ClientError>  {
+        web_sys::console::log_1(&"Creating new basic wallet".into());
         let key_pair = SecretKey::with_rng(&mut self.rng);
 
         let auth_scheme: AuthScheme = AuthScheme::RpoFalcon512 { pub_key: key_pair.public_key() };
@@ -165,6 +166,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
         max_supply: u64,
         account_storage_mode: AccountStorageMode,
     ) -> Result<(Account, Word), ClientError> {
+        web_sys::console::log_1(&"Creating new fungible faucet".into());
         let key_pair = SecretKey::with_rng(&mut self.rng);
 
         let auth_scheme: AuthScheme = AuthScheme::RpoFalcon512 { pub_key: key_pair.public_key() };
