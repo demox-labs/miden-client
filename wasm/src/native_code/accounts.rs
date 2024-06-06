@@ -132,6 +132,7 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store> Client<N, R, S> {
         web_sys::console::log_1(&"Creating new basic wallet".into());
         let key_pair = SecretKey::with_rng(&mut self.rng);
 
+        web_sys::console::log_1(&format!("Key pair created: {:?}", key_pair).into());
         let auth_scheme: AuthScheme = AuthScheme::RpoFalcon512 { pub_key: key_pair.public_key() };
 
         // we need to use an initial seed to create the wallet account

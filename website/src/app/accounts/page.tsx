@@ -1,16 +1,13 @@
 'use client'
 
 // import { testNewRegularAccount } from '../../helpers/account-helpers';
-import init, { WebClient } from 'wasm'
+import { useWasm } from '@/context/wasm-context';
 import DashboardLayout from '@/layouts/dashboard/_dashboard';
 import { ReactElement } from 'react';
 
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
-
-interface AccountTableProps {
-  webClient: WebClient
-}
+import * as w from 'wasm';
 
 interface Account {
   id: number
@@ -25,45 +22,48 @@ interface Account {
 function AccountsTable() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const wasm = useWasm();
 
-  const fetchAccounts = async () => {
+  if (!wasm) {
+    return <div>Loading...</div>;
+  }
+
+  const fetchAccounts = async (wasm: typeof w) => {
     setIsLoading(true)
-    await init();
-    const webClient = new WebClient();
+    const webClient = new wasm.WebClient();
     await webClient.create_client();
     const accounts = await webClient.get_accounts();
-    const accountObjs = []
-    for (let i = 0; i < accounts.length; i++) {
-      const acc = await webClient.get_account_stub_by_id(accounts[i])
-      console.log('account!!', acc)
-      accountObjs.push(acc)
-    }
-    console.log('account objs', accountObjs)
+    console.log('Found accounts: ', accounts);
     setAccounts(accounts)
     setIsLoading(false)
   }
 
   return (
     <div>
-      <button onClick={fetchAccounts} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button>
+      <button onClick={() => fetchAccounts(wasm)} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button>
     </div>
   )
 }
 
 export default function Accounts() {
   const [isLoading, setIsLoading] = useState(false)
+  const wasm = useWasm();
+  if (!wasm) {
+    return <div>Loading...</div>;
+  }
 
-  async function testNewRegularAccount() {
+  async function testNewRegularAccount(wasm: typeof w) {
     setIsLoading(true)
     try {
-      await init();
-      const webClient = new WebClient();
+      const webClient = new wasm.WebClient();
       await webClient.create_client();
       const basicMutableTemplate = {
-        type: "BasicMutable"
+        type: "BasicMutable",
+        storage_mode: "Local"
       };
       let result = await webClient.new_account(basicMutableTemplate);
       return result;
+      // await new Promise(r => setTimeout(r, 10000));
     } catch (error) {
       console.error('Failed to call create account:', error);
     }
@@ -73,12 +73,13 @@ export default function Accounts() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between p-24">
+    <div className="flex min-h-screen flex-col items-center">
       <div className="flex flex-row items-start">
-        { isLoading 
-          ? <Loader /> 
+        {/* { isLoading
+          ? <Loader variant='scaleUp' className="bg-gray-700 text-white py-2 px-4 rounded-md" /> 
           : <button className="bg-gray-700 text-white py-2 px-4 rounded-md" onClick={() => testNewRegularAccount()}>Create account</button>
-        }
+        } */}
+        <button disabled={isLoading} className="bg-gray-700 text-white py-2 px-4 rounded-md h-10 w-32" onClick={() => testNewRegularAccount(wasm)}>{ isLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
       </div>
       <AccountsTable />
     </div>

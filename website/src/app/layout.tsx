@@ -8,6 +8,7 @@ import '@/assets/css/range-slider.css';
 import Sidebar from "@/layouts/dashboard/_sidebar";
 import { ThemeProvider } from "next-themes";
 import { Header } from "@/layouts/dashboard/_dashboard";
+import { WasmProvider } from "@/context/wasm-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,25 +26,27 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>{
       <div className="bg-light-100 dark:bg-dark-100 flex min-h-screen flex-col">
-        <div className="xl:pl-72 2xl:pl-80">
-          <Header />
-          <main className="mb-12 flex flex-grow flex-col pt-16 sm:pt-24">
-            <ThemeProvider
-              attribute="class"
-              enableSystem={false}
-              defaultTheme="dark"
-            >
-              <Header />
-              <Sidebar className="hidden xl:block" />
-              <main className={
-                'min-h-[100vh] px-4 pt-16 pb-16 sm:px-6 sm:pb-20 lg:px-8 xl:px-10 xl:pb-24 3xl:px-12'
-              }
+        <WasmProvider>
+          <div className="xl:pl-72 2xl:pl-80">
+            <Header />
+            <main className="mb-12 flex flex-grow flex-col pt-16 sm:pt-24">
+              <ThemeProvider
+                attribute="class"
+                enableSystem={false}
+                defaultTheme="dark"
               >
-                {children}
-              </main>
-            </ThemeProvider>
-          </main>
-        </div>
+                <Header />
+                <Sidebar className="hidden xl:block" />
+                <main className={
+                  'min-h-[100vh] px-4 pt-16 pb-16 sm:px-6 sm:pb-20 lg:px-8 xl:px-10 xl:pb-24 3xl:px-12'
+                }
+                >
+                  {children}
+                </main>
+              </ThemeProvider>
+            </main>
+          </div>
+        </WasmProvider>
       </div>
     }</body>
     </html>
