@@ -9,12 +9,21 @@ import {
 } from './schema.js';
 
 export async function getNoteTags() {
+    console.log('Getting note tags');
     try {
         const record = await stateSync.get(1);  // Since id is the primary key and always 1
         if (record) {
-            let data = {
-                tags: JSON.stringify(record.tags)
-            }
+            let data = null;
+            if (record.tags.length === 0) {
+                data = {
+                    tags: JSON.stringify(record.tags)
+                }
+            } else {
+                data = {
+                    tags: record.tags
+                }
+            };
+            console.log('Note tags: ', data.tags);
             return data;
         } else {
             return null;
@@ -45,6 +54,7 @@ export async function getSyncHeight() {
 export async function addNoteTag(
     tags
 ) {
+    console.log('Adding note tag: ', tags);
     try {
         await stateSync.update(1, { tags: tags });
     } catch {
@@ -192,10 +202,16 @@ async function updateCommittedNotes(
     inputNoteInclusionProofs,
     inputNoteMetadatas
 ) {
+    console.log("Updating committed notes");
+    console.log("Output note ids: ", outputNoteIds);
+    console.log("Output note inclusion proofs: ", outputNoteInclusionProofs);
+    console.log('Input note ids: ', inputNoteIds);
+    console.log('Input note inclusion proofs: ', inputNoteInclusionProofs);
+    console.log('Input note metadatas: ', inputNoteMetadatas);
     try {
-        if (outputNoteIds.length === 0 || inputNoteIds.length === 0) {
-            return;
-        }
+        // if (outputNoteIds.length === 0 || inputNoteIds.length === 0) {
+        //     return;
+        // }
 
         if (outputNoteIds.length !== outputNoteInclusionProofs.length) {
             throw new Error("Arrays outputNoteIds and outputNoteInclusionProofs must be of the same length");
@@ -206,9 +222,11 @@ async function updateCommittedNotes(
             inputNoteIds.length !== inputNoteMetadatas.length && 
             inputNoteInclusionProofs.length !== inputNoteMetadatas.length
         ) {
+            console.log('Errored out here');
             throw new Error("Arrays inputNoteIds and inputNoteInclusionProofs and inputNoteMetadatas must be of the same length");
         }
 
+        console.log('output note ids length: ', outputNoteIds.length)
         for (let i = 0; i < outputNoteIds.length; i++) {
             const noteId = outputNoteIds[i];
             const inclusionProof = outputNoteInclusionProofs[i];
@@ -220,10 +238,14 @@ async function updateCommittedNotes(
             });
         }
 
+        console.log('input note ids length: ', inputNoteIds.length);
         for (let i = 0; i < inputNoteIds.length; i++) {
             const noteId = inputNoteIds[i];
+            console.log('Note id: ', noteId);
             const inclusionProof = inputNoteInclusionProofs[i];
+            console.log('Inclusion proof: ', inclusionProof);
             const metadata = inputNoteMetadatas[i];
+            console.log('Metadata: ', metadata);
 
             // Update input notes
             await tx.inputNotes.where({ noteId: noteId }).modify({
@@ -231,6 +253,9 @@ async function updateCommittedNotes(
                 inclusionProof: inclusionProof,
                 metadata: metadata
             });
+
+            console.log('Updated input notes');
+            console.log(tx.inputNotes.toArray());
         }
     } catch (error) {
         console.error("Error updating committed notes:", error);

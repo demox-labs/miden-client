@@ -15,19 +15,6 @@ use miden_client::{
     client::transactions::TransactionRecord,
     store::TransactionFilter
 };
-// use crate::native_code::{
-//     errors::NoteIdPrefixFetchError, 
-//     rpc::NodeRpcClient, 
-//     store::{
-//         note_record::InputNoteRecord, 
-//         NoteFilter, 
-//         Store, 
-//         TransactionFilter
-//     }, 
-//     transactions::transaction_request::{
-//         PaymentTransactionData, TransactionTemplate
-//     }, Client
-// };
 
 use serde::{Serialize, Deserialize};
 use serde_wasm_bindgen::from_value;

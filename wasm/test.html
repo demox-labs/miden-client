@@ -37,31 +37,49 @@
         });
         
         function setupNoteFileInputListener(webClient) {
-            document.getElementById('noteFileInput').addEventListener('change', function(event) {
+            document.getElementById('noteFileInput').addEventListener('change', async function(event) {
                 const file = event.target.files[0];
                 if (file) {
-                const reader = new FileReader();
-
-                reader.onload = async function(e) {
-                    const arrayBuffer = e.target.result;
-                    const byteArray = new Uint8Array(arrayBuffer);
-                    console.log(byteArray);  // Now you can work with the bytes
-
-                    let result = await importInputNote(webClient, byteArray);
-                    console.log(result);
-                };
-
-                reader.readAsArrayBuffer(file);
+                    try {
+                        const byteArray = await readFileAsByteArray(file);
+                        console.log(byteArray);  // Output the byte array to check the content
+                        let result = await importInputNote(webClient, byteArray);
+                        console.log(result);  // Log the result of the import process
+                    } catch (error) {
+                        console.error("Error handling file:", error);
+                    }
                 }
             });
         }
+
+        async function readFileAsByteArray(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = () => {
+                    const arrayBuffer = reader.result;
+                    const byteArray = new Uint8Array(arrayBuffer);
+                    console.log("Byte array length:", byteArray.length); // Check the length
+                    resolve(byteArray);
+                };
+
+                reader.onerror = () => {
+                    console.error("File read error:", reader.error);
+                    reject(reader.error);
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
         
-        async function createMidenWebClient() {
+        async function createMidenWebClient(dbName = "MidenClientDB") {
             try {
-                let local_rpc_url = "http://localhost:57291"
+                let remote_rpc_url = "http://18.203.155.106:57291"
+                // let local_rpc_url = "http://localhost:57291"
                 let envoy_proxy_url = "http://localhost:8080"
                 const webClient = new WebClient();
-                await webClient.create_client(local_rpc_url);
+                // await webClient.create_client(local_rpc_url);
+                await webClient.create_client(remote_rpc_url);
                 return webClient;
             } catch (error) {
                 console.error('Failed to create client with web store:', error);
@@ -145,7 +163,7 @@
 
         async function importAccount(
             webClient, 
-            accountAsBytes
+            accountAsBytes,
         ) {
             try {
                 let result = await webClient.import_account(accountAsBytes);
@@ -230,7 +248,14 @@
             recallHeight
         ) {
             try {
-                let result = await webClient.new_send_transaction();
+                let result = await webClient.new_send_transaction(
+                    senderAccountId,
+                    targetAccountId,
+                    facuetId,
+                    noteType,
+                    amount,
+                    recallHeight
+                );
                 console.log(`Created new send transaction with id ${result.transaction_id}`);
                 console.log(`Output notes created: ${result.created_note_ids}`);
                 return result;
@@ -258,7 +283,9 @@
                     noteType
                 );
                 console.log(`Created new swap transaction with id ${result.transaction_id}`);
-                console.log(`Output notes created: ${result.created_note_ids}`);
+                console.log(`Output notes created: ${result.expected_output_note_ids}`);
+                console.log(`Expected Partial Notes: ${result.expected_partial_note_ids}`);
+                console.log(`Payback Note Tag: ${result.payback_note_tag}`);
                 return result;
             } catch (error) {
                 console.error('Failed to call create new swap transaction:', error);
@@ -306,12 +333,39 @@
             }
         }
 
-        async function importInputNote(
+        async function getOutputNotes(
             webClient,
-            noteAsBytes
+            status = "All"
         ) {
             try {
-                await webClient.import_input_note(noteAsBytes);
+                let result = await webClient.get_output_notes(status);
+                console.log(result);
+                return result;
+            } catch (error) {
+                console.error('Failed to call get output notes:', error);
+            }
+        }
+
+        async function getOutputNote(
+            webClient,
+            noteId
+        ) {
+            try {
+                let result = await webClient.get_output_note(noteId);
+                console.log(result);
+                return result;
+            } catch (error) {
+                console.error('Failed to call get input note:', error);
+            }
+        }
+                
+        async function importInputNote(
+            webClient,
+            noteAsBytes,
+            verify
+        ) {
+            try {
+                await webClient.import_note(noteAsBytes, verify);
             } catch (error) {
                 console.error('Failed to call import input note:', error);
             }
@@ -341,6 +395,15 @@
             }
         }
 
+        async function addTag(webClient, noteTag) {
+            try {
+                let result = await webClient.add_tag(noteTag);
+                console.log(result);
+            } catch (error) {
+                console.error('Failed to call add note tag:', error);
+            }
+        }
+
         // Tests
         ///////////////////////////////////////////////////////////////////
 
@@ -354,6 +417,7 @@
             console.log('testCreateNewWallet finished');
         }
 
+        // Done
         async function testCreateNewFaucet() {
             console.log('testCreateNewFaucet started');
             let webClient = await createMidenWebClient();
@@ -376,6 +440,7 @@
             console.log('testImportAccount finished');
         }
 
+        // Done
         async function testGetAccounts(shouldCreateAccounts = true) {
             console.log('testGetAccounts started');
             let webClient = await createMidenWebClient();
@@ -388,31 +453,30 @@
             console.log('testGetAccounts finished');
         }
 
-        async function testGetAccount(shouldCreateAccount = true, accountId = null) {
+        // Done
+        async function testGetAccount() {
             console.log('testGetAccount started');
+
             let webClient = await createMidenWebClient();
-            if (shouldCreateAccount) {
-                accountId = await createNewWallet(webClient, "OffChain", true);
-            }
+            accountId = await createNewWallet(webClient, "OffChain", true);
 
             await getAccount(webClient, accountId);
 
             console.log('testGetAccount finished');
         }
 
-        async function testNewMintTransaction(shouldCreateAccounts = true, targetAccountId = null, faucetId = null) {
+        // Done
+        async function testNewMintTransaction() {
             console.log('testNewMintTransaction started');
+
             let webClient = await createMidenWebClient();
-            if (shouldCreateAccounts) {
-                targetAccountId = await createNewWallet(webClient, "OffChain", true);
-                faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
-            }
+            targetAccountId = await createNewWallet(webClient, "OffChain", true);
+            faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
             await new Promise(r => setTimeout(r, 10000));
-            // Call getAccountAuthByPubKey first to set the account auth
-            let pubKeyAsString = "YR2+eK/dug5TsPsq/DXl3FKFuLe5MsQhXai8Zb6gC0I=";
-            let pubKeyAsBytes = base64ToUint8Array(pubKeyAsString);
-            await webClient.fetch_and_cache_account_auth_by_pub_key(pubKeyAsBytes);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
             let result = await createNewMintTransaction(
                 webClient,
                 targetAccountId,
@@ -422,16 +486,21 @@
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
             console.log('testNewMintTransaction finished');
         }
 
+        // Done
         async function testNewConsumeTransaction() {
             console.log('testNewConsumeTransaction started');
+
             let webClient = await createMidenWebClient();
             let targetAccountId = await createNewWallet(webClient, "OffChain", true);
             let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
             let mintTransactionResult = await createNewMintTransaction(
                 webClient,
@@ -440,27 +509,34 @@
                 "Private",
                 "1000"
             );
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
             await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
 
             let consumeTransactionResult = await createNewConsumeTransaction(
                 webClient,
                 targetAccountId,
                 mintTransactionResult.created_note_ids
             );
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
             await syncState(webClient);
-            console.log('testNewMintTransaction finished');
+
+            console.log('testNewConsumeTransaction finished');
         }
 
+        // Done
         async function testNewSendTransaction() {
             console.log('testNewSendTransaction started');
+
             let webClient = await createMidenWebClient();
             let senderAccountId = await createNewWallet(webClient, "OffChain", true);
             let targetAccountId = await createNewWallet(webClient, "OffChain", true);
             let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
             await new Promise(r => setTimeout(r, 10000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
             let mintTransactionResult = await createNewMintTransaction(
                 webClient,
@@ -471,6 +547,8 @@
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccountId);
 
             let consumeTransactionResult = await createNewConsumeTransaction(
                 webClient,
@@ -486,10 +564,13 @@
                 targetAccountId,
                 faucetId,
                 "Private",
-                "500"
+                "500",
+                null
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
 
             let consumeSendTransactionResult = await createNewConsumeTransaction(
                 webClient,
@@ -498,17 +579,22 @@
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
             console.log('testNewSendTransaction finished');
         }
 
+        // Done
         async function testNewSendTransactionWithRecallHeight() {
             console.log('testNewSendTransactionWithRecallHeight started');
+
             let webClient = await createMidenWebClient();
             let senderAccountId = await createNewWallet(webClient, "OffChain", true);
             let targetAccountId = await createNewWallet(webClient, "OffChain", true);
             let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
             await new Promise(r => setTimeout(r, 10000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
 
             let mintTransactionResult = await createNewMintTransaction(
                 webClient,
@@ -519,6 +605,8 @@
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(senderAccountId);
 
             let consumeTransactionResult = await createNewConsumeTransaction(
                 webClient,
@@ -547,65 +635,112 @@
             );
             await new Promise(r => setTimeout(r, 10000));
             await syncState(webClient);
+
             console.log('testNewSendTransactionWithRecallHeight finished');
         }
 
-        // async function testNewSwapTransaction() {
-        //     console.log('testNewSwapTransaction started');
-        //     let webClient = await createMidenWebClient();
-        //     let senderAccountId = await createNewWallet(webClient, "OffChain", true);
-        //     let offeredAssetFaucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
-        //     let requestedAssetFaucetId = await createNewFaucet(webClient, "OffChain", false, "GAR", "10", "1000000");
-        //     await syncState(webClient);
-        //     await new Promise(r => setTimeout(r, 10000));
+        // Done
+        async function testNewSwapTransaction() {
+            console.log('testNewSwapTransaction started');
+            let webClient = await createMidenWebClient();
 
-        //     let mintTransactionResult = await createNewMintTransaction(
-        //         webClient,
-        //         senderAccountId,
-        //         offeredAssetFaucetId,
-        //         "Private",
-        //         "1000"
-        //     );
-        //     await new Promise(r => setTimeout(r, 10000));
-        //     await syncState(webClient);
+            let walletAAccountId = await createNewWallet(webClient, "OffChain", true);
+            let walletBAccountId = await createNewWallet(webClient, "OffChain", true);
+            let offeredAssetFaucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            let requestedAssetFaucetId = await createNewFaucet(webClient, "OffChain", false, "GAR", "10", "1000000");
+            await syncState(webClient);
+            await new Promise(r => setTimeout(r, 10000));
 
-        //     let consumeTransactionResult = await createNewConsumeTransaction(
-        //         webClient,
-        //         senderAccountId,
-        //         mintTransactionResult.created_note_ids
-        //     );
-        //     await new Promise(r => setTimeout(r, 10000));
-        //     await syncState(webClient);
+            await webClient.fetch_and_cache_account_auth_by_pub_key(offeredAssetFaucetId);
 
-        //     let swapTransactionResult = await createNewSwapTransaction(
-        //         webClient,
-        //         senderAccountId,
-        //         offeredAssetFaucetId,
-        //         "500",
-        //         requestedAssetFaucetId,
-        //         "500",
-        //         "Private"
-        //     );
-        //     await new Promise(r => setTimeout(r, 10000));
-        //     await syncState(webClient);
+            let walletAMintTransactionResult = await createNewMintTransaction(
+                webClient,
+                walletAAccountId,
+                offeredAssetFaucetId,
+                "Public",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 10000));
+            await syncState(webClient);
 
-        //     let consumeSwapTransactionResult = await createNewConsumeTransaction(
-        //         webClient,
-        //         senderAccountId,
-        //         swapTransactionResult.created_note_ids
-        //     );
-        //     await new Promise(r => setTimeout(r, 10000));
-        //     await syncState(webClient);
-        //     console.log('testNewSwapTransaction finished');
-        // }
+            await webClient.fetch_and_cache_account_auth_by_pub_key(requestedAssetFaucetId);
+
+            let walletBMintTransactionResult = await createNewMintTransaction(
+                webClient,
+                walletBAccountId,
+                requestedAssetFaucetId,
+                "Public",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 10000));
+            await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(walletAAccountId);
+
+            let walletAConsumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                walletAAccountId,
+                walletAMintTransactionResult.created_note_ids
+            );
+            await new Promise(r => setTimeout(r, 10000));
+            await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(walletBAccountId);
+
+            let walletBConsumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                walletBAccountId,
+                walletBMintTransactionResult.created_note_ids
+            );
+            await new Promise(r => setTimeout(r, 10000));
+            await syncState(webClient);
+
+            let swapTransactionResult = await createNewSwapTransaction(
+                webClient,
+                walletAAccountId,
+                offeredAssetFaucetId,
+                "100",
+                requestedAssetFaucetId,
+                "900",
+                "Public"
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await addTag(webClient, swapTransactionResult.payback_note_tag);
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            let walletBConsumeSwapTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                walletBAccountId,
+                swapTransactionResult.expected_output_note_ids // TODO CHANGE ME
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            let walletAConsumeSwapTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                walletAAccountId,
+                swapTransactionResult.expected_partial_note_ids // TODO CHANGE ME
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            console.log('testNewSwapTransaction finished');
+        }
         
+        // Done
         async function testGetTransactions() {
             console.log("testGetTransactions started");
+
             let webClient = await createMidenWebClient();
             let walletAccount = await createNewWallet(webClient, "OffChain", true);
             let faucetAccount = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetAccount);
             
             let mintTransactionResult = await createNewMintTransaction(
                 webClient,
@@ -616,6 +751,8 @@
             );
             await new Promise(r => setTimeout(r, 20000));
             await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(walletAccount);
 
             let consumeTransactionResult = await createNewConsumeTransaction(
                 webClient,
@@ -630,50 +767,81 @@
             console.log("testGetTransactions finished");
         }
 
-        async function testGetNotes() {
-            console.log("testGetNotes started");
+        // Done
+        async function testGetInputNotes() {
+            console.log("testGetInputNotes started");
+
             let webClient = await createMidenWebClient();
-
-            // Create accounts and sync
-            let regularAccountTemplate = createBasicMutableAccountTemplate("Local");
-            let fungibleFaucetAccountTemplate = createFungibleFaucetAccountTemplate(
-                "DEN",
-                "10",
-                "1000000",
-                "Local"
-            );
-            let regularAccountId = await createNewAccount(webClient, regularAccountTemplate);
-            let faucetId = await createNewAccount(webClient, fungibleFaucetAccountTemplate);
+            let targetAccountId = await createNewWallet(webClient, "OffChain", true);
+            let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
             await syncState(webClient);
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
 
-            // Create mint transaction and sync
-            let transactionTemplate = createMintTransactionTemplate(
-                regularAccountId,
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+            let mintTransactionResult = await createNewMintTransaction(
+                webClient,
+                targetAccountId,
                 faucetId,
-                "1000",
-                "Private"
+                "Private",
+                "1000"
             );
-            let createTransactionResult = await createTransaction(webClient, transactionTemplate);
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
             await syncState(webClient);
 
-            // Create mint transaction and sync
-            let transactionTemplate2 = createMintTransactionTemplate(
-                regularAccountId,
-                faucetId,
-                "1000",
-                "Private"
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+
+            let consumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                targetAccountId,
+                mintTransactionResult.created_note_ids
             );
-            let createTransactionResult2 = await createTransaction(webClient, transactionTemplate2);
-            await new Promise(r => setTimeout(r, 10000));
+            await new Promise(r => setTimeout(r, 20000));
             await syncState(webClient);
 
             await getInputNotes(webClient);
 
-            console.log("testGetNotes finished");
+            console.log("testGetInputNotes finished");
+        }
+
+        // Done
+        async function testGetInputNote() {
+            console.log("testGetInputNote started");
+
+            let webClient = await createMidenWebClient();
+            let targetAccountId = await createNewWallet(webClient, "OffChain", true);
+            let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            await syncState(webClient);
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+            let mintTransactionResult = await createNewMintTransaction(
+                webClient,
+                targetAccountId,
+                faucetId,
+                "Private",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+
+            let consumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                targetAccountId,
+                mintTransactionResult.created_note_ids
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await getInputNote(webClient, mintTransactionResult.created_note_ids[0]);
+
+            console.log("testGetInputNote finished");
         }
         
+        // Done
         async function testGetNote() {
             console.log("testGetNote started");
             let webClient = await createMidenWebClient();
@@ -707,6 +875,120 @@
             console.log("testGetNote finished");
         }
         
+        // Done
+        async function testGetOutputNotes() {
+            console.log("testGetOutputNotes started");
+
+            let webClient = await createMidenWebClient();
+            let targetAccountId = await createNewWallet(webClient, "OffChain", true);
+            let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            await syncState(webClient);
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+            let mintTransactionResult = await createNewMintTransaction(
+                webClient,
+                targetAccountId,
+                faucetId,
+                "Private",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+
+            let consumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                targetAccountId,
+                mintTransactionResult.created_note_ids
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await getOutputNotes(webClient);
+
+            console.log("testGetOutputNotes finished");
+        }
+
+        // Done
+        async function testGetOutputNote() {
+            console.log("testGetOutputNote started");
+
+            let webClient = await createMidenWebClient();
+            let targetAccountId = await createNewWallet(webClient, "OffChain", true);
+            let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            await syncState(webClient);
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+            let mintTransactionResult = await createNewMintTransaction(
+                webClient,
+                targetAccountId,
+                faucetId,
+                "Private",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+
+            let consumeTransactionResult = await createNewConsumeTransaction(
+                webClient,
+                targetAccountId,
+                mintTransactionResult.created_note_ids
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            await getOutputNote(webClient, mintTransactionResult.created_note_ids[0]);
+
+            console.log("testGetOutputNote finished");
+        }
+       
+        async function testImportInputNote() {
+            console.log("testImportInputNote started");
+
+            let webClient = await createMidenWebClient();
+            let walletAccount = await createNewWallet(webClient, "OffChain", true);
+
+            function setupNoteFileInputListener(webClient, targetAccountId) {
+                document.getElementById('noteFileInput').addEventListener('change', async function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = async function(e) {
+                            const arrayBuffer = e.target.result;
+                            const byteArray = new Uint8Array(arrayBuffer);
+                            const base64String = btoa(String.fromCharCode(byteArray));
+                            console.log(Array.from(byteArray));  // Converts Uint8Array to regular array and logs it
+
+                            let result = await importInputNote(webClient, base64String, false);
+                            console.log(result);  // Log the result of the import process
+
+                            await webClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+
+                            let consumeTransactionResult = await createNewConsumeTransaction(
+                                webClient,
+                                targetAccountId,
+                                [result]
+                            );
+                            await new Promise(r => setTimeout(r, 20000));
+                            await syncState(webClient);
+
+                            console.log("testImportInputNote finished");
+                        };
+                        reader.readAsArrayBuffer(file);
+                    }
+                });
+            }
+
+            setupNoteFileInputListener(webClient, walletAccount);
+        }
+
         async function testExportInputNote() {
             console.log("testExportInputNote started");
             let webClient = await createMidenWebClient();
@@ -785,49 +1067,22 @@
 
             // console.log("testExportInputNote finished");
         }
-       
-        async function testImportInputNote() {
-            let webClient = await createMidenWebClient();
-
-            setupNoteFileInputListener(webClient);
-
-            let regularAccountTemplate = await createBasicMutableAccountTemplate("Local");
-            await createNewAccount(webClient, regularAccountTemplate);
-
-            // Create consume transaction and sync
-            // let consumeTransactionTemplate = createConsumeNotesTransactionTemplate(
-            //     "0x912ea536cab38f1b",
-            //     ["0x8888c1474034b1aad083b58642d3547e7fea9c2b4061087d8ae128ef0a6ae3ca"]
-            // );
-            // await createTransaction(webClient, consumeTransactionTemplate);
-            // await new Promise(r => setTimeout(r, 10000));
-            // await syncState(webClient);
-        }
-
-        // await getAccountAuthByPubKey();
 
         // await testCreateNewWallet();
         // await testCreateNewFaucet();
-        // await testGetAccounts(false);
-        // await testGetAccount(false, "0x8add712899d6ab76");
-        await testNewMintTransaction(false,  "0x8add712899d6ab76", "0x248226f3436b0068");
+        // await testGetAccounts();
+        // await testGetAccount();
+        // await testNewMintTransaction();
         // await testNewConsumeTransaction();
         // await testNewSendTransaction();
         // await testNewSendTransactionWithRecallHeight();
         // await testNewSwapTransaction();
         // await testGetTransactions();
-
-        // await testCreateAllAccountTypes();
-        // await testGetAccount();
-        // await testGetAccounts();
-        // await testGetNotes();
-        // await testGetNote();
-        // await testExportInputNote();
-        // await testMintAsset();
-        // await testP2IDTransaction();
-        // await testP2IDRTransaction();
-        // await testGetTransactions();
-        // await testImportInputNote();
+        // await testGetInputNotes();
+        // await testGetInputNote();
+        // await testGetOutputNotes();
+        // await testGetOutputNote();
+        await testImportInputNote();
 
     </script>
 </body>

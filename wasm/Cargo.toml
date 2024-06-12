@@ -21,10 +21,10 @@ base64 = "0.13"
 futures = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 hex = { version = "0.4" }
-miden-client = { path = "../../miden-client", version = "0.3.0", default-features = false, features = ["wasm"] }
-miden-lib = { path="../../miden-base-new/miden-lib", default-features = false }
-miden-tx = { path="../../miden-base-new/miden-tx", default-features = false, features = ["async"] }
-miden-objects = { path="../../miden-base-new/objects", default-features = false, features = ["std", "serde"] }
+miden-client = { path = "../../demox-miden-client-next", version = "0.3.0", default-features = false, features = ["wasm", "async"] }
+miden-lib = { path="../../demox-miden-base/miden-lib", default-features = false, features = ["testing"] }
+miden-tx = { path="../../demox-miden-base/miden-tx", default-features = false, features = ["async"] }
+miden-objects = { path="../../demox-miden-base/objects", default-features = false, features = ["std", "serde", "testing"] }
 prost = { version = "0.12.3" }
 rand = { version = "0.8.5" }
 serde = { version = "1.0", features = ["derive"] }

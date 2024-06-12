@@ -65,6 +65,7 @@ impl WebClient {
         &mut self, 
         filter: JsValue
     ) -> Result<JsValue, JsValue> {
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes called"));
         if let Some(client) = self.get_mut_inner() {
             let filter: WebClientNoteFilter = from_value(filter).unwrap();
             let native_filter = match filter {

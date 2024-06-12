@@ -48,12 +48,16 @@ export async function insertChainMmrNodes(
 export async function getBlockHeaders(
     blockNumbers
 ) {
+    console.log("called getBlockHeaders with blockNumbers: ", blockNumbers);
     try {
         const blockHeaderPromises = blockNumbers.map(blockNum => 
             blockHeaders.get(blockNum)
         );
 
         const results = await Promise.all(blockHeaderPromises);
+
+        console.log("blockNum map");
+        console.log(results);
         
         // replace any undefined values with null
         results.forEach((result, index) => {
@@ -68,6 +72,9 @@ export async function getBlockHeaders(
                 }
             }
         });
+
+        console.log("blockNum map after");
+        console.log(results);
 
         return results
     } catch (err) {

@@ -9,6 +9,7 @@ import {
 export async function getOutputNotes(
     status
 ) {
+    console.log("called getOutputNotes");
     try {
         let notes;
 
@@ -29,15 +30,19 @@ export async function getOutputNotes(
 export async function getInputNotes(
     status
 ) {
+    console.log("called getInputNotes");
     try {
         let notes;
 
         // Fetch the records based on the filter
         if (status === 'All') {
+            console.log("fetching all notes");
             notes = await inputNotes.toArray();
         } else {
+            console.log("fetching notes with status: ", status);
             notes = await inputNotes.where('status').equals(status).toArray();
         }
+        console.log("notes: ", notes);
 
         return await processInputNotes(notes);
     } catch (err) {
@@ -49,11 +54,15 @@ export async function getInputNotes(
 export async function getInputNotesFromIds(
     noteIds
 ) {
+    console.log("called getInputNotesFromIds");
+    console.log("noteIds: ", noteIds);
     try {
         let notes;
 
         // Fetch the records based on a list of IDs
         notes = await inputNotes.where('noteId').anyOf(noteIds).toArray();
+
+        console.log("notes: ", notes);
 
         return await processInputNotes(notes);
     } catch (err) {
@@ -146,6 +155,9 @@ export async function insertOutputNote(
     serializedNoteScript,
     inclusionProof
 ) {
+    console.log("insertOutputNote");
+    console.log("noteId: ", noteId);
+    console.log('status', status);
     return db.transaction('rw', outputNotes, notesScripts, async (tx) => {
         try {
             let assetsBlob = new Blob([new Uint8Array(assets)]);
@@ -257,12 +269,14 @@ async function processInputNotes(
             consumer_account_id: consumerAccountId
         };
     }));
+    console.log("processedNotes: ", processedNotes);
     return processedNotes;
 }
 
 async function processOutputNotes(
     notes
 ) {
+    console.log("called processOutputNotes");
     // Fetch all scripts from the scripts table for joining
     const scripts = await notesScripts.toArray();
     const scriptMap = new Map(scripts.map(script => [script.scriptHash, script.serializedNoteScript]));

@@ -28,6 +28,9 @@ use models::*;
 pub(crate) mod utils;
 use utils::*;
 
+use web_sys::console;
+use wasm_bindgen::*;
+
 impl WebStore {
     pub(crate) async fn get_input_notes(
         &self,
@@ -89,6 +92,7 @@ impl WebStore {
         &self, 
         filter: NoteFilter<'_>
     ) -> Result<Vec<OutputNoteRecord>, StoreError> {
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes called"));
         let promise = match filter {
             NoteFilter::All | NoteFilter::Consumed | NoteFilter::Committed | NoteFilter::Pending => {
                 let filter_as_str = match filter {
@@ -100,6 +104,7 @@ impl WebStore {
                 };
     
                 // Assuming `js_fetch_notes` is your JavaScript function that handles simple string filters
+                web_sys::console::log_1(&JsValue::from_str("get_output_notes 2"));
                 idxdb_get_output_notes(filter_as_str.to_string())
             },
             NoteFilter::List(ids) => {
@@ -113,13 +118,17 @@ impl WebStore {
             }
         };
 
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes 3"));
         let js_value = JsFuture::from(promise).await.unwrap();
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes 4"));
         let output_notes_idxdb: Vec<OutputNoteIdxdbObject> = from_value(js_value).unwrap();
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes 5"));
 
         let native_output_notes: Result<Vec<OutputNoteRecord>, StoreError> = output_notes_idxdb
             .into_iter()
             .map(parse_output_note_idxdb_object) // Simplified closure
             .collect::<Result<Vec<_>, _>>(); // Collect results into a single Result
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes 6"));
 
         match native_output_notes {
             Ok(ref notes) => match filter {
@@ -137,6 +146,7 @@ impl WebStore {
             },
             Err(e) => return Err(e),
         }
+        web_sys::console::log_1(&JsValue::from_str("get_output_notes 7"));
 
         native_output_notes
     }

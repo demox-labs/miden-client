@@ -17,6 +17,9 @@ use miden_client::{
 use crate::web_client::store::notes::{InputNoteIdxdbObject, OutputNoteIdxdbObject};
 use super::js_bindings::*;
 
+use wasm_bindgen::*;
+use web_sys::console;
+
 // TYPES
 // ================================================================================================
 
@@ -304,29 +307,38 @@ pub fn parse_input_note_idxdb_object(
 pub fn parse_output_note_idxdb_object(
     note_idxdb: OutputNoteIdxdbObject
 ) -> Result<OutputNoteRecord, StoreError> {
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object called"));
     let note_details: Option<NoteRecordDetails> = if let Some(details_as_json_str) = note_idxdb.details {
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 1"));
         // Merge the info that comes from the input notes table and the notes script table
         let serialized_note_script = note_idxdb.serialized_note_script
             .expect("Has note details so it should have the serialized script");
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 2"));
         let note_script = NoteScript::read_from_bytes(&serialized_note_script)?;
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 3"));
         let note_details: NoteRecordDetails = serde_json::from_str(&details_as_json_str)
             .map_err(StoreError::JsonDataDeserializationError)?;
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 4"));
         let note_details = NoteRecordDetails::new(
             note_details.nullifier().to_string(),
             note_script,
             note_details.inputs().clone(),
             note_details.serial_num(),
         );
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 5"));
 
         Some(note_details)
     } else {
+        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 6"));
         None
     };
-
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 7"));
     let note_metadata: NoteMetadata =
         serde_json::from_str(&note_idxdb.metadata).map_err(StoreError::JsonDataDeserializationError)?;
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 8"));
 
     let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 9"));
 
     let inclusion_proof = match note_idxdb.inclusion_proof {
         Some(note_inclusion_proof) => {
@@ -338,16 +350,21 @@ pub fn parse_output_note_idxdb_object(
         },
         _ => None,
     };
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 10"));
 
     let recipient = Digest::try_from(note_idxdb.recipient)?;
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 11"));
     let id = NoteId::new(recipient, note_assets.commitment());
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 12"));
     let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
         .map_err(StoreError::JsonDataDeserializationError)?;
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 13"));
 
     let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
-        Some(account_id) => Some(AccountId::try_from(account_id.parse::<u64>().unwrap())?),
+        Some(account_id) => Some(AccountId::from_hex(&account_id)?),
         None => None,
     };
+    web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 14"));
 
     Ok(OutputNoteRecord::new(
         id,

@@ -12,6 +12,7 @@ pub mod new_transactions;
 pub mod notes;
 pub mod sync;
 pub mod transactions;
+pub mod tags;
 pub mod store;
 pub mod rpc;
 pub mod models;
@@ -44,7 +45,7 @@ impl WebClient {
     // Exposed method to JS to create an internal client
     pub async fn create_client(
         &mut self,
-        node_url: Option<String>
+        node_url: Option<String>,
     ) -> Result<JsValue, JsValue> {
         web_sys::console::log_1(&JsValue::from_str("create_client called"));
         let rng = get_random_coin();

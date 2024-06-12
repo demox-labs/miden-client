@@ -66,7 +66,6 @@ impl WebRpcClient {
     }
 }
 
-#[async_trait(?Send)]
 impl NodeRpcClient for WebRpcClient {
     async fn submit_proven_transaction(
         &mut self,
