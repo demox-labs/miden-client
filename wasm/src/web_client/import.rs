@@ -41,13 +41,13 @@ impl WebClient {
 
     pub async fn import_note(
         &mut self,
-        note_bytes: String,
+        note_bytes: JsValue,
         verify: bool
     ) -> Result<JsValue, JsValue> {
         web_sys::console::log_1(&JsValue::from_str("import_note called"));
         if let Some(client) = self.get_mut_inner() {
-            // let note_bytes_result: Vec<u8> = from_value(note_bytes).unwrap();
-            let note_bytes_result = decode(note_bytes).unwrap();
+            let note_bytes_result: Vec<u8> = from_value(note_bytes).unwrap();
+            // let note_bytes_result = decode(note_bytes).unwrap();
             web_sys::console::log_1(&JsValue::from_str("import_note 2"));
             let input_note_record =
                 InputNoteRecord::read_from_bytes(&note_bytes_result).map_err(|err| err.to_string())?;

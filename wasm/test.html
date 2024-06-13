@@ -21,18 +21,36 @@
         document.getElementById('accountFileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
-            const reader = new FileReader();
+                const reader = new FileReader();
 
-            reader.onload = async function(e) {
-                let webClient = await createMidenWebClient();
-                const arrayBuffer = e.target.result;
-                const byteArray = new Uint8Array(arrayBuffer);
-                console.log(byteArray);  // Now you can work with the bytes
+                reader.onload = async function(e) {
+                    let webClient = await createMidenWebClient();
+                    const arrayBuffer = e.target.result;
+                    const byteArray = new Uint8Array(arrayBuffer);
+                    console.log(byteArray);  // Now you can work with the bytes
 
-                await testImportAccount(webClient, byteArray);
-            };
+                    await testImportAccount(webClient, byteArray);
+                };
 
-            reader.readAsArrayBuffer(file);
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        document.getElementById('noteFileInput').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = async function(e) {
+                    let webClient = await createMidenWebClient();
+                    const arrayBuffer = e.target.result;
+                    const byteArray = new Uint8Array(arrayBuffer);
+                    console.log(byteArray);  // Now you can work with the bytes
+
+                    await importInputNote(webClient, byteArray, true);
+                };
+
+                reader.readAsArrayBuffer(file);
             }
         });
         
@@ -371,13 +389,14 @@
             }
         }
 
-        async function exportInputNote(
+        async function exportNote(
             webClient,
             noteId
         ) {
             try {
-                let result = await webClient.export_input_note(noteId);
+                let result = await webClient.export_note(noteId);
                 console.log(result);
+                return result;
             } catch (error) {
                 console.error('Failed to call export input note:', error);
             }
@@ -949,6 +968,54 @@
             console.log("testGetOutputNote finished");
         }
        
+        async function testExportNote() {
+            console.log("testExportNote started");
+
+            let webClient = await createMidenWebClient();
+            let senderAccountId = await createNewWallet(webClient, "OffChain", true);
+            let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            await syncState(webClient);
+            await new Promise(r => setTimeout(r, 20000));
+
+            await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+            let mintTransactionResult = await createNewMintTransaction(
+                webClient,
+                senderAccountId,
+                faucetId,
+                "Private",
+                "1000"
+            );
+            await new Promise(r => setTimeout(r, 20000));
+            await syncState(webClient);
+
+            let result = await exportNote(webClient, mintTransactionResult.created_note_ids[0]);
+
+            const blob = new Blob([result], {type: 'application/octet-stream'});
+
+            // Create a URL for the Blob
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary anchor element
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'exportNoteTest.mno'; // Specify the file name
+
+            // Append the anchor to the document
+            document.body.appendChild(a);
+
+            // Programmatically click the anchor to trigger the download
+            a.click();
+
+            // Remove the anchor from the document
+            document.body.removeChild(a);
+
+            // Revoke the object URL to free up resources
+            URL.revokeObjectURL(url);
+            
+            console.log("testExportNote finished");
+        }
+        
         async function testImportInputNote() {
             console.log("testImportInputNote started");
 
@@ -1082,7 +1149,8 @@
         // await testGetInputNote();
         // await testGetOutputNotes();
         // await testGetOutputNote();
-        await testImportInputNote();
+        await testExportNote();
+        // await testImportInputNote();
 
     </script>
 </body>
