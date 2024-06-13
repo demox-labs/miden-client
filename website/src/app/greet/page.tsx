@@ -1,12 +1,21 @@
 'use client'
 
-import init, { greet } from 'wasm';
+import { useWasm } from '@/context/wasm-context';
 
 export default function Greet() {
+  const wasm = useWasm();
+  if (!wasm) {
+    return <div>Loading...</div>;
+  }
 
   async function greetFromWasm() {
-    await init();
-    greet();
+    if (!wasm) {
+      console.error('wasm or webClient is null');
+      return
+    }
+
+    wasm.greet();
+    console.log('serialze: ', wasm.serialize_test())
   }
 
   return (
