@@ -14,12 +14,8 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
-"@demox-labs/miden-sdk@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@demox-labs/miden-sdk/-/miden-sdk-0.0.1.tgz#a2c2d213fcabeb27b4814f1404b1392b8d7178cf"
-  integrity sha512-efRe5YsqWHN3cV4TuaQ7/Crah4JVLM4ib2OyPp18BeBZ0mZXWZ53wbVzgkogiF+NP2k9XanzNxsP2e2/glaEUQ==
-  dependencies:
-    dexie "^4.0.1"
+"@demox-labs/miden-sdk@file:../wasm/dist":
+  version "0.0.0"
 
 "@eslint-community/eslint-utils@^4.2.0":
   version "4.4.0"

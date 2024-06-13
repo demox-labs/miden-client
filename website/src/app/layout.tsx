@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className}>{
       <div className="bg-light-100 dark:bg-dark-100 flex min-h-screen flex-col">
-        <WasmProvider>
+        {/* <WasmProvider> */}
           <div className="xl:pl-72 2xl:pl-80">
             <Header />
             <main className="mb-12 flex flex-grow flex-col pt-16 sm:pt-24">
@@ -46,7 +46,7 @@ export default function RootLayout({
               </ThemeProvider>
             </main>
           </div>
-        </WasmProvider>
+        {/* </WasmProvider> */}
       </div>
     }</body>
     </html>

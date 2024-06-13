@@ -24,6 +24,7 @@ base64 = "0.13"
 futures = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 hex = { version = "0.4" }
+miden-client = { path = "../../demox-miden-client", version = "0.3.0", default-features = false, features = ["wasm", "async"] }
 miden-lib = { path="../../demox-miden-base/miden-lib", default-features = false, features = ["testing"] }
 miden-objects = { path="../../demox-miden-base/objects", features = ["serde", "testing"] }
 miden-tx = { path="../../demox-miden-base/miden-tx", default-features = false }
