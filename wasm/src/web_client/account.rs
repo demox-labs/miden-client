@@ -15,6 +15,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::console;
 use std::panic;
 use serde_wasm_bindgen::Serializer;
+use console_error_panic_hook;
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -45,9 +46,10 @@ impl WebClient {
     pub async fn get_accounts(
         &mut self
     ) -> Result<JsValue, JsValue> {
-        web_sys::console::log_1(&JsValue::from_str("new_wallet called"));
+        console_error_panic_hook::set_once();
         if let Some(client) = self.get_mut_inner() {
             let account_tuples = client.get_account_stubs().await.unwrap();
+            web_sys::console::log_1(&format!("account_tuples {:?}", account_tuples).into());
             let accounts: Vec<SerializedAccountStub> = account_tuples.into_iter().map(|(account, _)| {
                 SerializedAccountStub::new(
                     account.id().to_string(),

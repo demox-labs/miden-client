@@ -195,6 +195,7 @@
         async function getAccounts(webClient) {
             try {
                 let accounts = await webClient.get_accounts();
+                console.log(accounts);
                 let accountIds = accounts.map(account => account.id);
                 console.log(accountIds)
                 return accountIds;
@@ -1137,7 +1138,7 @@
 
         // await testCreateNewWallet();
         // await testCreateNewFaucet();
-        // await testGetAccounts();
+        await testGetAccounts(false);
         // await testGetAccount();
         // await testNewMintTransaction();
         // await testNewConsumeTransaction();
@@ -1149,7 +1150,7 @@
         // await testGetInputNote();
         // await testGetOutputNotes();
         // await testGetOutputNote();
-        await testExportNote();
+        // await testExportNote();
         // await testImportInputNote();
 
     </script>

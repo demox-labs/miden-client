@@ -3,11 +3,10 @@
 // import { testNewRegularAccount } from '../../helpers/account-helpers';
 // import { useWasm } from '@/context/wasm-context';
 import DashboardLayout from '@/layouts/dashboard/_dashboard';
-import { ReactElement, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { ReactElement, use, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
-import * as wasm from '@demox-labs/miden-sdk';
 
 interface Account {
   id: number
@@ -17,7 +16,8 @@ interface Account {
   vault_root: string 
 }
 
-function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean}) {
+function AccountsTable({ accounts, isLoading, fetchAccounts }: { accounts: Account[], isLoading: boolean, fetchAccounts: () => void }) {
+
   return (
     <div className="flex flex-col items-center">
       <div>
@@ -42,7 +42,7 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
           }
         </tbody>
       </table>
-      {/* <button onClick={() => fetchAccounts(wasm)} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button> */}
+      {/* <button onClick={() => fetchAccounts()} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button> */}
     </div>
   )
 }
@@ -52,66 +52,96 @@ export default function Accounts() {
   const [createAccountLoading, setCreateAccountLoading] = useState(false)
   const [fetchAccountsLoading, setFetchAccountsLoading] = useState(false)
   const [accounts, setAccounts] = useState<Account[]>([])
-  // const wasm = useWasm();
-  useLayoutEffect(() => {
-    workerRef.current = new Worker(new URL('../../workers/accounts.ts', import.meta.url), { type : "module" });
-    workerRef.current.onmessage = async (event) => {
-      switch (event.data.type) {
-        case "createAccount":
-          console.log('create account worker finished')
-          // workerRef.current?.postMessage("fetchAccounts")
-          setCreateAccountLoading(false)
-          break;
-        case "fetchAccounts":
-          console.log('fetch accounts worker finished', event.data.accounts)
-          setFetchAccountsLoading(false)
-          setAccounts(event.data.accounts)
-          break;
-        default:
-          console.log('invalid message:', event.data);
-          break;
-      }
-    }
-    workerRef.current.onerror = (error) => {
-      console.error('Worker error:', error.message)
-    }
+  
+  function createWorkerAndSendMessage(message: string) {
+    return new Promise((resolve, reject) => {
+      workerRef.current = new Worker(new URL('../../workers/accounts.ts', import.meta.url), { type : "module" });
+  
+      workerRef.current.onmessage = function(event) {
+        switch (event.data.type) {
+          case "ready":
+            console.log('Worker is ready. Sending message...');
+            workerRef.current?.postMessage(message);
+            break;
+          case "createAccount":
+            console.log('create account worker finished')
+            workerRef.current?.postMessage("fetchAccounts")
+            setCreateAccountLoading(false)
+            break;
+          case "fetchAccounts":
+            console.log('fetch accounts worker finished', event.data.accounts)
+            setFetchAccountsLoading(false)
+            setAccounts(event.data.accounts)
+            break;
+          default:
+            console.log('invalid message:', event.data);
+            break;
+        }
+      };
+  
+      workerRef.current.onerror = function(error) {
+        reject(error);
+      };
+    });
+  }
 
-    // fetchAccounts();
+  useLayoutEffect(() => {
+    createWorkerAndSendMessage("fetchAccounts")
+    // workerRef.current = new Worker(new URL('../../workers/accounts.ts', import.meta.url), { type : "module" });
+    // workerRef.current.onmessage = async (event) => {
+    //   switch (event.data.type) {
+    //     case "createAccount":
+    //       console.log('create account worker finished')
+    //       workerRef.current?.postMessage("fetchAccounts")
+    //       setCreateAccountLoading(false)
+    //       break;
+    //     case "fetchAccounts":
+    //       console.log('fetch accounts worker finished', event.data.accounts)
+    //       setFetchAccountsLoading(false)
+    //       setAccounts(event.data.accounts)
+    //       break;
+    //     default:
+    //       console.log('invalid message:', event.data);
+    //       break;
+    //   }
+    // }
+    // workerRef.current.onerror = (error) => {
+    //   console.error('Worker error:', error.message)
+    // }
+
     return () => {
       workerRef.current?.terminate();
     }
   }, [])
 
-  // const fetchAccounts = () => {
-  //   setFetchAccountsLoading(true)
+  useEffect(() => {
+    fetchAccounts()
+  }, [])
 
-  //   // const webClient = new wasm.WebClient()
-  //   // console.log('webClient', webClient)
-  //   // await webClient.create_client();
-  //   // const accounts = await webClient.get_accounts();
-  //   workerRef.current?.postMessage("fetchAccounts")
-  // }
+  const fetchAccounts = () => {
+    console.log('fetching accounts')
+    setFetchAccountsLoading(true)
+
+    console.log('sending fetchAccounts to worker')
+    console.log('workerRef', workerRef.current)
+    workerRef.current?.postMessage("fetchAccounts")
+  }
 
   async function createAccount() {
     try {
       setCreateAccountLoading(true)
       workerRef.current?.postMessage("createAccount")
-      // await new Promise(r => setTimeout(r, 3000));
     } catch (error) {
       console.error('Failed to call create account:', error);
     }
   }
-// !wasm ? <div className="flex min-h-screen flex-col items-center">Loading...</div> : 
+  
   return (
     <div className="flex min-h-screen flex-col items-center">
       <div className="flex flex-row items-start pb-4">
-        {/* { isLoading
-          ? <Loader variant='scaleUp' className="bg-gray-700 text-white py-2 px-4 rounded-md" /> 
-          : <button className="bg-gray-700 text-white py-2 px-4 rounded-md" onClick={() => testNewRegularAccount()}>Create account</button>
-        } */}
         <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
       </div>
-      <AccountsTable accounts={accounts} isLoading={fetchAccountsLoading} />
+      <AccountsTable accounts={accounts} isLoading={fetchAccountsLoading} fetchAccounts={fetchAccounts} />
     </div>
   )
 }
