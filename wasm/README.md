@@ -15,15 +15,84 @@ yarn add @demox-labs/miden-sdk
 
 ## Usage
 
-```javascript
+```typescript
 import { WebClient } from "@demox-labs/miden-sdk";
 
 const webClient = new WebClient();
 await webClient.create_client();
 
 // Use webclient to create accounts, notes, transactions, etc.
-// This will create an mutable, offchain account and store it in indexedDb
+// This will create a mutable, off-chain account and store it in IndexedDB
 const accountId = await webClient.new_wallet("OffChain", true);
+```
+
+## Examples
+### The WebClient
+The WebClient is your gateway to creating and interacting with anything miden vm related.
+Example:
+```typescript
+// Creates a new WebClient instance which can then be configured after
+const webClient = new WebClient();
+
+// Creates the internal client of a previously instantiated WebClient.
+// Can provide `node_url` as an optional parameter. Defaults to "http://localhost:57291".
+// See https://github.com/0xPolygonMiden/miden-node for setting up and running your own node locally
+await webClient.create_client();
+```
+### Accounts
+You can use the WebClient to create and retrieve account information.
+```typescript
+const webClient = new WebClient();
+await webClient.create_client();
+
+/**
+ * Creates a new wallet account.
+ * 
+ * @param storage_type String. Either "OffChain" or "OnChain".
+ * @param mutable Boolean. Whether the wallet code is mutable or not
+ * 
+ * Returns: Wallet Id
+ */
+const walletId = await webClient.new_wallet("OffChain", true);
+
+/**
+ * Creates a new faucet account.
+ * 
+ * @param storage_type String. Either "OffChain" or "OnChain".
+ * @param non_fungible Boolean. Whether the faucet is non_fungible or not. NOTE: Non-fungible faucets are not supported yet
+ * @param token_symbol String. Token symbol of the token the faucet creates
+ * @param decimals String. Decimal precision of token.
+ * @param max_supply String. Maximum token supply
+ */ 
+const faucetId = await webClient.new_faucet("OffChain", true, "TOK", 6, 1_000_000)
+
+// Returns all accounts. Both wallets and faucets.
+const accounts = await webClient.get_accounts()
+
+// Gets a single account by id
+const account = await webClient.get_account("0x9258fec00ad6d9bc");
+```
+
+### Transactions
+You can use the webClient to facilitate transactions between accounts.
+
+Let's mint some tokens for our wallet from our faucet:
+```typescript
+const webClient = new WebClient();
+await webClient.create_client();
+const walletId = await webClient.new_wallet("OffChain", true);
+const faucetId = await webClient.new_faucet("OffChain", true, "TOK", 6, 1_000_000);
+
+// Syncs web client with node state.
+await webClient.sync_state();
+// Caches faucet account auth. A workaround to allow for synchronicity in the transaction flow.
+await webClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
+
+// Mint 10_000 tokens for the previously created wallet via a Private Note
+const newTxnResult = await webClient.new_mint_transaction(walletId, faucetId, "Private", 10_000)
+
+// Sync state again
+await webClient.sync_state();
 ```
 
 ## API Reference
@@ -176,3 +245,7 @@ constructor();
  */
 create_client(node_url?: string): Promise<any>;
 ```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
