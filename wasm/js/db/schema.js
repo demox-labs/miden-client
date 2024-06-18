@@ -3,7 +3,7 @@ import Dexie from "dexie";
 const DATABASE_NAME = 'MidenClientDB';
 
 export async function openDatabase() {
-  console.log('Opening database blah blah...')
+  console.log('Opening database...')
   try {
       await db.open();
       console.log("Database opened successfully");

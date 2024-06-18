@@ -16,12 +16,12 @@ interface Account {
   vault_root: string 
 }
 
-function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
+function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
 
   return (
     <div className="flex flex-col items-center">
       <div>
-        <p className="text-2xl font-bold">Accounts</p>
+        <p className="text-2xl font-bold">Faucets</p>
       </div>
       <table className="w-full table-auto border-collapse text-left">
         <thead>
@@ -42,12 +42,11 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
           }
         </tbody>
       </table>
-      {/* <button onClick={() => fetchAccounts()} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button> */}
     </div>
   )
 }
 
-export default function Accounts() {
+export default function Faucets() {
   const workerRef = useRef<Worker>()
   const [accountStorageType, setAccountStorageType] = useState('OffChain')
   const [accountMutable, setAccountMutable] = useState(true)
@@ -62,16 +61,13 @@ export default function Accounts() {
       workerRef.current.onmessage = function(event) {
         switch (event.data.type) {
           case "ready":
-            console.log('Worker is ready. Sending message...');
             workerRef.current?.postMessage(message);
             break;
           case "createAccount":
-            console.log('create account worker finished')
             workerRef.current?.postMessage({ type: "fetchAccounts" })
             setCreateAccountLoading(false)
             break;
           case "fetchAccounts":
-            console.log('fetch accounts worker finished', event.data.accounts)
             setFetchAccountsLoading(false)
             setAccounts(event.data.accounts)
             break;
@@ -96,8 +92,11 @@ export default function Accounts() {
   }, [])
 
   const fetchAccounts = () => {
+    console.log('fetching accounts')
     setFetchAccountsLoading(true)
 
+    console.log('sending fetchAccounts to worker')
+    console.log('workerRef', workerRef.current)
     workerRef.current?.postMessage("fetchAccounts")
   }
 
@@ -123,12 +122,12 @@ export default function Accounts() {
         </select>
         <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
       </div>
-      <AccountsTable accounts={accounts} isLoading={fetchAccountsLoading} fetchAccounts={fetchAccounts} />
+      <FaucetsTable accounts={accounts} isLoading={fetchAccountsLoading} />
     </div>
   )
 }
 
-Accounts.getLayout = function getLayout(page: ReactElement) {
+Faucets.getLayout = function getLayout(page: ReactElement) {
   return (
     <DashboardLayout contentClassName="flex items-center justify-center">
       {page}

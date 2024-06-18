@@ -7,20 +7,22 @@ postMessage({ type: "ready" });
 
 addEventListener('message', async (event) => {
   console.log('worker received message', event.data)
-  // const webClient = new WebClient();
-  // await webClient.create_client();
-  console.log()
-  switch (event.data) {
+  switch (event.data.type) {
+
     case "createAccount":
-      const accountId = await webClient.new_wallet("OffChain", true);
+      const params = event.data.params
+      console.log('creating account', params)
+      const accountId = await webClient.new_wallet(params.storageType, params.mutable);
       console.log('account created', accountId);
       postMessage({ type: "createAccount", accountId });
       break;
+
     case "fetchAccounts":
       const accounts = await webClient.get_accounts();
       console.log('accounts fetched', accounts);
       postMessage({ type: "fetchAccounts", accounts: accounts });
       break;
+
     default:
       console.log('invalid message:', event.data);
       postMessage({});

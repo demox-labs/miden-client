@@ -10,8 +10,8 @@ import { MenuItem } from "../../components/ui/collapsible-menu";
 
 const routes = {
   gettingStarted: '/',
-  greet: '/greet',
   accounts: '/accounts',
+  faucets: '/faucets',
   notes: '/notes',
   transactions: '/transactions'
 };
@@ -23,14 +23,14 @@ const menuItems = [
     href: routes.gettingStarted,
   },
   {
-    name: 'Greet',
-    icon: <ChevronForward />,
-    href: routes.greet,
-  },
-  {
     name: 'Accounts',
     icon: <ChevronForward />,
     href: routes.accounts,
+  },
+  {
+    name: 'Faucets',
+    icon: <ChevronForward />,
+    href: routes.faucets,
   },
   {
     name: 'Notes',
