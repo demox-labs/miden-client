@@ -10,6 +10,10 @@ pub struct SerializedAccountStub {
     vault_root: String,
     storage_root: String,
     code_root: String,
+    account_type: String,
+    is_faucet: bool,
+    is_regular_account: bool,
+    is_on_chain: bool,
 }
 
 #[wasm_bindgen]
@@ -19,14 +23,22 @@ impl SerializedAccountStub {
         nonce: String,
         vault_root: String,
         storage_root: String,
-        code_root: String
+        code_root: String,
+        account_type: String,
+        is_faucet: bool,
+        is_regular_account: bool,
+        is_on_chain: bool
     ) -> SerializedAccountStub {
         SerializedAccountStub {
             id,
             nonce,
             vault_root,
             storage_root,
-            code_root
+            code_root,
+            account_type,
+            is_faucet,
+            is_regular_account,
+            is_on_chain
         }
     }
 

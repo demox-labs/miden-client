@@ -57,6 +57,10 @@ impl WebClient {
                     account.vault_root().to_string(),
                     account.storage_root().to_string(),
                     account.code_root().to_string(),
+                    format!("{:?}", account.id().account_type()),
+                    account.id().is_faucet(),
+                    account.id().is_regular_account(),
+                    account.id().is_on_chain()
                 )
             }).collect();
 

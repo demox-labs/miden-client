@@ -50,9 +50,9 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
 
 export default function Accounts() {
   const workerRef = useRef<Worker>()
-  const [accountStorageType, setAccountStorageType] = useState('OffChain')
-  const [accountMutable, setAccountMutable] = useState(true)
-  const [createAccountLoading, setCreateAccountLoading] = useState(false)
+  const [walletStorageType, setWalletStorageType] = useState('OffChain')
+  const [walletMutable, setWalletMutable] = useState(true)
+  const [createWalletLoading, setCreateWalletLoading] = useState(false)
   const [fetchAccountsLoading, setFetchAccountsLoading] = useState(true)
   const [accounts, setAccounts] = useState<Account[]>([])
   
@@ -69,7 +69,7 @@ export default function Accounts() {
           case "createAccount":
             console.log('create account worker finished')
             workerRef.current?.postMessage({ type: "fetchAccounts" })
-            setCreateAccountLoading(false)
+            setCreateWalletLoading(false)
             break;
           case "fetchAccounts":
             console.log('fetch accounts worker finished', event.data.accounts)
@@ -96,16 +96,10 @@ export default function Accounts() {
     }
   }, [])
 
-  const fetchAccounts = () => {
-    setFetchAccountsLoading(true)
-
-    workerRef.current?.postMessage("fetchAccounts")
-  }
-
   async function createAccount() {
     try {
-      setCreateAccountLoading(true)
-      workerRef.current?.postMessage({ type: "createAccount", params: { storageType: accountStorageType, mutable: accountMutable } })
+      setCreateWalletLoading(true)
+      workerRef.current?.postMessage({ type: "createAccount", params: { storageType: walletStorageType, mutable: walletMutable } })
     } catch (error) {
       console.error('Failed to call create account:', error);
     }
@@ -117,22 +111,22 @@ export default function Accounts() {
         <div className="flex flex-col">
           <div className="flex items-center pb-2">
             <label className="text-sm mr-2 w-28">Storage Type:</label>
-            <select value={accountStorageType} onChange={(event) => setAccountStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
+            <select value={walletStorageType} onChange={(event) => setWalletStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
               <option value="OffChain">OffChain</option>
               <option value="OnChain">OnChain</option>
             </select>
           </div>
 
           <div className="flex items-center pb-2">
-            <label className="text-sm mr-2 w-28">Account Mutable:</label>
-            <select value={String(accountMutable)} onChange={(event) => setAccountMutable(event.target.value == 'true')} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
+            <label className="text-sm mr-2 w-28">Wallet Mutable:</label>
+            <select value={String(walletMutable)} onChange={(event) => setWalletMutable(event.target.value == 'true')} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
               <option value={'true'}>True</option>
               <option value={'false'}>False</option>
             </select>
           </div>
         </div>
         
-        <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
+        <button disabled={createWalletLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createWalletLoading ? <Loader variant='scaleUp' />  : 'Create wallet'}</button>
       </div>
       <AccountsTable accounts={accounts.filter((account) => account.is_regular_account)} isLoading={fetchAccountsLoading} />
     </div>

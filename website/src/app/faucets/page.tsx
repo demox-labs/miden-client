@@ -38,14 +38,6 @@ function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading:
   )
 }
 
-// { 
-//   storageType: "OffChain",
-//   nonFungible: false,
-//   tokenSymbol: "TOK",
-//   decimals: "6",
-//   maxSupply: "1000000"
-// } 
-
 export default function Faucets() {
   const workerRef = useRef<Worker>()
   const [faucetStorageType, setFaucetStorageType] = useState('OffChain')
@@ -55,7 +47,7 @@ export default function Faucets() {
   const [createAccountLoading, setCreateAccountLoading] = useState(false)
   const [fetchAccountsLoading, setFetchAccountsLoading] = useState(true)
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [recentFaucetId, setRecentFaucetId] = useState("");
+  const [recentFaucetId, setRecentFaucetId] = useState("")
   
   function createWorkerAndSendMessage(message: object) {
     return new Promise((resolve, reject) => {
@@ -94,20 +86,11 @@ export default function Faucets() {
       workerRef.current?.terminate();
     }
   }, [])
-
-  const fetchAccounts = () => {
-    console.log('fetching accounts')
-    setFetchAccountsLoading(true)
-
-    console.log('sending fetchAccounts to worker')
-    console.log('workerRef', workerRef.current)
-    workerRef.current?.postMessage("fetchAccounts")
-  }
   
   async function createFaucet() {
     try {
       setCreateAccountLoading(true)
-      workerRef.current?.postMessage({ 
+      workerRef.current?.postMessage({
         type: "createFaucet", 
         params: { 
           storageType: faucetStorageType,

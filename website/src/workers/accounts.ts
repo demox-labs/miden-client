@@ -35,6 +35,20 @@ addEventListener('message', async (event) => {
       postMessage({ type: "createFaucet", faucetId });
       break;
 
+    case "fetchInputNotes":
+      console.log('fetching input notes', params)
+      const inputNotes = await webClient.get_input_notes(params.noteFilter);
+      console.log('input notes fetched', inputNotes);
+      postMessage({ type: "fetchInputNotes", inputNotes: inputNotes });
+      break;
+
+    case "fetchOutputNotes":
+      console.log('fetching output notes', params)
+      const outputNotes = await webClient.get_output_notes(params.noteFilter);
+      console.log('output notes fetched', outputNotes);
+      postMessage({ type: "fetchOutputNotes", outputNotes: outputNotes });
+      break;
+
     default:
       console.log('invalid message:', event.data);
       postMessage({});

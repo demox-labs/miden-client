@@ -23,7 +23,7 @@ const menuItems = [
     href: routes.gettingStarted,
   },
   {
-    name: 'Accounts',
+    name: 'Wallets',
     icon: <ChevronForward />,
     href: routes.accounts,
   },
@@ -33,14 +33,14 @@ const menuItems = [
     href: routes.faucets,
   },
   {
-    name: 'Notes',
-    icon: <ChevronForward />,
-    href: routes.notes,
-  },
-  {
     name: 'Transactions',
     icon: <ChevronForward />,
     href: routes.transactions,
+  },
+  {
+    name: 'Notes',
+    icon: <ChevronForward />,
+    href: routes.notes,
   }
 ];
 

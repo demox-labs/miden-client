@@ -7,17 +7,6 @@ import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 import { useDrawer } from '@/components/drawer-views/context';
 import Sidebar from '@/layouts/dashboard/_sidebar';
 import React, { FC, useMemo } from 'react';
-// import { WalletMultiButton } from '@demox-labs/aleo-wallet-adapter-reactui';
-
-// require('@demox-labs/aleo-wallet-adapter-reactui/dist/styles.css');
-
-// function HeaderRightArea() {
-//   return (
-//     <div className="relative order-last flex shrink-0 items-center gap-3 sm:gap-6 lg:gap-8">
-//       <WalletMultiButton className="bg-[#1253fa]" />
-//     </div>
-//   );
-// }
 
 export function Header() {
   const { openDrawer } = useDrawer();
