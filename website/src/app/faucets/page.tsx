@@ -1,20 +1,12 @@
 'use client'
 
-// import { testNewRegularAccount } from '../../helpers/account-helpers';
-// import { useWasm } from '@/context/wasm-context';
 import DashboardLayout from '@/layouts/dashboard/_dashboard';
-import { ReactElement, use, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { ReactElement, useLayoutEffect, useRef } from 'react';
 
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
+import { Account } from '../accounts/page';
 
-interface Account {
-  id: number
-  nonce: string
-  code_root: string
-  storage_root: string
-  vault_root: string 
-}
 
 function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
 
@@ -46,13 +38,24 @@ function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading:
   )
 }
 
+// { 
+//   storageType: "OffChain",
+//   nonFungible: false,
+//   tokenSymbol: "TOK",
+//   decimals: "6",
+//   maxSupply: "1000000"
+// } 
+
 export default function Faucets() {
   const workerRef = useRef<Worker>()
-  const [accountStorageType, setAccountStorageType] = useState('OffChain')
-  const [accountMutable, setAccountMutable] = useState(true)
+  const [faucetStorageType, setFaucetStorageType] = useState('OffChain')
+  const [tokenSymbol, setTokenSymbol] = useState("TOK")
+  const [decimals, setDecimals] = useState("6")
+  const [maxSupply, setMaxSupply] = useState("1000000")
   const [createAccountLoading, setCreateAccountLoading] = useState(false)
   const [fetchAccountsLoading, setFetchAccountsLoading] = useState(true)
   const [accounts, setAccounts] = useState<Account[]>([])
+  const [recentFaucetId, setRecentFaucetId] = useState("");
   
   function createWorkerAndSendMessage(message: object) {
     return new Promise((resolve, reject) => {
@@ -63,8 +66,9 @@ export default function Faucets() {
           case "ready":
             workerRef.current?.postMessage(message);
             break;
-          case "createAccount":
+          case "createFaucet":
             workerRef.current?.postMessage({ type: "fetchAccounts" })
+            setRecentFaucetId(event.data.faucetId)
             setCreateAccountLoading(false)
             break;
           case "fetchAccounts":
@@ -99,30 +103,56 @@ export default function Faucets() {
     console.log('workerRef', workerRef.current)
     workerRef.current?.postMessage("fetchAccounts")
   }
-
-  async function createAccount() {
+  
+  async function createFaucet() {
     try {
       setCreateAccountLoading(true)
-      workerRef.current?.postMessage({ type: "createAccount", params: { storageType: accountStorageType, mutable: accountMutable } })
+      workerRef.current?.postMessage({ 
+        type: "createFaucet", 
+        params: { 
+          storageType: faucetStorageType,
+          nonFungible: false, // Only support fungible tokens for now
+          tokenSymbol: tokenSymbol,
+          decimals: decimals,
+          maxSupply: maxSupply
+        } 
+      })
     } catch (error) {
       console.error('Failed to call create account:', error);
     }
   }
-  
+
   return (
     <div className="flex min-h-screen flex-col items-center">
-      <div className="flex flex-row items-start pb-4">
-        <select value={accountStorageType} onChange={(event) => setAccountStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
-          <option value="OffChain">OffChain</option>
-          <option value="OnChain">OnChain</option>
-        </select>
-        <select value={String(accountMutable)} onChange={(event) => setAccountMutable(event.target.value == 'true')} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
-          <option value={'true'}>True</option>
-          <option value={'false'}>False</option>
-        </select>
-        <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
+      <div className="flex flex-row items-center pb-4">
+        <div className="flex flex-col">
+          <div className="flex items-center pb-2">
+            <label className="text-sm mr-2 w-28">Storage Type:</label>
+            <select value={faucetStorageType} onChange={(event) => setFaucetStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
+              <option value="OffChain">OffChain</option>
+              <option value="OnChain">OnChain</option>
+            </select>
+          </div>
+
+          <div className="flex items-center pb-2">
+            <label className="text-sm mr-2 w-28">Token Symbol:</label>
+            <input type="text" id="tokenSymbol" value={tokenSymbol} onChange={(e) => setTokenSymbol(e.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer" />
+          </div>
+
+          <div className="flex items-center pb-2">
+            <label className="text-sm mr-2 w-28">Decimals:</label>
+            <input type="text" id="tokenSymbol" value={decimals} onChange={(e) => setDecimals(e.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer" />
+          </div>
+
+          <div className="flex items-center">
+            <label className="text-sm mr-2 w-28">Max Supply:</label>
+            <input type="text" id="tokenSymbol" value={maxSupply} onChange={(e) => setMaxSupply(e.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer" />
+          </div>
+        </div>
+        
+        <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createFaucet()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create faucet'}</button>
       </div>
-      <FaucetsTable accounts={accounts} isLoading={fetchAccountsLoading} />
+      <FaucetsTable accounts={accounts.filter((account) => account.is_faucet)} isLoading={fetchAccountsLoading} />
     </div>
   )
 }

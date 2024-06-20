@@ -12,7 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@demox-labs/miden-sdk": "^.0.0.3",
+    "@demox-labs/miden-sdk": "file:../wasm/dist",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.13",
     "classnames": "^2.5.1",

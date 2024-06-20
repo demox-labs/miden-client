@@ -1,19 +1,21 @@
 'use client'
 
-// import { testNewRegularAccount } from '../../helpers/account-helpers';
-// import { useWasm } from '@/context/wasm-context';
 import DashboardLayout from '@/layouts/dashboard/_dashboard';
-import { ReactElement, use, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { ReactElement, useLayoutEffect, useRef } from 'react';
 
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
 
-interface Account {
+export interface Account {
   id: number
   nonce: string
-  code_root: string
-  storage_root: string
   vault_root: string 
+  storage_root: string
+  code_root: string
+  account_type: string,
+  is_faucet: boolean,
+  is_regular_account: boolean,
+  is_on_chain: boolean,  
 }
 
 function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
@@ -21,7 +23,7 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
   return (
     <div className="flex flex-col items-center">
       <div>
-        <p className="text-2xl font-bold">Accounts</p>
+        <p className="text-2xl font-bold">Wallets</p>
       </div>
       <table className="w-full table-auto border-collapse text-left">
         <thead>
@@ -42,7 +44,6 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
           }
         </tbody>
       </table>
-      {/* <button onClick={() => fetchAccounts()} className="bg-gray-700 text-white py-2 px-4 rounded-md">Fetch accounts</button> */}
     </div>
   )
 }
@@ -112,18 +113,28 @@ export default function Accounts() {
   
   return (
     <div className="flex min-h-screen flex-col items-center">
-      <div className="flex flex-row items-start pb-4">
-        <select value={accountStorageType} onChange={(event) => setAccountStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
-          <option value="OffChain">OffChain</option>
-          <option value="OnChain">OnChain</option>
-        </select>
-        <select value={String(accountMutable)} onChange={(event) => setAccountMutable(event.target.value == 'true')} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
-          <option value={'true'}>True</option>
-          <option value={'false'}>False</option>
-        </select>
+      <div className="flex flex-row items-center pb-4">
+        <div className="flex flex-col">
+          <div className="flex items-center pb-2">
+            <label className="text-sm mr-2 w-28">Storage Type:</label>
+            <select value={accountStorageType} onChange={(event) => setAccountStorageType(event.target.value)} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
+              <option value="OffChain">OffChain</option>
+              <option value="OnChain">OnChain</option>
+            </select>
+          </div>
+
+          <div className="flex items-center pb-2">
+            <label className="text-sm mr-2 w-28">Account Mutable:</label>
+            <select value={String(accountMutable)} onChange={(event) => setAccountMutable(event.target.value == 'true')} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 mr-4 cursor-pointer">
+              <option value={'true'}>True</option>
+              <option value={'false'}>False</option>
+            </select>
+          </div>
+        </div>
+        
         <button disabled={createAccountLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createAccountLoading ? <Loader variant='scaleUp' />  : 'Create account'}</button>
       </div>
-      <AccountsTable accounts={accounts} isLoading={fetchAccountsLoading} fetchAccounts={fetchAccounts} />
+      <AccountsTable accounts={accounts.filter((account) => account.is_regular_account)} isLoading={fetchAccountsLoading} />
     </div>
   )
 }
