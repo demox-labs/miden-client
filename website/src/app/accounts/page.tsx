@@ -66,8 +66,8 @@ export default function Accounts() {
             console.log('Worker is ready. Sending message...');
             workerRef.current?.postMessage(message);
             break;
-          case "createAccount":
-            console.log('create account worker finished')
+          case "createWallet":
+            console.log('create wallet worker finished')
             workerRef.current?.postMessage({ type: "fetchAccounts" })
             setCreateWalletLoading(false)
             break;
@@ -96,10 +96,10 @@ export default function Accounts() {
     }
   }, [])
 
-  async function createAccount() {
+  async function createWallet() {
     try {
       setCreateWalletLoading(true)
-      workerRef.current?.postMessage({ type: "createAccount", params: { storageType: walletStorageType, mutable: walletMutable } })
+      workerRef.current?.postMessage({ type: "createWallet", params: { storageType: walletStorageType, mutable: walletMutable } })
     } catch (error) {
       console.error('Failed to call create account:', error);
     }
@@ -126,7 +126,7 @@ export default function Accounts() {
           </div>
         </div>
         
-        <button disabled={createWalletLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createAccount()}>{ createWalletLoading ? <Loader variant='scaleUp' />  : 'Create wallet'}</button>
+        <button disabled={createWalletLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createWallet()}>{ createWalletLoading ? <Loader variant='scaleUp' />  : 'Create wallet'}</button>
       </div>
       <AccountsTable accounts={accounts.filter((account) => account.is_regular_account)} isLoading={fetchAccountsLoading} />
     </div>
