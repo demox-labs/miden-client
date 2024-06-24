@@ -1,6 +1,5 @@
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
-use serde::{Serialize, Deserialize};
-use serde_wasm_bindgen::to_value;
 
 #[wasm_bindgen]
 #[derive(Serialize, Deserialize)]
@@ -19,14 +18,14 @@ impl SerializedAccountStub {
         nonce: String,
         vault_root: String,
         storage_root: String,
-        code_root: String
+        code_root: String,
     ) -> SerializedAccountStub {
         SerializedAccountStub {
             id,
             nonce,
             vault_root,
             storage_root,
-            code_root
+            code_root,
         }
     }
 

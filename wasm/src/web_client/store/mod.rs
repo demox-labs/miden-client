@@ -1,40 +1,29 @@
 use std::collections::BTreeMap;
 
-use async_trait::async_trait;
+use miden_client::{
+    client::{
+        sync::StateSyncUpdate,
+        transactions::{TransactionRecord, TransactionResult},
+    },
+    errors::StoreError,
+    store::{
+        ChainMmrNodeFilter, InputNoteRecord, NoteFilter, OutputNoteRecord, Store, TransactionFilter,
+    },
+};
+use miden_objects::{
+    accounts::{Account, AccountId, AccountStub, AuthSecretKey},
+    crypto::merkle::{InOrderIndex, MmrPeaks},
+    notes::{NoteTag, Nullifier},
+    BlockHeader, Digest, Word,
+};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::*;
 
-use miden_objects::{
-    accounts::{Account, AccountId, AccountStub, AuthSecretKey}, 
-    crypto::merkle::{InOrderIndex, MmrPeaks}, 
-    notes::{NoteId, NoteInclusionProof, NoteTag}, 
-    transaction::TransactionId, 
-    BlockHeader, Digest, Word
-};
-use miden_client::{
-    errors::StoreError,
-    store::{ChainMmrNodeFilter, InputNoteRecord, NoteFilter, OutputNoteRecord, Store, TransactionFilter},
-    client::{
-        sync::StateSyncUpdate,
-        transactions::{TransactionRecord, TransactionResult}
-    }
-};
-
-// use crate::native_code::{
-//     errors::{ClientError, StoreError}, 
-//     store::{
-//         note_record::{InputNoteRecord, OutputNoteRecord}, 
-//         ChainMmrNodeFilter, NoteFilter, Store, TransactionFilter
-//     }, 
-//     sync::SyncedNewNotes, 
-//     transactions::{TransactionRecord, TransactionResult}
-// }; 
-
 pub mod accounts;
-pub mod notes;
-pub mod transactions;
-pub mod sync;
 pub mod chain_data;
+pub mod notes;
+pub mod sync;
+pub mod transactions;
 
 // Initialize IndexedDB
 #[wasm_bindgen(module = "/js/db/schema.js")]
@@ -47,46 +36,32 @@ pub struct WebStore {}
 
 impl WebStore {
     pub async fn new() -> Result<WebStore, ()> {
-        JsFuture::from(setup_indexed_db()).await;
+        let _ = JsFuture::from(setup_indexed_db()).await;
         Ok(WebStore {})
     }
 }
 
-// #[async_trait(?Send)]
 impl Store for WebStore {
     // SYNC
     // --------------------------------------------------------------------------------------------
 
-    async fn get_note_tags(
-        &self
-    ) -> Result<Vec<NoteTag>, StoreError> {
+    async fn get_note_tags(&self) -> Result<Vec<NoteTag>, StoreError> {
         self.get_note_tags().await
     }
 
-    async fn add_note_tag(
-        &self,
-        tag: NoteTag,
-    ) -> Result<bool, StoreError> {
+    async fn add_note_tag(&self, tag: NoteTag) -> Result<bool, StoreError> {
         self.add_note_tag(tag).await
     }
 
-    async fn remove_note_tag(
-        &self, 
-        tag: NoteTag
-    ) -> Result<bool, StoreError> {
+    async fn remove_note_tag(&self, tag: NoteTag) -> Result<bool, StoreError> {
         self.remove_note_tag(tag).await
     }
 
-    async fn get_sync_height(
-        &self
-    ) -> Result<u32, StoreError> {
+    async fn get_sync_height(&self) -> Result<u32, StoreError> {
         self.get_sync_height().await
     }
 
-    async fn apply_state_sync(
-        &self,
-        state_sync_update: StateSyncUpdate,
-    ) -> Result<(), StoreError> {
+    async fn apply_state_sync(&self, state_sync_update: StateSyncUpdate) -> Result<(), StoreError> {
         self.apply_state_sync(state_sync_update).await
     }
 
@@ -100,10 +75,7 @@ impl Store for WebStore {
         self.get_transactions(transaction_filter).await
     }
 
-    async fn apply_transaction(
-        &self,
-        tx_result: TransactionResult,
-    ) -> Result<(), StoreError> {
+    async fn apply_transaction(&self, tx_result: TransactionResult) -> Result<(), StoreError> {
         self.apply_transaction(tx_result).await
     }
 
@@ -124,10 +96,7 @@ impl Store for WebStore {
         self.get_output_notes(note_filter).await
     }
 
-    async fn insert_input_note(
-        &self,
-        note: &InputNoteRecord,
-    ) -> Result<(), StoreError> {
+    async fn insert_input_note(&self, note: &InputNoteRecord) -> Result<(), StoreError> {
         self.insert_input_note(note).await
     }
 
@@ -150,9 +119,7 @@ impl Store for WebStore {
         self.get_block_headers(block_numbers).await
     }
 
-    async fn get_tracked_block_headers(
-        &self
-    ) -> Result<Vec<BlockHeader>, StoreError> {
+    async fn get_tracked_block_headers(&self) -> Result<Vec<BlockHeader>, StoreError> {
         self.get_tracked_block_headers().await
     }
 
@@ -164,15 +131,15 @@ impl Store for WebStore {
     }
 
     async fn insert_chain_mmr_nodes(
-        &self, 
-        nodes: &[(InOrderIndex, Digest)]
+        &self,
+        nodes: &[(InOrderIndex, Digest)],
     ) -> Result<(), StoreError> {
         self.insert_chain_mmr_nodes(nodes).await
     }
 
     async fn get_chain_mmr_peaks_by_block_num(
-        &self, 
-        block_num: u32
+        &self,
+        block_num: u32,
     ) -> Result<MmrPeaks, StoreError> {
         self.get_chain_mmr_peaks_by_block_num(block_num).await
     }
@@ -189,15 +156,11 @@ impl Store for WebStore {
         self.insert_account(account, account_seed, auth_info).await
     }
 
-    async fn get_account_ids(
-        &self
-    ) -> Result<Vec<AccountId>, StoreError> {
+    async fn get_account_ids(&self) -> Result<Vec<AccountId>, StoreError> {
         self.get_account_ids().await
     }
 
-    async fn get_account_stubs(
-        &self
-    ) -> Result<Vec<(AccountStub, Option<Word>)>, StoreError> {
+    async fn get_account_stubs(&self) -> Result<Vec<(AccountStub, Option<Word>)>, StoreError> {
         self.get_account_stubs().await
     }
 
@@ -215,17 +178,15 @@ impl Store for WebStore {
         self.get_account(account_id).await
     }
 
-    async fn get_account_auth(
-        &self,
-        account_id: AccountId,
-    ) -> Result<AuthSecretKey, StoreError> {
+    async fn get_account_auth(&self, account_id: AccountId) -> Result<AuthSecretKey, StoreError> {
         self.get_account_auth(account_id).await
     }
 
-    fn get_account_auth_by_pub_key(
-        &self, 
-        pub_key: Word
-    ) -> Result<AuthSecretKey, StoreError> {
+    fn get_account_auth_by_pub_key(&self, pub_key: Word) -> Result<AuthSecretKey, StoreError> {
         self.get_account_auth_by_pub_key(pub_key)
+    }
+
+    async fn get_unspent_input_note_nullifiers(&self) -> Result<Vec<Nullifier>, StoreError> {
+        self.get_unspent_input_note_nullifiers().await
     }
 }

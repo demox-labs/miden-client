@@ -1,19 +1,15 @@
-use miden_objects::{accounts::Account, assembly::AstSerdeOptions, transaction::ToNullifier, Digest};
+use miden_client::{client::transactions::TransactionResult, errors::StoreError};
+use miden_objects::{
+    accounts::Account, assembly::AstSerdeOptions, transaction::ToInputNoteCommitments, Digest,
+};
 use miden_tx::utils::Serializable;
 use wasm_bindgen_futures::*;
 
-use miden_client::{
-    client::transactions::TransactionResult,
-    errors::StoreError
-};
-// use crate::native_code::{errors::StoreError, transactions::TransactionResult};
-
-use crate::web_client::store::accounts::utils::{
-    insert_account_asset_vault, 
-    insert_account_storage, 
-    insert_account_record
-};
 use super::js_bindings::*;
+// use crate::native_code::{errors::StoreError, transactions::TransactionResult};
+use crate::web_client::store::accounts::utils::{
+    insert_account_asset_vault, insert_account_record, insert_account_storage,
+};
 
 // TYPES
 // ================================================================================================
@@ -35,7 +31,7 @@ type SerializedTransactionData = (
 // ================================================================================================
 
 pub async fn insert_proven_transaction_data(
-    transaction_result: TransactionResult
+    transaction_result: TransactionResult,
 ) -> Result<(), StoreError> {
     let (
         transaction_id,
@@ -48,7 +44,7 @@ pub async fn insert_proven_transaction_data(
         script_hash,
         script_inputs,
         block_num,
-        committed
+        committed,
     ) = serialize_transaction_data(transaction_result)?;
 
     if let Some(hash) = script_hash.clone() {
@@ -66,7 +62,7 @@ pub async fn insert_proven_transaction_data(
         script_hash.clone(),
         script_inputs.clone(),
         block_num,
-        committed
+        committed,
     );
     JsFuture::from(promise).await.unwrap();
 
@@ -74,7 +70,7 @@ pub async fn insert_proven_transaction_data(
 }
 
 pub(super) fn serialize_transaction_data(
-    transaction_result: TransactionResult
+    transaction_result: TransactionResult,
 ) -> Result<SerializedTransactionData, StoreError> {
     let executed_transaction = transaction_result.executed_transaction();
     let transaction_id: String = executed_transaction.id().inner().into();
@@ -102,9 +98,8 @@ pub(super) fn serialize_transaction_data(
     let mut script_inputs = None;
 
     if let Some(tx_script) = transaction_args.tx_script() {
-        script_program = Some(tx_script.code().to_bytes(AstSerdeOptions {
-            serialize_imports: true,
-        }));
+        script_program =
+            Some(tx_script.code().to_bytes(AstSerdeOptions { serialize_imports: true }));
         script_hash = Some(tx_script.hash().to_bytes());
         script_inputs = Some(
             serde_json::to_string(&tx_script.inputs())
@@ -127,10 +122,8 @@ pub(super) fn serialize_transaction_data(
     ))
 }
 
-pub async fn update_account(
-    new_account_state: &Account,
-) -> Result<(), ()> {
-    insert_account_storage(new_account_state.storage()).await;
-    insert_account_asset_vault(new_account_state.vault()).await;
+pub async fn update_account(new_account_state: &Account) -> Result<(), ()> {
+    let _ = insert_account_storage(new_account_state.storage()).await;
+    let _ = insert_account_asset_vault(new_account_state.vault()).await;
     insert_account_record(new_account_state, None).await
 }

@@ -17,9 +17,7 @@ extern "C" {
     // ================================================================================================
 
     #[wasm_bindgen(js_name = addNoteTag)]
-    pub fn idxdb_add_note_tag(
-        tags: String
-    ) -> js_sys::Promise;
+    pub fn idxdb_add_note_tag(tags: String) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = applyStateSync)]
     pub fn idxdb_apply_state_sync(

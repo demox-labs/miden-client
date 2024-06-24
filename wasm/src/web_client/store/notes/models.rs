@@ -1,6 +1,5 @@
-use base64::{decode as base64_decode, DecodeError};
-use serde::{Deserialize, Deserializer, Serialize};
-use serde::de::{Error, Unexpected};
+use base64::decode as base64_decode;
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct InputNoteIdxdbObject {
@@ -14,6 +13,9 @@ pub struct InputNoteIdxdbObject {
     #[serde(deserialize_with = "base64_to_vec_u8_required", default)]
     pub serialized_note_script: Vec<u8>,
     pub consumer_account_id: Option<String>,
+    pub created_at: String,
+    pub submitted_at: Option<String>,
+    pub nullifier_height: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -27,7 +29,10 @@ pub struct OutputNoteIdxdbObject {
     pub inclusion_proof: Option<String>,
     #[serde(deserialize_with = "base64_to_vec_u8_optional", default)]
     pub serialized_note_script: Option<Vec<u8>>,
-    pub consumer_account_id: Option<String>
+    pub consumer_account_id: Option<String>,
+    pub created_at: String,
+    pub submitted_at: Option<String>,
+    pub nullifier_height: Option<String>,
 }
 
 fn base64_to_vec_u8_required<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>

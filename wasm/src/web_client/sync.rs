@@ -4,10 +4,7 @@ use super::WebClient;
 
 #[wasm_bindgen]
 impl WebClient {
-    pub async fn sync_state(
-        &mut self
-    ) -> Result<JsValue, JsValue> {
-        web_sys::console::log_1(&JsValue::from_str("sync_state called"));
+    pub async fn sync_state(&mut self) -> Result<JsValue, JsValue> {
         if let Some(client) = self.get_mut_inner() {
             let sync_summary = client.sync_state().await.unwrap();
 

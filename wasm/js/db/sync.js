@@ -80,7 +80,7 @@ export async function applyStateSync(
 ) {
     return db.transaction('rw', stateSync, inputNotes, outputNotes, transactions, blockHeaders, chainMmrNodes, async (tx) => {
         await updateSyncHeight(tx, blockNum);
-        await updateSpentNotes(tx, nullifiers);
+        await updateSpentNotes(tx, blockNum, nullifiers);
         await updateBlockHeader(tx, blockNum, blockHeader, chainMmrPeaks, hasClientNotes);
         await updateChainMmrNodes(tx, nodeIndices, nodes);
         await updateCommittedNotes(tx, outputNoteIds, outputNoteInclusionProofs, inputNoteIds, inputNoteInluclusionProofs, inputeNoteMetadatas);
@@ -102,6 +102,7 @@ async function updateSyncHeight(
 
 async function updateSpentNotes(
     tx,
+    blockNum,
     nullifiers
 ) {
     try {
@@ -119,7 +120,7 @@ async function updateSpentNotes(
         for (const note of parsedInputNotes) {
             if (nullifiers.includes(note.details.nullifier)) {
                 // If the nullifier is in the list, update the note's status
-                await tx.inputNotes.update(note.noteId, { status: 'Consumed' });
+                await tx.inputNotes.update(note.noteId, { status: 'Consumed', nullifierHeight: blockNum });
             }
         }
 
@@ -133,7 +134,7 @@ async function updateSpentNotes(
         for (const note of parsedOutputNotes) {
             if (nullifiers.includes(note.details.nullifier)) {
                 // If the nullifier is in the list, update the note's status
-                await tx.outputNotes.update(note.noteId, { status: 'Consumed' });
+                await tx.outputNotes.update(note.noteId, { status: 'Consumed', nullifierHeight: blockNum });
             }
         }
 

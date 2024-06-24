@@ -1,5 +1,4 @@
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsValue;
+use wasm_bindgen::{prelude::*, JsValue};
 
 #[wasm_bindgen]
 pub struct NewTransactionResult {
@@ -9,14 +8,8 @@ pub struct NewTransactionResult {
 
 #[wasm_bindgen]
 impl NewTransactionResult {
-    pub fn new(
-        transaction_id: String, 
-        created_note_ids: Vec<String>
-    ) -> NewTransactionResult {
-        NewTransactionResult {
-            transaction_id,
-            created_note_ids
-        }
+    pub fn new(transaction_id: String, created_note_ids: Vec<String>) -> NewTransactionResult {
+        NewTransactionResult { transaction_id, created_note_ids }
     }
 
     #[wasm_bindgen(getter)]
@@ -26,7 +19,7 @@ impl NewTransactionResult {
 
     #[wasm_bindgen(getter)]
     pub fn created_note_ids(&self) -> JsValue {
-        JsValue::from_serde(&self.created_note_ids).unwrap()
+        serde_wasm_bindgen::to_value(&self.created_note_ids).unwrap()
     }
 }
 
@@ -41,7 +34,7 @@ pub struct NewSwapTransactionResult {
 #[wasm_bindgen]
 impl NewSwapTransactionResult {
     pub fn new(
-        transaction_id: String, 
+        transaction_id: String,
         expected_output_note_ids: Vec<String>,
         expected_partial_note_ids: Vec<String>,
         payback_note_tag: Option<String>,
@@ -50,11 +43,11 @@ impl NewSwapTransactionResult {
             transaction_id,
             expected_output_note_ids,
             expected_partial_note_ids,
-            payback_note_tag: payback_note_tag.unwrap_or_else(|| "".to_string()), // Use default value if None
+            payback_note_tag: payback_note_tag.unwrap_or_default(),
         }
     }
 
-    pub fn setNoteTag(&mut self, payback_note_tag: String) {
+    pub fn set_note_tag(&mut self, payback_note_tag: String) {
         self.payback_note_tag = payback_note_tag
     }
 
@@ -65,12 +58,12 @@ impl NewSwapTransactionResult {
 
     #[wasm_bindgen(getter)]
     pub fn expected_output_note_ids(&self) -> JsValue {
-        JsValue::from_serde(&self.expected_output_note_ids).unwrap()
+        serde_wasm_bindgen::to_value(&self.expected_output_note_ids).unwrap()
     }
 
     #[wasm_bindgen(getter)]
     pub fn expected_partial_note_ids(&self) -> JsValue {
-        JsValue::from_serde(&self.expected_partial_note_ids).unwrap()
+        serde_wasm_bindgen::to_value(&self.expected_partial_note_ids).unwrap()
     }
 
     #[wasm_bindgen(getter)]

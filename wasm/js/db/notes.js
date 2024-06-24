@@ -89,7 +89,10 @@ export async function getOutputNotesFromIds(
 
 export async function getUnspentInputNoteNullifiers() {
     try {
-        const notes = await db.InputNotes.where('status').equals('Committed').toArray();
+        const notes = await db.InputNotes
+            .where('status')
+            .anyOf(['Committed', 'Processing'])
+            .toArray();
         const nullifiers = notes.map(note => JSON.parse(note.details).nullifier);
 
         return nullifiers;
@@ -108,7 +111,8 @@ export async function insertInputNote(
     details,
     noteScriptHash,
     serializedNoteScript,
-    inclusionProof
+    inclusionProof,
+    serializedCreatedAt
 ) {
     return db.transaction('rw', inputNotes, notesScripts, async (tx) => {
         try {
@@ -123,7 +127,8 @@ export async function insertInputNote(
                 metadata: metadata ? metadata : null,
                 details: details,
                 inclusionProof: inclusionProof ? JSON.stringify(inclusionProof) : null,
-                consumerTransactionId: null
+                consumerTransactionId: null,
+                createdAt: serializedCreatedAt
             };
 
             // Perform the insert using Dexie
@@ -153,7 +158,8 @@ export async function insertOutputNote(
     details,
     noteScriptHash,
     serializedNoteScript,
-    inclusionProof
+    inclusionProof,
+    serializedCreatedAt
 ) {
     console.log("insertOutputNote");
     console.log("noteId: ", noteId);
@@ -171,7 +177,8 @@ export async function insertOutputNote(
                 metadata: metadata,
                 details: details ? details : null,
                 inclusionProof: inclusionProof ? JSON.stringify(inclusionProof) : null,
-                consumerTransactionId: null
+                consumerTransactionId: null,
+                createdAt: serializedCreatedAt
             };
 
             // Perform the insert using Dexie
@@ -197,7 +204,7 @@ export async function insertOutputNote(
     });
 }
 
-export async function updateNoteConsumerTxId(noteId, consumerTxId) {
+export async function updateNoteConsumerTxId(noteId, consumerTxId, submittedAt) {
     try {
         // Start a transaction that covers both tables
         await db.transaction('rw', inputNotes, outputNotes, async (tx) => {
@@ -205,13 +212,13 @@ export async function updateNoteConsumerTxId(noteId, consumerTxId) {
             const updatedInputNotes = await tx.inputNotes
                 .where('noteId')
                 .equals(noteId)
-                .modify({ consumerTransactionId: consumerTxId });
+                .modify({ consumerTransactionId: consumerTxId, submittedAt: submittedAt, status: "Processing" });
 
             // Update output_notes where note_id matches
             const updatedOutputNotes = await tx.outputNotes
                 .where('noteId')
                 .equals(noteId)
-                .modify({ consumerTransactionId: consumerTxId });
+                .modify({ consumerTransactionId: consumerTxId, submittedAt: submittedAt, status: "Processing" });
 
             // Log the count of updated entries in both tables (optional)
             console.log(`Updated ${updatedInputNotes} input notes and ${updatedOutputNotes} output notes`);
@@ -266,7 +273,10 @@ async function processInputNotes(
             metadata: note.metadata ? note.metadata : null,
             inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
             serialized_note_script: serializedNoteScriptBase64,
-            consumer_account_id: consumerAccountId
+            consumer_account_id: consumerAccountId,
+            created_at: note.createdAt,
+            submitted_at: note.submittedAt ? note.submittedAt : null,
+            nullifier_height: note.nullifierHeight ? note.nullifierHeight : null
         };
     }));
     console.log("processedNotes: ", processedNotes);

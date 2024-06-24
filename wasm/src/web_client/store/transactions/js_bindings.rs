@@ -7,14 +7,12 @@ extern "C" {
     // ================================================================================================
 
     #[wasm_bindgen(js_name = getTransactions)]
-    pub fn idxdb_get_transactions(
-        filter: String
-    ) -> js_sys::Promise;
+    pub fn idxdb_get_transactions(filter: String) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = insertTransactionScript)]
     pub fn idxdb_insert_transaction_script(
         script_hash: Vec<u8>,
-        script_program: Option<Vec<u8>>
+        script_program: Option<Vec<u8>>,
     ) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = insertProvenTransactionData)]
@@ -28,12 +26,12 @@ extern "C" {
         script_hash: Option<Vec<u8>>,
         script_inputs: Option<String>,
         block_num: String,
-        committed: Option<String>
+        committed: Option<String>,
     ) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = markTransactionsAsCommitted)]
     pub fn idxdb_mark_transactions_as_committed(
         block_num: String,
-        transaction_ids: Vec<String>
+        transaction_ids: Vec<String>,
     ) -> js_sys::Promise;
 }

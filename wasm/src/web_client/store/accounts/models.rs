@@ -1,6 +1,5 @@
-use base64::{decode as base64_decode, DecodeError};
-use serde::{Deserialize, Deserializer, Serialize};
-use serde::de::{Error, Unexpected};
+use base64::decode as base64_decode;
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct AccountCodeIdxdbObject {

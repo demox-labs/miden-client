@@ -12,29 +12,42 @@ crate-type = ["cdylib"]
 concurrent = ["miden-lib/concurrent", "miden-objects/concurrent", "miden-tx/concurrent"]
 default = ["std"]
 std = ["miden-objects/std"]
-testing = ["miden-objects/testing", "miden-lib/testing"]
+testing = ["miden-client/testing", "miden-objects/testing", "miden-lib/testing"]
 test_utils = ["miden-objects/testing"]
 
 [dependencies]
-async-trait = "0.1"
 base64 = "0.13"
+chrono = { version = "0.4", optional = false }
 futures = "0.3"
 getrandom = { version = "0.2", features = ["js"] }
 hex = { version = "0.4" }
-miden-client = { path = "../../demox-miden-client-next", version = "0.3.0", default-features = false, features = ["wasm", "async"] }
-miden-lib = { version = "0.3.1", default-features = false, features = ["testing"] }
-miden-tx = { version = "0.3.1", default-features = false, features = ["async"] }
-miden-objects = { version = "0.3.1", default-features = false, features = ["std", "serde", "testing"] }
+# miden-client = { package = "miden-client", git = "https://github.com/0xPolygonMiden/miden-client.git", branch = "next", features = ["async"]}
+miden-client = { path = "../../demox-miden-client-next", features = ["async"] }
+miden-lib = { path = "../../demox-miden-base/miden-lib", default-features = false }
+miden-tx = { path = "../../demox-miden-base/miden-tx", default-features = false }
+miden-objects = { path = "../../demox-miden-base/objects", default-features = false, features = ["serde"] }
+# miden-lib = { package = "miden-lib", git = "https://github.com/0xPolygonMiden/miden-base.git", branch = "next", default-features = false }
+# miden-tx = { package = "miden-tx", git = "https://github.com/0xPolygonMiden/miden-base.git", branch = "next", default-features = false }
+# miden-objects = { package = "miden-objects", git = "https://github.com/0xPolygonMiden/miden-base.git", branch = "next", default-features = false, features = ["serde"] }
+# miden-client = { path = "../../demox-miden-client-next", version = "0.3.0", default-features = false, features = ["wasm", "async"] }
+# miden-lib = { version = "0.3.1", default-features = false, features = ["testing"] }
+# miden-tx = { version = "0.3.1", default-features = false, features = ["async"] }
+# miden-objects = { version = "0.3.1", default-features = false, features = ["std", "serde", "testing"] }
 prost = { version = "0.12.3" }
 rand = { version = "0.8.5" }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = { version = "1.0", features = ["raw_value"] }
 serde-wasm-bindgen = "0.6.5"
 tonic = { version="0.11.0", default-features = false, features=["prost","codegen"] }
 tonic-web-wasm-client = "0.5"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["console"] }
+console_error_panic_hook = "0.1.6"
+# winter-utils = { path = "../../winterfell/utils/core" }
+
+# [patch.crates-io]
+# winter-utils = { path = "../../winterfell/utils/core" }
 
 [build-dependencies]
 tonic-build = { version="0.11.0", default-features = false, features = ["prost"]}

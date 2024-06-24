@@ -1,54 +1,45 @@
-use wasm_bindgen_futures::*;
-use wasm_bindgen::prelude::*;
-use web_sys::console;
-
+use miden_client::errors::StoreError;
 use miden_objects::{
-    accounts::{Account, AccountCode, AccountId, AccountStorage, AccountStub, AuthSecretKey}, 
-    assembly::AstSerdeOptions, 
-    assets::{Asset, AssetVault}, 
+    accounts::{Account, AccountCode, AccountId, AccountStorage, AccountStub, AuthSecretKey},
+    assembly::AstSerdeOptions,
+    assets::{Asset, AssetVault},
     utils::Deserializable,
-    Felt, Digest, Word
+    Digest, Felt, Word,
 };
 use miden_tx::utils::Serializable;
-use miden_client::errors::StoreError;
+use wasm_bindgen_futures::*;
 
-use super::js_bindings::*;
-use super::models::*;
+use super::{js_bindings::*, models::*};
 
-pub async fn insert_account_code(
-    account_code: &AccountCode
-) -> Result<(), ()> {
+pub async fn insert_account_code(account_code: &AccountCode) -> Result<(), ()> {
     let root = account_code.root().to_string();
     let procedures = serde_json::to_string(account_code.procedures()).unwrap();
     let module = account_code.module().to_bytes(AstSerdeOptions { serialize_imports: true });
 
     let promise = idxdb_insert_account_code(root, procedures, module);
-    let js_value = JsFuture::from(promise).await;
-    
+    let _ = JsFuture::from(promise).await;
+
     Ok(())
 }
 
-pub async fn insert_account_storage(
-    account_storage: &AccountStorage
-) -> Result<(), ()> {
+pub async fn insert_account_storage(account_storage: &AccountStorage) -> Result<(), ()> {
     let root = account_storage.root().to_string();
+
     let storage = account_storage.to_bytes();
 
     let promise = idxdb_insert_account_storage(root, storage);
-    let js_value = JsFuture::from(promise).await;
+    let _ = JsFuture::from(promise).await;
 
     Ok(())
 }
 
-pub async fn insert_account_asset_vault(
-    asset_vault: &AssetVault
-) -> Result<(), ()> {
+pub async fn insert_account_asset_vault(asset_vault: &AssetVault) -> Result<(), ()> {
     let root = serde_json::to_string(&asset_vault.commitment()).unwrap();
     let assets: Vec<Asset> = asset_vault.assets().collect();
     let assets_as_str = serde_json::to_string(&assets).unwrap();
 
     let promise = idxdb_insert_account_asset_vault(root, assets_as_str);
-    let js_value = JsFuture::from(promise).await;
+    let _ = JsFuture::from(promise).await;
     Ok(())
 }
 
@@ -65,8 +56,8 @@ pub async fn insert_account_auth(
     let auth_info = auth_info.to_bytes();
 
     let promise = idxdb_insert_account_auth(account_id_str, auth_info, pub_key);
-    let js_value = JsFuture::from(promise).await;
-    
+    let _ = JsFuture::from(promise).await;
+
     Ok(())
 }
 
@@ -91,22 +82,29 @@ pub async fn insert_account_record(
         committed,
         account_seed,
     );
-    let js_value = JsFuture::from(promise).await;
-    
+    let _ = JsFuture::from(promise).await;
+
     Ok(())
 }
 
 pub fn parse_account_record_idxdb_object(
-    account_stub_idxdb: AccountRecordIdxdbOjbect
+    account_stub_idxdb: AccountRecordIdxdbOjbect,
 ) -> Result<(AccountStub, Option<Word>), StoreError> {
     let native_account_id: AccountId = AccountId::from_hex(&account_stub_idxdb.id).unwrap();
-    let native_nonce: u64 = account_stub_idxdb.nonce.parse::<u64>().map_err(|err| StoreError::ParsingError(err.to_string()))?;
-    let account_seed = account_stub_idxdb.account_seed.map(|seed| Word::read_from_bytes(&seed)).transpose()?;
-    
+    let native_nonce: u64 = account_stub_idxdb
+        .nonce
+        .parse::<u64>()
+        .map_err(|err| StoreError::ParsingError(err.to_string()))?;
+    let account_seed = account_stub_idxdb
+        .account_seed
+        .map(|seed| Word::read_from_bytes(&seed))
+        .transpose()?;
+
     let account_stub = AccountStub::new(
         native_account_id,
         Felt::new(native_nonce),
-        serde_json::from_str(&account_stub_idxdb.vault_root).map_err(StoreError::InputSerializationError)?,
+        serde_json::from_str(&account_stub_idxdb.vault_root)
+            .map_err(StoreError::InputSerializationError)?,
         Digest::try_from(&account_stub_idxdb.storage_root)?,
         Digest::try_from(&account_stub_idxdb.code_root)?,
     );

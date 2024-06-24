@@ -1,6 +1,5 @@
-use base64::{decode as base64_decode, DecodeError};
-use serde::{Deserialize, Deserializer, Serialize};
-use serde::de::{Error, Unexpected};
+use base64::decode as base64_decode;
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct TransactionIdxdbObject {
@@ -16,8 +15,8 @@ pub struct TransactionIdxdbObject {
     #[serde(deserialize_with = "base64_to_vec_u8_optional", default)]
     pub script_program: Option<Vec<u8>>,
     pub script_inputs: Option<String>,
-    pub block_num: String, // usually u32
-    pub commit_height: Option<String> // usually Option<u32>
+    pub block_num: String,             // usually u32
+    pub commit_height: Option<String>, // usually Option<u32>
 }
 
 fn base64_to_vec_u8_required<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>

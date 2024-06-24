@@ -1,6 +1,6 @@
+use miden_client::errors::{ConversionError, MissingFieldHelper};
 use miden_objects::BlockHeader;
 
-use miden_client::errors::{ConversionError, MissingFieldHelper};
 use crate::web_client::rpc::client_grpc::block_header;
 
 // BLOCK HEADER
@@ -16,7 +16,7 @@ impl From<&BlockHeader> for block_header::BlockHeader {
             account_root: Some(header.account_root().into()),
             nullifier_root: Some(header.nullifier_root().into()),
             note_root: Some(header.note_root().into()),
-            batch_root: Some(header.batch_root().into()),
+            tx_hash: Some(header.tx_hash().into()),
             proof_hash: Some(header.proof_hash().into()),
             timestamp: header.timestamp(),
         }
@@ -65,8 +65,8 @@ impl TryFrom<block_header::BlockHeader> for BlockHeader {
                 .ok_or(block_header::BlockHeader::missing_field(stringify!(note_root)))?
                 .try_into()?,
             value
-                .batch_root
-                .ok_or(block_header::BlockHeader::missing_field(stringify!(batch_root)))?
+                .tx_hash
+                .ok_or(block_header::BlockHeader::missing_field(stringify!(tx_hash)))?
                 .try_into()?,
             value
                 .proof_hash

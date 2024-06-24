@@ -1,38 +1,42 @@
+use chrono::Utc;
+use miden_client::{
+    errors::StoreError,
+    store::{
+        note_record::{
+            NOTE_STATUS_COMMITTED, NOTE_STATUS_CONSUMED, NOTE_STATUS_EXPECTED,
+            NOTE_STATUS_PROCESSING,
+        },
+        InputNoteRecord, NoteRecordDetails, NoteStatus, OutputNoteRecord,
+    },
+};
 use miden_objects::{
     accounts::AccountId,
     notes::{NoteAssets, NoteId, NoteInclusionProof, NoteMetadata, NoteScript},
     transaction::TransactionId,
     utils::Deserializable,
-    Digest
+    Digest,
 };
-use miden_tx::utils::Serializable;
+use miden_tx::utils::{DeserializationError, Serializable};
+use wasm_bindgen::*;
 use wasm_bindgen_futures::*;
 
-use miden_client::{
-    store::{NoteStatus, NoteRecordDetails, InputNoteRecord, OutputNoteRecord},
-    errors::StoreError
-};
-// use crate::native_code::{errors::StoreError, store::note_record::{InputNoteRecord, NoteStatus, OutputNoteRecord}};
-
-use crate::web_client::store::notes::{InputNoteIdxdbObject, OutputNoteIdxdbObject};
 use super::js_bindings::*;
-
-use wasm_bindgen::*;
-use web_sys::console;
+use crate::web_client::store::notes::{InputNoteIdxdbObject, OutputNoteIdxdbObject};
 
 // TYPES
 // ================================================================================================
 
 type SerializedInputNoteData = (
-    String, 
-    Vec<u8>, 
-    String, 
-    String, 
-    Option<String>, 
-    String, 
     String,
     Vec<u8>,
-    Option<String>
+    String,
+    String,
+    Option<String>,
+    String,
+    String,
+    Vec<u8>,
+    Option<String>,
+    String,
 );
 
 type SerializedOutputNoteData = (
@@ -45,6 +49,7 @@ type SerializedOutputNoteData = (
     Option<String>,
     Option<Vec<u8>>,
     Option<String>,
+    String,
 );
 
 // ================================================================================================
@@ -55,15 +60,20 @@ pub(crate) async fn update_note_consumer_tx_id(
 ) -> Result<(), StoreError> {
     let serialized_note_id = note_id.inner().to_string();
     let serialized_consumer_tx_id = consumer_tx_id.to_string();
+    let serialized_submitted_at = Utc::now().timestamp().to_string();
 
-    let promise = idxdb_update_note_consumer_tx_id(serialized_note_id, serialized_consumer_tx_id);
-    let result = JsFuture::from(promise).await.unwrap();
+    let promise = idxdb_update_note_consumer_tx_id(
+        serialized_note_id,
+        serialized_consumer_tx_id,
+        serialized_submitted_at,
+    );
+    JsFuture::from(promise).await.unwrap();
 
     Ok(())
 }
 
 pub(crate) fn serialize_input_note(
-    note: &InputNoteRecord
+    note: &InputNoteRecord,
 ) -> Result<SerializedInputNoteData, StoreError> {
     let note_id = note.id().inner().to_string();
     let note_assets = note.assets().to_bytes();
@@ -84,15 +94,11 @@ pub(crate) fn serialize_input_note(
             )?)
             .map_err(StoreError::InputSerializationError)?;
 
-            let status = serde_json::to_string(&NoteStatus::Committed)
-                .map_err(StoreError::InputSerializationError)?
-                .replace('\"', "");
+            let status = NOTE_STATUS_COMMITTED.to_string();
             (Some(inclusion_proof), status)
         },
         None => {
-            let status = serde_json::to_string(&NoteStatus::Pending)
-                .map_err(StoreError::InputSerializationError)?
-                .replace('\"', "");
+            let status = NOTE_STATUS_EXPECTED.to_string();
 
             (None, status)
         },
@@ -109,6 +115,7 @@ pub(crate) fn serialize_input_note(
         serde_json::to_string(&note.details()).map_err(StoreError::InputSerializationError)?;
     let note_script_hash = note.details().script_hash().to_hex();
     let serialized_note_script = note.details().script().to_bytes();
+    let serialized_created_at = Utc::now().timestamp().to_string();
 
     Ok((
         note_id,
@@ -120,22 +127,22 @@ pub(crate) fn serialize_input_note(
         note_script_hash,
         serialized_note_script,
         inclusion_proof,
+        serialized_created_at,
     ))
 }
 
-pub async fn insert_input_note_tx(
-    note: &InputNoteRecord
-) -> Result<(), StoreError> {
+pub async fn insert_input_note_tx(note: &InputNoteRecord) -> Result<(), StoreError> {
     let (
-        note_id, 
-        assets, 
-        recipient, 
-        status, 
-        metadata, 
-        details, 
+        note_id,
+        assets,
+        recipient,
+        status,
+        metadata,
+        details,
         note_script_hash,
         serialized_note_script,
-        inclusion_proof
+        inclusion_proof,
+        serialized_created_at,
     ) = serialize_input_note(note)?;
 
     let promise = idxdb_insert_input_note(
@@ -147,7 +154,8 @@ pub async fn insert_input_note_tx(
         details,
         note_script_hash,
         serialized_note_script,
-        inclusion_proof
+        inclusion_proof,
+        serialized_created_at,
     );
     JsFuture::from(promise).await.unwrap();
 
@@ -175,16 +183,12 @@ pub(crate) fn serialize_output_note(
             )?)
             .map_err(StoreError::InputSerializationError)?;
 
-            let status = serde_json::to_string(&NoteStatus::Committed)
-                .map_err(StoreError::InputSerializationError)?
-                .replace('\"', "");
+            let status = NOTE_STATUS_COMMITTED.to_string();
 
             (Some(inclusion_proof), status)
         },
         None => {
-            let status = serde_json::to_string(&NoteStatus::Pending)
-                .map_err(StoreError::InputSerializationError)?
-                .replace('\"', "");
+            let status = NOTE_STATUS_EXPECTED.to_string();
 
             (None, status)
         },
@@ -201,6 +205,7 @@ pub(crate) fn serialize_output_note(
     };
     let note_script_hash = note.details().map(|details| details.script_hash().to_hex());
     let serialized_note_script = note.details().map(|details| details.script().to_bytes());
+    let serialized_created_at = Utc::now().timestamp().to_string();
 
     Ok((
         note_id,
@@ -212,22 +217,22 @@ pub(crate) fn serialize_output_note(
         note_script_hash,
         serialized_note_script,
         inclusion_proof,
+        serialized_created_at,
     ))
 }
 
-pub async fn insert_output_note_tx(
-    note: &OutputNoteRecord
-) -> Result<(), StoreError> {
+pub async fn insert_output_note_tx(note: &OutputNoteRecord) -> Result<(), StoreError> {
     let (
-        note_id, 
-        assets, 
+        note_id,
+        assets,
         recipient,
-        status, 
-        metadata, 
+        status,
+        metadata,
         details,
         note_script_hash,
-        serialized_note_script, 
-        inclusion_proof
+        serialized_note_script,
+        inclusion_proof,
+        serialized_created_at,
     ) = serialize_output_note(note)?;
 
     let result = JsFuture::from(idxdb_insert_output_note(
@@ -239,8 +244,10 @@ pub async fn insert_output_note_tx(
         details,
         note_script_hash,
         serialized_note_script,
-        inclusion_proof
-    )).await; 
+        inclusion_proof,
+        serialized_created_at,
+    ))
+    .await;
     match result {
         Ok(_) => Ok(()),
         Err(_) => Err(StoreError::QueryError("Failed to insert output note".to_string())),
@@ -248,12 +255,12 @@ pub async fn insert_output_note_tx(
 }
 
 pub fn parse_input_note_idxdb_object(
-    note_idxdb: InputNoteIdxdbObject
+    note_idxdb: InputNoteIdxdbObject,
 ) -> Result<InputNoteRecord, StoreError> {
     // Merge the info that comes from the input notes table and the notes script table
     let note_script = NoteScript::read_from_bytes(&note_idxdb.serialized_note_script)?;
-    let note_details: NoteRecordDetails =
-        serde_json::from_str(&note_idxdb.details).map_err(StoreError::JsonDataDeserializationError)?;
+    let note_details: NoteRecordDetails = serde_json::from_str(&note_idxdb.details)
+        .map_err(StoreError::JsonDataDeserializationError)?;
     let note_details = NoteRecordDetails::new(
         note_details.nullifier().to_string(),
         note_script,
@@ -261,14 +268,15 @@ pub fn parse_input_note_idxdb_object(
         note_details.serial_num(),
     );
 
-    let note_metadata: Option<NoteMetadata> = if let Some(metadata_as_json_str) = note_idxdb.metadata {
-        Some(
-            serde_json::from_str(&metadata_as_json_str)
-                .map_err(StoreError::JsonDataDeserializationError)?,
-        )
-    } else {
-        None
-    };
+    let note_metadata: Option<NoteMetadata> =
+        if let Some(metadata_as_json_str) = note_idxdb.metadata {
+            Some(
+                serde_json::from_str(&metadata_as_json_str)
+                    .map_err(StoreError::JsonDataDeserializationError)?,
+            )
+        } else {
+            None
+        };
 
     let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
 
@@ -285,11 +293,41 @@ pub fn parse_input_note_idxdb_object(
 
     let recipient = Digest::try_from(note_idxdb.recipient)?;
     let id = NoteId::new(recipient, note_assets.commitment());
-    let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
-        .map_err(StoreError::JsonDataDeserializationError)?;
     let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
         Some(account_id) => Some(AccountId::from_hex(&account_id)?),
         None => None,
+    };
+    let created_at = note_idxdb.created_at.parse::<u64>().expect("Failed to parse created_at");
+    let submitted_at: Option<u64> = note_idxdb
+        .submitted_at
+        .map(|submitted_at| submitted_at.parse::<u64>().expect("Failed to parse submitted_at"));
+    let nullifier_height: Option<u64> = note_idxdb.nullifier_height.map(|nullifier_height| {
+        nullifier_height.parse::<u64>().expect("Failed to parse nullifier_height")
+    });
+
+    // If the note is committed and has a consumer account id, then it was consumed locally but the client is not synced with the chain
+    let status = match note_idxdb.status.as_str() {
+        NOTE_STATUS_EXPECTED => NoteStatus::Expected { created_at },
+        NOTE_STATUS_COMMITTED => NoteStatus::Committed {
+            block_height: inclusion_proof
+                .clone()
+                .map(|proof| proof.origin().block_num as u64)
+                .expect("Committed note should have inclusion proof"),
+        },
+        NOTE_STATUS_PROCESSING => NoteStatus::Processing {
+            consumer_account_id: consumer_account_id
+                .expect("Processing note should have consumer account id"),
+            submitted_at: submitted_at.expect("REASON"),
+        },
+        NOTE_STATUS_CONSUMED => NoteStatus::Consumed {
+            consumer_account_id,
+            block_height: nullifier_height.expect("REASON"),
+        },
+        _ => {
+            return Err(StoreError::DataDeserializationError(DeserializationError::InvalidValue(
+                format!("NoteStatus: {}", note_idxdb.status),
+            )))
+        },
     };
 
     Ok(InputNoteRecord::new(
@@ -300,41 +338,42 @@ pub fn parse_input_note_idxdb_object(
         note_metadata,
         inclusion_proof,
         note_details,
-        consumer_account_id
     ))
 }
 
 pub fn parse_output_note_idxdb_object(
-    note_idxdb: OutputNoteIdxdbObject
+    note_idxdb: OutputNoteIdxdbObject,
 ) -> Result<OutputNoteRecord, StoreError> {
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object called"));
-    let note_details: Option<NoteRecordDetails> = if let Some(details_as_json_str) = note_idxdb.details {
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 1"));
-        // Merge the info that comes from the input notes table and the notes script table
-        let serialized_note_script = note_idxdb.serialized_note_script
-            .expect("Has note details so it should have the serialized script");
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 2"));
-        let note_script = NoteScript::read_from_bytes(&serialized_note_script)?;
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 3"));
-        let note_details: NoteRecordDetails = serde_json::from_str(&details_as_json_str)
-            .map_err(StoreError::JsonDataDeserializationError)?;
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 4"));
-        let note_details = NoteRecordDetails::new(
-            note_details.nullifier().to_string(),
-            note_script,
-            note_details.inputs().clone(),
-            note_details.serial_num(),
-        );
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 5"));
+    let note_details: Option<NoteRecordDetails> =
+        if let Some(details_as_json_str) = note_idxdb.details {
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 1"));
+            // Merge the info that comes from the input notes table and the notes script table
+            let serialized_note_script = note_idxdb
+                .serialized_note_script
+                .expect("Has note details so it should have the serialized script");
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 2"));
+            let note_script = NoteScript::read_from_bytes(&serialized_note_script)?;
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 3"));
+            let note_details: NoteRecordDetails = serde_json::from_str(&details_as_json_str)
+                .map_err(StoreError::JsonDataDeserializationError)?;
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 4"));
+            let note_details = NoteRecordDetails::new(
+                note_details.nullifier().to_string(),
+                note_script,
+                note_details.inputs().clone(),
+                note_details.serial_num(),
+            );
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 5"));
 
-        Some(note_details)
-    } else {
-        web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 6"));
-        None
-    };
+            Some(note_details)
+        } else {
+            web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 6"));
+            None
+        };
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 7"));
-    let note_metadata: NoteMetadata =
-        serde_json::from_str(&note_idxdb.metadata).map_err(StoreError::JsonDataDeserializationError)?;
+    let note_metadata: NoteMetadata = serde_json::from_str(&note_idxdb.metadata)
+        .map_err(StoreError::JsonDataDeserializationError)?;
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 8"));
 
     let note_assets = NoteAssets::read_from_bytes(&note_idxdb.assets)?;
@@ -356,8 +395,6 @@ pub fn parse_output_note_idxdb_object(
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 11"));
     let id = NoteId::new(recipient, note_assets.commitment());
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 12"));
-    let status: NoteStatus = serde_json::from_str(&format!("\"{0}\"", note_idxdb.status))
-        .map_err(StoreError::JsonDataDeserializationError)?;
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 13"));
 
     let consumer_account_id: Option<AccountId> = match note_idxdb.consumer_account_id {
@@ -365,6 +402,38 @@ pub fn parse_output_note_idxdb_object(
         None => None,
     };
     web_sys::console::log_1(&JsValue::from_str("parse_output_note_idxdb_object 14"));
+    let created_at = note_idxdb.created_at.parse::<u64>().expect("Failed to parse created_at");
+    let submitted_at: Option<u64> = note_idxdb
+        .submitted_at
+        .map(|submitted_at| submitted_at.parse::<u64>().expect("Failed to parse submitted_at"));
+    let nullifier_height: Option<u64> = note_idxdb.nullifier_height.map(|nullifier_height| {
+        nullifier_height.parse::<u64>().expect("Failed to parse nullifier_height")
+    });
+
+    // If the note is committed and has a consumer account id, then it was consumed locally but the client is not synced with the chain
+    let status = match note_idxdb.status.as_str() {
+        NOTE_STATUS_EXPECTED => NoteStatus::Expected { created_at },
+        NOTE_STATUS_COMMITTED => NoteStatus::Committed {
+            block_height: inclusion_proof
+                .clone()
+                .map(|proof| proof.origin().block_num as u64)
+                .expect("Committed note should have inclusion proof"),
+        },
+        NOTE_STATUS_PROCESSING => NoteStatus::Processing {
+            consumer_account_id: consumer_account_id
+                .expect("Processing note should have consumer account id"),
+            submitted_at: submitted_at.expect("Processing note should have submition timestamp"),
+        },
+        NOTE_STATUS_CONSUMED => NoteStatus::Consumed {
+            consumer_account_id,
+            block_height: nullifier_height.expect("Consumed note should have nullifier height"),
+        },
+        _ => {
+            return Err(StoreError::DataDeserializationError(DeserializationError::InvalidValue(
+                format!("NoteStatus: {}", note_idxdb.status),
+            )))
+        },
+    };
 
     Ok(OutputNoteRecord::new(
         id,
@@ -374,6 +443,5 @@ pub fn parse_output_note_idxdb_object(
         note_metadata,
         inclusion_proof,
         note_details,
-        consumer_account_id,
     ))
 }
