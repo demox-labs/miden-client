@@ -1,4 +1,5 @@
 import { WebClient } from "@demox-labs/miden-sdk";
+import { resolve } from "path";
 
 console.log('Worker is setting up...');
 const webClient = new WebClient();
@@ -72,6 +73,27 @@ addEventListener('message', async (event) => {
       const result = await webClient.import_account(params.accountAsBytes);
       console.log('account imported', result);
       postMessage({ type: "importAccount", result });
+      break;
+
+    case "mintTransaction":
+      console.log('doing a mint transaction', params)
+      await webClient.sync_state();
+      await webClient.fetch_and_cache_account_auth_by_pub_key(params.faucetId);
+      const mintResult = await webClient.new_mint_transaction(params.walletId, params.faucetId, params.noteType, params.amount);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await webClient.sync_state();
+      postMessage({ type: "mintTransaction", mintResult: { transactionId: mintResult.transaction_id, createdNoteIds: mintResult.created_note_ids } });
+      break;
+  
+    case "consumeTransaction":
+      console.log('doing a consume transaction', params)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await webClient.sync_state();
+      await webClient.fetch_and_cache_account_auth_by_pub_key(params.targetAccountId);
+      const consumeResult = await webClient.new_consume_transaction(params.targetAccountId, params.noteIds);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await webClient.sync_state();
+      postMessage({ type: "consumeTransaction", consumeResult: { transactionId: consumeResult.transaction_id, createdNoteIds: consumeResult.created_note_ids } });
       break;
 
     default:

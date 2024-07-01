@@ -7,7 +7,7 @@ import { useState } from 'react'
 import Loader from '@/components/ui/loader';
 
 export interface Account {
-  id: number
+  id: string
   nonce: string
   vault_root: string 
   storage_root: string
