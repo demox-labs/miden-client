@@ -1,5 +1,4 @@
 import { WebClient } from "@demox-labs/miden-sdk";
-import { resolve } from "path";
 
 console.log('Worker is setting up...');
 const webClient = new WebClient();
@@ -23,7 +22,7 @@ addEventListener('message', async (event) => {
         params.storageType, 
         params.nonFungible, 
         params.tokenSymbol, 
-        params.decimals, 
+        params.decimals,
         params.maxSupply
       );
       console.log('faucet created', faucetId);
@@ -82,9 +81,56 @@ addEventListener('message', async (event) => {
       const mintResult = await webClient.new_mint_transaction(params.walletId, params.faucetId, params.noteType, params.amount);
       await new Promise(resolve => setTimeout(resolve, 2000));
       await webClient.sync_state();
-      postMessage({ type: "mintTransaction", mintResult: { transactionId: mintResult.transaction_id, createdNoteIds: mintResult.created_note_ids } });
+      postMessage({ 
+        type: "mintTransaction", 
+        mintResult: { transactionId: mintResult.transaction_id, createdNoteIds: mintResult.created_note_ids }
+      });
+      break;
+
+    case "sendTransaction":
+      console.log('doing a send transaction', params)
+      await webClient.sync_state();
+      await webClient.fetch_and_cache_account_auth_by_pub_key(params.senderAccountId);
+      const sendResult = await webClient.new_send_transaction(
+        params.senderAccountId,
+        params.targetAccountId,
+        params.faucetId,
+        params.noteType,
+        params.amount,
+        params.recallHeight
+      );
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await webClient.sync_state();
+      postMessage({ type: "sendTransaction", sendResult: { transactionId: sendResult.transaction_id, createdNoteIds: sendResult.created_note_ids } });
       break;
   
+    case "swapTransaction":
+      console.log('doing a swap transaction', params)
+      await webClient.sync_state();
+      await webClient.fetch_and_cache_account_auth_by_pub_key(params.walletA);
+      const swapResult = await webClient.new_swap_transaction(
+        params.walletA,
+        params.faucetA,
+        params.amountOfA,
+        params.faucetB,
+        params.amountOfB,
+        params.noteType
+      );
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await webClient.sync_state();
+
+      await webClient.add_tag(swapResult.payback_note_tag)
+      await new Promise(resolve => setTimeout(resolve, 10000));
+      await webClient.sync_state();
+
+      postMessage({ type: "swapTransaction", swapResult: { 
+        transactionId: swapResult.transaction_id, 
+        expectedOutputNoteIds: swapResult.expected_output_note_ids,
+        expectedPartialNoteIds: swapResult.expected_partial_note_ids,
+        paybackNoteTag: swapResult.payback_note_tag 
+      } });
+      break;
+
     case "consumeTransaction":
       console.log('doing a consume transaction', params)
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -93,7 +139,11 @@ addEventListener('message', async (event) => {
       const consumeResult = await webClient.new_consume_transaction(params.targetAccountId, params.noteIds);
       await new Promise(resolve => setTimeout(resolve, 2000));
       await webClient.sync_state();
-      postMessage({ type: "consumeTransaction", consumeResult: { transactionId: consumeResult.transaction_id, createdNoteIds: consumeResult.created_note_ids } });
+      postMessage({ 
+        type: "consumeTransaction", 
+        consumeResult: { transactionId: consumeResult.transaction_id, createdNoteIds: consumeResult.created_note_ids },
+        consumeType: params.consumeType
+      });
       break;
 
     default:
