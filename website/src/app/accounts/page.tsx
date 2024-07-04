@@ -1,10 +1,12 @@
 'use client'
 
 import DashboardLayout from '@/layouts/dashboard/_dashboard';
-import { ReactElement, useLayoutEffect, useRef } from 'react';
+import { MutableRefObject, ReactElement, useLayoutEffect, useRef } from 'react';
 
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
+import { SerializedAccount } from '@demox-labs/miden-sdk';
+import Link from 'next/link';
 
 export interface Account {
   id: string
@@ -18,7 +20,11 @@ export interface Account {
   is_on_chain: boolean,  
 }
 
-function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
+function AccountsTable({ accounts, isLoading, worker }: { accounts: Account[], isLoading: boolean, worker: MutableRefObject<Worker | undefined> }) {
+
+  const getAccount = (accountId: string) => {
+    worker.current?.postMessage({ type: "getAccount", params: { accountId } })
+  }
 
   return (
     <div className="flex flex-col items-center">
@@ -36,8 +42,17 @@ function AccountsTable({ accounts, isLoading }: { accounts: Account[], isLoading
           {isLoading 
             ? <tr><td colSpan={2} className="px-4 py-4 border-b border-gray-200 text-center"><div className="flex justify-center items-center"><Loader /></div></td></tr>
             : accounts.map((account) => (
-              <tr key={account.id}>
-                <td className="px-4 py-2 border-b border-gray-200">{account.id}</td>
+              <tr key={account.id} className="pointer" onClick={() => { getAccount(account.id) }}>
+                <td className="px-4 py-2 border-b border-gray-200">
+                  <Link
+                    href={{
+                      pathname: `/accounts/${account.id}`,
+                    }}
+                    as={`/accounts/${account.id}`}
+                  >
+                    {account.id}
+                  </Link>
+                </td>
                 <td className="px-4 py-2 border-b border-gray-200">{account.nonce}</td>
               </tr>
             ))
@@ -75,6 +90,10 @@ export default function Accounts() {
             console.log('fetch accounts worker finished', event.data.accounts)
             setFetchAccountsLoading(false)
             setAccounts(event.data.accounts)
+            break;
+          case "getAccount":
+            const account = event.data.account as SerializedAccount
+            console.log('get account worker finished', account)
             break;
           default:
             console.log('invalid message:', event.data);
@@ -128,7 +147,10 @@ export default function Accounts() {
         
         <button disabled={createWalletLoading} className="text-sm bg-gray-700 text-white rounded-md h-10 w-32 flex items-center justify-center" onClick={() => createWallet()}>{ createWalletLoading ? <Loader variant='scaleUp' />  : 'Create wallet'}</button>
       </div>
-      <AccountsTable accounts={accounts.filter((account) => account.is_regular_account)} isLoading={fetchAccountsLoading} />
+      <AccountsTable
+        accounts={accounts.filter((account) => account.is_regular_account)}
+        isLoading={fetchAccountsLoading}
+        worker={workerRef} />
     </div>
   )
 }

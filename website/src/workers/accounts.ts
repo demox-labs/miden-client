@@ -1,3 +1,4 @@
+import { JSSerializedAccount } from "@/app/accounts/[accountId]/page";
 import { WebClient } from "@demox-labs/miden-sdk";
 
 console.log('Worker is setting up...');
@@ -54,6 +55,13 @@ addEventListener('message', async (event) => {
       const transactions = await webClient.get_transactions();
       console.log('transactions fetched', transactions);
       postMessage({ type: "fetchTransactions", transactions: transactions });
+      break;
+
+    case "getAccount":
+      console.log('getting account', params)
+      const account = await webClient.get_account(params.accountId);
+      console.log('account fetched', account);
+      postMessage({ type: "getAccount", account: new JSSerializedAccount(account) });
       break;
 
     case "importNote":
@@ -148,7 +156,7 @@ addEventListener('message', async (event) => {
 
     default:
       console.log('invalid message:', event.data);
-      postMessage({});
+      postMessage({ type: 'invalid' });
       break;
   }
 })

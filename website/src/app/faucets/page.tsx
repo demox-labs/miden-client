@@ -6,6 +6,7 @@ import { ReactElement, useLayoutEffect, useRef } from 'react';
 import { useState } from 'react'
 import Loader from '@/components/ui/loader';
 import { Account } from '../accounts/page';
+import Link from 'next/link';
 
 
 function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading: boolean }) {
@@ -27,7 +28,16 @@ function FaucetsTable({ accounts, isLoading }: { accounts: Account[], isLoading:
             ? <tr><td colSpan={2} className="px-4 py-4 border-b border-gray-200 text-center"><div className="flex justify-center items-center"><Loader /></div></td></tr>
             : accounts.map((account) => (
               <tr key={account.id}>
-                <td className="px-4 py-2 border-b border-gray-200">{account.id}</td>
+                <td className="px-4 py-2 border-b border-gray-200">
+                  <Link
+                    href={{
+                      pathname: `/accounts/${account.id}`,
+                    }}
+                    as={`/accounts/${account.id}`}
+                  >
+                    {account.id}
+                  </Link>
+                </td>
                 <td className="px-4 py-2 border-b border-gray-200">{account.nonce}</td>
               </tr>
             ))

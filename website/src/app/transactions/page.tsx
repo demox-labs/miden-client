@@ -51,6 +51,8 @@ interface SwapTransactionProps {
   swapLoading: boolean,
   setSwapLoading: React.Dispatch<React.SetStateAction<boolean>>,
   swappedTransaction: SwapTransactionResult | null,
+  swapANotes: string[] | null,
+  swapBNotes: string[] | null,
   consumeALoading: boolean,
   setConsumeALoading: React.Dispatch<React.SetStateAction<boolean>>,
   consumeBLoading: boolean,
@@ -282,17 +284,17 @@ function SwapTransaction(props: SwapTransactionProps) {
           setConsumeLoading={props.setConsumeBLoading}
           worker={props.worker}
           transactionId={props.swappedTransaction?.transactionId}
-          consumeParams={props.swappedTransaction ? { targetAccountId: walletB, listOfNotes: props.swappedTransaction?.expectedOutputNoteIds } : null }
+          consumeParams={props.swapBNotes ? { targetAccountId: walletB, listOfNotes: props.swapBNotes } : null }
           consumeTitle="Consume Note for Wallet B"
           consumeType='swapB' />
       </div>
       <div className="flex place-content-center mb-2 mt-12">
         <ConsumeTransaction
-          consumeLoading={props.consumeALoading} 
+          consumeLoading={props.consumeALoading}
           setConsumeLoading={props.setConsumeALoading}
           worker={props.worker}
           transactionId={props.swappedTransaction?.transactionId}
-          consumeParams={props.swappedTransaction ? { targetAccountId: walletA, listOfNotes: props.swappedTransaction?.expectedPartialNoteIds } : null }
+          consumeParams={props.swapANotes ? { targetAccountId: walletA, listOfNotes: props.swapANotes } : null }
           consumeTitle="Consume Note for Wallet A"
           consumeType='swapA' />
       </div>
@@ -347,8 +349,8 @@ export default function Transactions() {
   const [sendConsumeLoading, setSendConsumeLoading] = useState(false)
   const [swapAConsumeLoading, setSwapAConsumeLoading] = useState(false)
   const [swapBConsumeLoading, setSwapBConsumeLoading] = useState(false)
-  const [swapAConsumed, setSwapAConsumed] = useState(false)
-  const [swapBConsumed, setSwapBConsumed] = useState(false)
+  const [swapANotes, setSwapANotes] = useState<string[] | null>(null)
+  const [swapBNotes, setSwapBNotes] = useState<string[] | null>(null)
 
   function createWorkerAndFetchTransactions() {
     return new Promise((resolve, reject) => {
@@ -386,9 +388,10 @@ export default function Transactions() {
           case "swapTransaction":
             console.log('swap transaction worker finished', event.data)
             setSwapLoading(false)
-            setSwapAConsumed(false)
-            setSwapBConsumed(false)
-            setSwappedTransaction(event.data.swapResult as SwapTransactionResult)
+            const swapResult = event.data.swapResult as SwapTransactionResult
+            setSwappedTransaction(swapResult)
+            setSwapANotes(swapResult.expectedPartialNoteIds)
+            setSwapBNotes(swapResult.expectedOutputNoteIds)
             workerRef.current?.postMessage({ type: "fetchTransactions" })
             break;
           case "consumeTransaction":
@@ -397,17 +400,13 @@ export default function Transactions() {
             if (event.data.consumeType == "mint") setMintedTransacton(null)
             if (event.data.consumeType == "send") setSentTransaction(null)
             if (event.data.consumeType == "swapA") {
-              console.log("swapA consumed")
-              setSwapAConsumed(true)
               setSwapAConsumeLoading(false)
+              setSwapANotes(null)
             }
             if (event.data.consumeType == "swapB") {
-              console.log("swapB consumed")
-              setSwapBConsumed(true)
               setSwapBConsumeLoading(false)
+              setSwapBNotes(null)
             }
-            if (event.data.consumeType == "swapA" && swapBConsumed) setSwappedTransaction(null)
-            if (event.data.consumeType == "swapB" && swapAConsumed) setSwappedTransaction(null)
             workerRef.current?.postMessage({ type: "fetchTransactions" })
             break;
           default:
@@ -457,6 +456,8 @@ export default function Transactions() {
         swapLoading={swapLoading}
         setSwapLoading={setSwapLoading}
         swappedTransaction={swappedTransaction}
+        swapANotes={swapANotes}
+        swapBNotes={swapBNotes}
         consumeALoading={swapAConsumeLoading}
         setConsumeALoading={setSwapAConsumeLoading} 
         consumeBLoading={swapBConsumeLoading}
