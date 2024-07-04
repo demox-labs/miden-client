@@ -1,13 +1,17 @@
 use super::WebClient;
 use crate::web_client::models::accounts::SerializedAccountStub;
+use crate::web_client::models::accounts::AssetInfo;
+use crate::web_client::models::accounts::SerializedAccount;
 
 use base64::encode;
-use miden_objects::{accounts::{AccountData, AccountId}, assets::TokenSymbol, notes::NoteId};
+use miden_objects::{accounts::{AccountData, AccountId}, assets::{self, Asset, TokenSymbol}, notes::NoteId};
 use miden_tx::utils::{Deserializable, Serializable};
 
 use miden_client::client::accounts;
 use miden_client::client::rpc::NodeRpcClient;
 use miden_client::store::Store;
+
+use miden_objects::accounts::AccountStub;
 
 use serde::{Serialize, Deserialize};
 use serde_wasm_bindgen::from_value;
@@ -49,7 +53,6 @@ impl WebClient {
         console_error_panic_hook::set_once();
         if let Some(client) = self.get_mut_inner() {
             let account_tuples = client.get_account_stubs().await.unwrap();
-            web_sys::console::log_1(&format!("account_tuples {:?}", account_tuples).into());
             let accounts: Vec<SerializedAccountStub> = account_tuples.into_iter().map(|(account, _)| {
                 SerializedAccountStub::new(
                     account.id().to_string(),
@@ -76,15 +79,42 @@ impl WebClient {
     pub async fn get_account(
         &mut self,
         account_id: String
-    ) -> Result<JsValue, JsValue> {
+    ) -> Result<SerializedAccount, JsValue> {
         web_sys::console::log_1(&JsValue::from_str("get_account called"));
         if let Some(client) = self.get_mut_inner() {
             let native_account_id = AccountId::from_hex(&account_id).unwrap();
 
             let result = client.get_account(native_account_id).await.unwrap();
+            let asset_infos: Vec<AssetInfo> = result.0.vault().assets().map(|asset| {
+              match asset {
+                assets::Asset::Fungible(fungible) => AssetInfo::new(
+                  asset.is_fungible(),
+                  fungible.amount().to_string(),
+                  asset.faucet_id().to_string(),
+                ),
+                assets::Asset::NonFungible(non_fungible) => AssetInfo::new(
+                  asset.is_fungible(),
+                  "0".to_string(),
+                  asset.faucet_id().to_string(),
+                )
+              }
+            }).collect();
+            let account_stub: AccountStub = (&result.0).into();
 
-            serde_wasm_bindgen::to_value(&result.0.id().to_string())
-                .map_err(|e| JsValue::from_str(&e.to_string()))
+            Ok(SerializedAccount::new(
+                result.0.id().to_string(),
+                result.0.nonce().to_string(),
+                account_stub.vault_root().to_string(),
+                account_stub.storage_root().to_string(),
+                account_stub.code_root().to_string(),
+                format!("{:?}", result.0.id().account_type()),
+                result.0.id().is_faucet(),
+                result.0.id().is_regular_account(),
+                result.0.id().is_on_chain(),
+                asset_infos
+            ))
+            // serde_wasm_bindgen::to_value(&result.0.id().to_string())
+            //     .map_err(|e| JsValue::from_str(&e.to_string()))
         } else {
             Err(JsValue::from_str("Client not initialized"))
         }
