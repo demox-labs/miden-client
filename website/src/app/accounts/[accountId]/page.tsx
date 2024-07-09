@@ -96,28 +96,30 @@ const AccountDetailsPage = ({ params }: { params: { accountId: string } }) => {
 
   return (
     <div className="flex min-h-screen flex-col items-center">
-      <h1 className="text-2xl font-bold mb-8">Account Details for account {params.accountId}</h1>
       <div>
-        <p>Nonce: {account.nonce}</p>
-        <p>Vault root: {account.vault_root}</p>
-        <p>Storage root: {account.storage_root}</p>
-        <p>Code root: {account.code_root}</p>
-        <p>Account Type: {account.account_type}</p>
-        <p>Is Faucet?: {account.is_faucet.toString()}</p>
-        <p>Is regaular account?: {account.is_regular_account.toString()}</p>
-        <p>Is on chain?: {account.is_on_chain.toString()}</p>
-      </div>
+        <h1 className="text-2xl font-bold mb-8">Account Details for account {params.accountId}</h1>
+        <div>
+          <p>Nonce: {account.nonce}</p>
+          <p>Vault root: {account.vault_root}</p>
+          <p>Storage root: {account.storage_root}</p>
+          <p>Code root: {account.code_root}</p>
+          <p>Account Type: {account.account_type}</p>
+          <p>Is Faucet?: {account.is_faucet.toString()}</p>
+          <p>Is regaular account?: {account.is_regular_account.toString()}</p>
+          <p>Is on chain?: {account.is_on_chain.toString()}</p>
+        </div>
 
-      <h1 className="text-2xl font-bold my-8">Assets:</h1>
-      <div>
-      {account.assets.map((asset, idx) =>
-        <div key={asset.faucet_id} className="mb-6">
-          <p>Asset {idx}</p>
-          <p>Asset faucet Id: {asset.faucet_id}</p>
-          <p>Asset amount: {asset.amount}</p>
-          <p>Asset is fungible: {asset.is_fungible.toString()}</p>
-        </div>)
-      }
+        <h1 className="text-2xl font-bold my-8">Assets:</h1>
+        <div>
+        {account.assets.map((asset, idx) =>
+          <div key={asset.faucet_id} className="mb-6">
+            <p>Asset {idx}</p>
+            <p>Asset faucet Id: {asset.faucet_id}</p>
+            <p>Asset amount: {asset.amount}</p>
+            <p>Asset is fungible: {asset.is_fungible.toString()}</p>
+          </div>)
+        }
+        </div>
       </div>
     </div>
   );
