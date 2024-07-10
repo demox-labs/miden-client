@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build-wasm": "rimraf node_modules/wasm && rimraf .next && rimraf yarn.lock && cd ../wasm && rimraf pkg && wasm-pack build --dev --target web && cd ../website && yarn",
     "build:workers": "tsc -p tsconfig.worker.json",
     "watch:workers": "tsc -p tsconfig.worker.json -watch",
     "dev": "next dev",

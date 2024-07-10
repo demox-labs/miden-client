@@ -6,6 +6,18 @@ const webClient = new WebClient();
 await webClient.create_client();
 postMessage({ type: "ready" });
 
+async function pollUntilComitted(webClient: WebClient, outputNoteId: String) {
+  let status;
+  while (status !== 'Committed') {
+    await webClient.sync_state();
+    status = await webClient.get_output_note_status(outputNoteId);
+    console.log('STATUS', status)
+    if (status !== 'Committed') {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
 addEventListener('message', async (event) => {
   console.log('worker received message', event.data)
   const params = event.data.params
@@ -142,6 +154,7 @@ addEventListener('message', async (event) => {
     case "consumeTransaction":
       console.log('doing a consume transaction', params)
       await new Promise(resolve => setTimeout(resolve, 2000));
+      await pollUntilComitted(webClient, params.noteIds[0]);
       await webClient.sync_state();
       await webClient.fetch_and_cache_account_auth_by_pub_key(params.targetAccountId);
       const consumeResult = await webClient.new_consume_transaction(params.targetAccountId, params.noteIds);

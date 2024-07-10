@@ -102,4 +102,20 @@ impl WebClient {
             Err(JsValue::from_str("Client not initialized"))
         }
     }
+
+    pub async fn get_output_note_status(
+      &mut self,
+      note_id: String
+    ) -> Result<JsValue, JsValue> {
+      if let Some(client) = self.get_mut_inner() {
+          let note_id: NoteId = Digest::try_from(note_id)
+              .map_err(|err| format!("Failed to parse output note id: {}", err))?
+              .into();
+          let note: OutputNoteRecord = client.get_output_note(note_id).await.unwrap();
+
+          serde_wasm_bindgen::to_value(&format!("{:?}", note.status())).map_err(|e| JsValue::from_str(&e.to_string()))
+      } else {
+          Err(JsValue::from_str("Client not initialized"))
+      }
+    }
 }
