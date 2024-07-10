@@ -7,10 +7,11 @@ impl WebClient {
     pub async fn sync_state(
         &mut self
     ) -> Result<JsValue, JsValue> {
-        if let Some(ref mut client) = self.get_mut_inner() {
-            let block_num = client.sync_state().await.unwrap();
+        web_sys::console::log_1(&JsValue::from_str("sync_state called"));
+        if let Some(client) = self.get_mut_inner() {
+            let sync_summary = client.sync_state().await.unwrap();
 
-            Ok(JsValue::from_f64(block_num as f64))
+            Ok(JsValue::from_f64(sync_summary.block_num as f64))
         } else {
             Err(JsValue::from_str("Client not initialized"))
         }

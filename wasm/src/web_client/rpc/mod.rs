@@ -7,20 +7,29 @@ use wasm_bindgen_futures::*;
 
 use miden_objects::{
     accounts::{Account, AccountId},
-    notes::{Note, NoteId, NoteMetadata, NoteTag, NoteType},
+    crypto::merkle::{MerklePath, MmrProof},
+    notes::{
+        NoteMetadata,
+        NoteId,
+        Note, NoteTag, NoteType
+    },
     transaction::ProvenTransaction,
     utils::Deserializable,
     BlockHeader, Digest, Felt,
 };
 use miden_tx::utils::Serializable;
 
-use crate::native_code::{
+use miden_client::{
+    client::rpc::{AccountUpdateSummary, AccountDetails, CommittedNote, NodeRpcClient, NodeRpcClientEndpoint, NoteDetails, NoteInclusionDetails, StateSyncInfo},
     errors::{ConversionError, NodeRpcClientError},
-    rpc::{
-        CommittedNote, NodeRpcClient, NodeRpcClientEndpoint, NoteDetails, NoteInclusionDetails,
-        StateSyncInfo
-    },
 };
+// use crate::native_code::{
+//     errors::{ConversionError, NodeRpcClientError},
+//     rpc::{
+//         CommittedNote, NodeRpcClient, NodeRpcClientEndpoint, NoteDetails, NoteInclusionDetails,
+//         StateSyncInfo
+//     },
+// };
 
 use client_grpc::{
     requests::{
@@ -57,19 +66,7 @@ impl WebRpcClient {
     }
 }
 
-#[async_trait(?Send)]
 impl NodeRpcClient for WebRpcClient {
-    async fn test_rpc(&mut self) -> Result<(), JsValue> {
-        // Now correctly handling the Promise returned by test_rpc
-        let promise = test_rpc("https://www.google.com".to_string());
-        let result = JsFuture::from(promise).await;
-        
-        match result {
-            Ok(_) => Ok(()),
-            Err(e) => Err(e),
-        }
-    }
-
     async fn submit_proven_transaction(
         &mut self,
         proven_transaction: ProvenTransaction,
@@ -93,28 +90,56 @@ impl NodeRpcClient for WebRpcClient {
     async fn get_block_header_by_number(
         &mut self,
         block_num: Option<u32>,
-    ) -> Result<BlockHeader, NodeRpcClientError> {
+        include_mmr_proof: bool,
+    ) -> Result<(BlockHeader, Option<MmrProof>), NodeRpcClientError> {
         let mut query_client = self.build_api_client();
 
         let request = GetBlockHeaderByNumberRequest {
-            block_num: block_num,
+            block_num,
+            include_mmr_proof: Some(include_mmr_proof),
         };
     
         // Attempt to send the request and process the response
-        let response = query_client.get_block_header_by_number(request).await.map_err(|err| {
+        let api_response = query_client.get_block_header_by_number(request).await.map_err(|err| {
             // log to console all the properties of block header
             NodeRpcClientError::RequestError(
                 NodeRpcClientEndpoint::GetBlockHeaderByNumber.to_string(),
                 err.to_string(),
             )
         })?;
+
+        let response = api_response.into_inner();
     
-        response
-            .into_inner()
+        let block_header: BlockHeader = response
             .block_header
             .ok_or(NodeRpcClientError::ExpectedFieldMissing("BlockHeader".into()))?
             .try_into()
-            .map_err(|err: ConversionError| NodeRpcClientError::ConversionFailure(err.to_string()))
+            .map_err(|err: ConversionError| {
+                NodeRpcClientError::ConversionFailure(err.to_string())
+            })?;
+
+        let mmr_proof = if include_mmr_proof {
+            let forest = response
+                .chain_length
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("ChainLength".into()))?;
+            let merkle_path: MerklePath = response
+                .mmr_path
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("MmrPath".into()))?
+                .try_into()
+                .map_err(|err: ConversionError| {
+                    NodeRpcClientError::ConversionFailure(err.to_string())
+                })?;
+
+            Some(MmrProof {
+                forest: forest as usize,
+                position: block_header.block_num() as usize,
+                merkle_path,
+            })
+        } else {
+            None
+        };
+
+        Ok((block_header, mmr_proof))
     }
 
     async fn get_notes_by_id(
@@ -127,18 +152,21 @@ impl NodeRpcClient for WebRpcClient {
             note_ids: note_ids.iter().map(|id| id.inner().into()).collect(),
         };
 
-        let response = query_client.get_notes_by_id(request).await.map_err(|err| {
+        let api_response = query_client.get_notes_by_id(request).await.map_err(|err| {
             NodeRpcClientError::RequestError(
                 NodeRpcClientEndpoint::GetBlockHeaderByNumber.to_string(),
                 err.to_string(),
             )
         })?;
 
-        let rpc_notes = response.into_inner().notes;
+        let rpc_notes = api_response.into_inner().notes;
         let mut response_notes = Vec::with_capacity(rpc_notes.len());
         for note in rpc_notes {
-            let sender_id =
-                note.sender.ok_or(NodeRpcClientError::ExpectedFieldMissing("Sender".into()))?;
+            let sender_id = note
+                .metadata
+                .clone()
+                .and_then(|metadata| metadata.sender)
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("Metadata.Sender".into()))?;
 
             let inclusion_details = {
                 let merkle_path = note
@@ -158,7 +186,11 @@ impl NodeRpcClient for WebRpcClient {
                 },
                 // Off-chain notes do not have details
                 None => {
-                    let note_tag = NoteTag::from(note.tag).validate(NoteType::OffChain)?;
+                    let tag = note
+                        .metadata
+                        .ok_or(NodeRpcClientError::ExpectedFieldMissing("Metadata".into()))?
+                        .tag;
+                    let note_tag = NoteTag::from(tag).validate(NoteType::OffChain)?;
                     let note_metadata = NoteMetadata::new(
                         sender_id.try_into()?,
                         NoteType::OffChain,
@@ -175,7 +207,6 @@ impl NodeRpcClient for WebRpcClient {
             };
             response_notes.push(note)
         }
-
         Ok(response_notes)
     }
 
@@ -225,11 +256,10 @@ impl NodeRpcClient for WebRpcClient {
     async fn get_account_update(
         &mut self,
         account_id: AccountId
-    ) -> Result<Account, NodeRpcClientError> {
+    ) -> Result<AccountDetails, NodeRpcClientError> {
         let mut query_client = self.build_api_client();
 
-        let account_id = account_id.into();
-        let request = GetAccountDetailsRequest { account_id: Some(account_id) };
+        let request = GetAccountDetailsRequest { account_id: Some(account_id.into()) };
 
         let response = query_client.get_account_details(request).await.map_err(|err| {
             NodeRpcClientError::RequestError(
@@ -243,14 +273,30 @@ impl NodeRpcClient for WebRpcClient {
             "GetAccountDetails response should have an `account`".to_string(),
         ))?;
 
-        let details_bytes =
-            account_info.details.ok_or(NodeRpcClientError::ExpectedFieldMissing(
-                "GetAccountDetails response's account should have `details`".to_string(),
+        let account_summary =
+            account_info.summary.ok_or(NodeRpcClientError::ExpectedFieldMissing(
+                "GetAccountDetails response's account should have a `summary`".to_string(),
             ))?;
 
-        let details = Account::read_from_bytes(&details_bytes)?;
+        let hash = account_summary.account_hash.ok_or(NodeRpcClientError::ExpectedFieldMissing(
+            "GetAccountDetails response's account should have an `account_hash`".to_string(),
+        ))?;
 
-        Ok(details)
+        let hash = hash.try_into()?;
+
+        let update_summary = AccountUpdateSummary::new(hash, account_summary.block_num);
+        if account_id.is_on_chain() {
+            let details_bytes =
+                account_info.details.ok_or(NodeRpcClientError::ExpectedFieldMissing(
+                    "GetAccountDetails response's account should have `details`".to_string(),
+                ))?;
+
+            let account = Account::read_from_bytes(&details_bytes)?;
+
+            Ok(AccountDetails::Public(account, update_summary))
+        } else {
+            Ok(AccountDetails::OffChain(account_id, update_summary))
+        }
     }
 }
 
@@ -309,17 +355,26 @@ impl TryFrom<SyncStateResponse> for StateSyncInfo {
                 .try_into()?;
 
             let sender_account_id = note
-                .sender
-                .ok_or(NodeRpcClientError::ExpectedFieldMissing("Notes.Sender".into()))?
+                .metadata
+                .clone()
+                .and_then(|m| m.sender)
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("Notes.Metadata.Sender".into()))?
                 .try_into()?;
 
-            let note_type = NoteType::try_from(Felt::new(note.note_type.into()))?;
-            let metadata = NoteMetadata::new(
-                sender_account_id,
-                note_type,
-                note.tag.into(),
-                Default::default(),
-            )?;
+            let tag = note
+                .metadata
+                .clone()
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("Notes.Metadata".into()))?
+                .tag;
+
+            let note_type = note
+                .metadata
+                .ok_or(NodeRpcClientError::ExpectedFieldMissing("Notes.Metadata".into()))?
+                .note_type;
+
+            let note_type = NoteType::try_from(note_type)?;
+            let metadata =
+                NoteMetadata::new(sender_account_id, note_type, tag.into(), Default::default())?;
 
             let committed_note =
                 CommittedNote::new(note_id, note.note_index, merkle_path, metadata);

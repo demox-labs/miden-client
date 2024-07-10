@@ -9,10 +9,22 @@ import {
 } from './schema.js';
 
 export async function getNoteTags() {
+    console.log('Getting note tags');
     try {
         const record = await stateSync.get(1);  // Since id is the primary key and always 1
         if (record) {
-            return record.tags;
+            let data = null;
+            if (record.tags.length === 0) {
+                data = {
+                    tags: JSON.stringify(record.tags)
+                }
+            } else {
+                data = {
+                    tags: record.tags
+                }
+            };
+            console.log('Note tags: ', data.tags);
+            return data;
         } else {
             return null;
         }
@@ -42,6 +54,7 @@ export async function getSyncHeight() {
 export async function addNoteTag(
     tags
 ) {
+    console.log('Adding note tag: ', tags);
     try {
         await stateSync.update(1, { tags: tags });
     } catch {
@@ -58,8 +71,11 @@ export async function applyStateSync(
     hasClientNotes,
     nodeIndices,
     nodes,
-    noteIds,
-    inclusionProofs,
+    outputNoteIds,
+    outputNoteInclusionProofs,
+    inputNoteIds,
+    inputNoteInluclusionProofs,
+    inputeNoteMetadatas,
     transactionIds,
 ) {
     return db.transaction('rw', stateSync, inputNotes, outputNotes, transactions, blockHeaders, chainMmrNodes, async (tx) => {
@@ -67,7 +83,7 @@ export async function applyStateSync(
         await updateSpentNotes(tx, nullifiers);
         await updateBlockHeader(tx, blockNum, blockHeader, chainMmrPeaks, hasClientNotes);
         await updateChainMmrNodes(tx, nodeIndices, nodes);
-        await updateCommittedNotes(tx, noteIds, inclusionProofs);
+        await updateCommittedNotes(tx, outputNoteIds, outputNoteInclusionProofs, inputNoteIds, inputNoteInluclusionProofs, inputeNoteMetadatas);
         await updateCommittedTransactions(tx, blockNum, transactionIds);
     });
 }
@@ -180,33 +196,66 @@ async function updateChainMmrNodes(
 
 async function updateCommittedNotes(
     tx, 
-    noteIds, 
-    inclusionProofs
+    outputNoteIds, 
+    outputNoteInclusionProofs,
+    inputNoteIds,
+    inputNoteInclusionProofs,
+    inputNoteMetadatas
 ) {
+    console.log("Updating committed notes");
+    console.log("Output note ids: ", outputNoteIds);
+    console.log("Output note inclusion proofs: ", outputNoteInclusionProofs);
+    console.log('Input note ids: ', inputNoteIds);
+    console.log('Input note inclusion proofs: ', inputNoteInclusionProofs);
+    console.log('Input note metadatas: ', inputNoteMetadatas);
     try {
-        if (noteIds.length !== inclusionProofs.length) {
-            throw new Error("Arrays noteIds and inclusionProofs must be of the same length");
+        // if (outputNoteIds.length === 0 || inputNoteIds.length === 0) {
+        //     return;
+        // }
+
+        if (outputNoteIds.length !== outputNoteInclusionProofs.length) {
+            throw new Error("Arrays outputNoteIds and outputNoteInclusionProofs must be of the same length");
         }
 
-        if (noteIds.length === 0) {
-            return;
+        if (
+            inputNoteIds.length !== inputNoteInclusionProofs.length && 
+            inputNoteIds.length !== inputNoteMetadatas.length && 
+            inputNoteInclusionProofs.length !== inputNoteMetadatas.length
+        ) {
+            console.log('Errored out here');
+            throw new Error("Arrays inputNoteIds and inputNoteInclusionProofs and inputNoteMetadatas must be of the same length");
         }
 
-        for (let i = 0; i < noteIds.length; i++) {
-            const noteId = noteIds[i];
-            const inclusionProof = inclusionProofs[i];
-
-            // Update input notes
-            await tx.inputNotes.where({ noteId: noteId }).modify({
-                status: 'Committed',
-                inclusionProof: inclusionProof
-            });
+        console.log('output note ids length: ', outputNoteIds.length)
+        for (let i = 0; i < outputNoteIds.length; i++) {
+            const noteId = outputNoteIds[i];
+            const inclusionProof = outputNoteInclusionProofs[i];
 
             // Update output notes
             await tx.outputNotes.where({ noteId: noteId }).modify({
                 status: 'Committed',
                 inclusionProof: inclusionProof
             });
+        }
+
+        console.log('input note ids length: ', inputNoteIds.length);
+        for (let i = 0; i < inputNoteIds.length; i++) {
+            const noteId = inputNoteIds[i];
+            console.log('Note id: ', noteId);
+            const inclusionProof = inputNoteInclusionProofs[i];
+            console.log('Inclusion proof: ', inclusionProof);
+            const metadata = inputNoteMetadatas[i];
+            console.log('Metadata: ', metadata);
+
+            // Update input notes
+            await tx.inputNotes.where({ noteId: noteId }).modify({
+                status: 'Committed',
+                inclusionProof: inclusionProof,
+                metadata: metadata
+            });
+
+            console.log('Updated input notes');
+            console.log(tx.inputNotes.toArray());
         }
     } catch (error) {
         console.error("Error updating committed notes:", error);

@@ -3,11 +3,13 @@ import {
     inputNotes,
     outputNotes,
     notesScripts,
+    transactions
 } from './schema.js';
 
 export async function getOutputNotes(
     status
 ) {
+    console.log("called getOutputNotes");
     try {
         let notes;
 
@@ -18,41 +20,8 @@ export async function getOutputNotes(
             notes = await outputNotes.where('status').equals(status).toArray();
         }
 
-        // Fetch all scripts from the scripts table for joining
-        const scripts = await notesScripts.toArray();
-        const scriptMap = new Map(scripts.map(script => [script.scriptHash, script.serializedNoteScript]));
-
-        // Process each note to convert 'blobField' from Blob to Uint8Array
-        const processedNotes = await Promise.all(notes.map(async note => {
-            const assetsArrayBuffer = await note.assets.arrayBuffer();
-            const assetsArray = new Uint8Array(assetsArrayBuffer);
-            const assetsBase64 = uint8ArrayToBase64(assetsArray);
-            note.assets = assetsBase64;
-
-            let serializedNoteScriptBase64 = null;
-            // Parse details JSON and perform a "join"
-            if (note.details) {
-                const details = JSON.parse(note.details);
-                if (details.script_hash) {
-                    let serializedNoteScript = scriptMap.get(details.script_hash);
-                    let serializedNoteScriptArrayBuffer = await serializedNoteScript.arrayBuffer();
-                    const serializedNoteScriptArray = new Uint8Array(serializedNoteScriptArrayBuffer);
-                    serializedNoteScriptBase64 = uint8ArrayToBase64(serializedNoteScriptArray);
-                }
-            }
-
-            return {
-                assets: note.assets,
-                details: note.details ? note.details : null,
-                recipient: note.recipient,
-                status: note.status,
-                metadata: note.metadata,
-                inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
-                serialized_note_script: serializedNoteScriptBase64
-            };
-        }));
-        return processedNotes;
-    } catch {
+        return await processOutputNotes(notes);
+    } catch (err) {
         console.error("Failed to get input notes: ", err);
         throw err;
     }
@@ -61,93 +30,71 @@ export async function getOutputNotes(
 export async function getInputNotes(
     status
 ) {
+    console.log("called getInputNotes");
     try {
         let notes;
 
         // Fetch the records based on the filter
         if (status === 'All') {
+            console.log("fetching all notes");
             notes = await inputNotes.toArray();
         } else {
+            console.log("fetching notes with status: ", status);
             notes = await inputNotes.where('status').equals(status).toArray();
         }
-        // Fetch all scripts from the scripts table for joining
-        const scripts = await notesScripts.toArray();
-        const scriptMap = new Map(scripts.map(script => [script.scriptHash, script.serializedNoteScript]));
+        console.log("notes: ", notes);
 
-        // Process each note to convert 'blobField' from Blob to Uint8Array
-        const processedNotes = await Promise.all(notes.map(async note => {
-            const assetsArrayBuffer = await note.assets.arrayBuffer();
-            const assetsArray = new Uint8Array(assetsArrayBuffer);
-            const assetsBase64 = uint8ArrayToBase64(assetsArray);
-            note.assets = assetsBase64;
-
-            let serializedNoteScriptBase64 = null;
-            // Parse details JSON and perform a "join"
-            if (note.details) {
-                const details = JSON.parse(note.details);
-                if (details.script_hash) {
-                    let serializedNoteScript = scriptMap.get(details.script_hash);
-                    let serializedNoteScriptArrayBuffer = await serializedNoteScript.arrayBuffer();
-                    const serializedNoteScriptArray = new Uint8Array(serializedNoteScriptArrayBuffer);
-                    serializedNoteScriptBase64 = uint8ArrayToBase64(serializedNoteScriptArray);
-                }
-            }
-
-            return {
-                assets: note.assets,
-                details: note.details,
-                recipient: note.recipient,
-                status: note.status,
-                metadata: note.metadata ? note.metadata : null,
-                inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
-                serialized_note_script: serializedNoteScriptBase64
-            };
-        }));
-        return processedNotes;
-    } catch {
+        return await processInputNotes(notes);
+    } catch (err) {
         console.error("Failed to get input notes: ", err);
         throw err;
     }
 }
 
-export async function getInputNote(
-    noteId
+export async function getInputNotesFromIds(
+    noteIds
+) {
+    console.log("called getInputNotesFromIds");
+    console.log("noteIds: ", noteIds);
+    try {
+        let notes;
+
+        // Fetch the records based on a list of IDs
+        notes = await inputNotes.where('noteId').anyOf(noteIds).toArray();
+
+        console.log("notes: ", notes);
+
+        return await processInputNotes(notes);
+    } catch (err) {
+        console.error("Failed to get input notes: ", err);
+        throw err;
+    }
+}
+
+export async function getOutputNotesFromIds(
+    noteIds
 ) {
     try {
-        const note = await inputNotes.get(noteId);
+        let notes;
 
-        const assetsArrayBuffer = await note.assets.arrayBuffer();
-        const assetsArray = new Uint8Array(assetsArrayBuffer);
-        const assetsBase64 = uint8ArrayToBase64(assetsArray);
+        // Fetch the records based on a list of IDs
+        notes = await outputNotes.where('noteId').anyOf(noteIds).toArray();
 
+        return await processOutputNotes(notes);
+    } catch (err) {
+        console.error("Failed to get input notes: ", err);
+        throw err;
+    }
+}
 
-        let serializedNoteScriptBase64 = null;
-        if (note.details) {
-            const details = JSON.parse(note.details);
-            if (details.script_hash) {
-                let noteScriptRecord = await notesScripts.get(details.script_hash);
-                let serializedNoteScript = noteScriptRecord.serializedNoteScript;
-                let serializedNoteScriptArrayBuffer = await serializedNoteScript.arrayBuffer();
-                let serializedNoteScriptArray = new Uint8Array(serializedNoteScriptArrayBuffer);
-                serializedNoteScriptBase64 = uint8ArrayToBase64(serializedNoteScriptArray);
-            }
-        }
+export async function getUnspentInputNoteNullifiers() {
+    try {
+        const notes = await db.InputNotes.where('status').equals('Committed').toArray();
+        const nullifiers = notes.map(note => JSON.parse(note.details).nullifier);
 
-        note.assets = assetsBase64
-
-        const data = {
-            assets: note.assets,
-            details: note.details,
-            recipient: note.recipient,
-            status: note.status,
-            metadata: note.metadata ? note.metadata : null,
-            inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
-            serialized_note_script: serializedNoteScriptBase64
-        }
-
-        return data;
-    } catch {
-        console.error("Failed to get input note: ", err);
+        return nullifiers;
+    } catch (err) {
+        console.error("Failed to get unspent input note nullifiers: ", err);
         throw err;
     }
 }
@@ -176,21 +123,20 @@ export async function insertInputNote(
                 metadata: metadata ? metadata : null,
                 details: details,
                 inclusionProof: inclusionProof ? JSON.stringify(inclusionProof) : null,
+                consumerTransactionId: null
             };
 
             // Perform the insert using Dexie
             await tx.inputNotes.add(data);
 
-            const exists = await tx.notesScripts.get(noteScriptHash);
-            if (!exists) {
-                let serializedNoteScriptBlob = new Blob([new Uint8Array(serializedNoteScript)]);
+            let serializedNoteScriptBlob = new Blob([new Uint8Array(serializedNoteScript)]);
 
-                const data = {
-                    scriptHash: noteScriptHash,
-                    serializedNoteScript: serializedNoteScriptBlob,
-                };
-                await tx.notesScripts.add(data);
-            }
+            const noteScriptData = {
+                scriptHash: noteScriptHash,
+                serializedNoteScript: serializedNoteScriptBlob,
+            };
+
+            await tx.notesScripts.put(noteScriptData);
         } catch {
             console.error(`Error inserting note: ${noteId}:`, error);
             throw error; // Rethrow the error to handle it further up the call chain if needed
@@ -209,6 +155,9 @@ export async function insertOutputNote(
     serializedNoteScript,
     inclusionProof
 ) {
+    console.log("insertOutputNote");
+    console.log("noteId: ", noteId);
+    console.log('status', status);
     return db.transaction('rw', outputNotes, notesScripts, async (tx) => {
         try {
             let assetsBlob = new Blob([new Uint8Array(assets)]);
@@ -222,6 +171,7 @@ export async function insertOutputNote(
                 metadata: metadata,
                 details: details ? details : null,
                 inclusionProof: inclusionProof ? JSON.stringify(inclusionProof) : null,
+                consumerTransactionId: null
             };
 
             // Perform the insert using Dexie
@@ -247,16 +197,130 @@ export async function insertOutputNote(
     });
 }
 
-export async function getUnspentInputNoteNullifiers() {
+export async function updateNoteConsumerTxId(noteId, consumerTxId) {
     try {
-        const notes = await db.InputNotes.where('status').equals('Committed').toArray();
-        const nullifiers = notes.map(note => JSON.parse(note.details).nullifier);
+        // Start a transaction that covers both tables
+        await db.transaction('rw', inputNotes, outputNotes, async (tx) => {
+            // Update input_notes where note_id matches
+            const updatedInputNotes = await tx.inputNotes
+                .where('noteId')
+                .equals(noteId)
+                .modify({ consumerTransactionId: consumerTxId });
 
-        return nullifiers;
+            // Update output_notes where note_id matches
+            const updatedOutputNotes = await tx.outputNotes
+                .where('noteId')
+                .equals(noteId)
+                .modify({ consumerTransactionId: consumerTxId });
+
+            // Log the count of updated entries in both tables (optional)
+            console.log(`Updated ${updatedInputNotes} input notes and ${updatedOutputNotes} output notes`);
+        });
     } catch (err) {
-        console.error("Failed to get unspent input note nullifiers: ", err);
+        console.error("Failed to update note consumer transaction ID: ", err);
         throw err;
     }
+}
+
+async function processInputNotes(
+    notes
+) {
+    // Fetch all scripts from the scripts table for joining
+    const scripts = await notesScripts.toArray();
+    const scriptMap = new Map(scripts.map(script => [script.scriptHash, script.serializedNoteScript]));
+
+    const transactionRecords = await transactions.toArray();
+    const transactionMap = new Map(transactionRecords.map(transaction => [transaction.id, transaction.accountId]));
+
+    const processedNotes = await Promise.all(notes.map(async note => {
+        // Convert the assets blob to base64
+        const assetsArrayBuffer = await note.assets.arrayBuffer();
+        const assetsArray = new Uint8Array(assetsArrayBuffer);
+        const assetsBase64 = uint8ArrayToBase64(assetsArray);
+        note.assets = assetsBase64;
+
+        // Convert the serialized note script blob to base64
+        let serializedNoteScriptBase64 = null;
+        // Parse details JSON and perform a "join"
+        if (note.details) {
+            const details = JSON.parse(note.details);
+            if (details.script_hash) {
+                let serializedNoteScript = scriptMap.get(details.script_hash);
+                let serializedNoteScriptArrayBuffer = await serializedNoteScript.arrayBuffer();
+                const serializedNoteScriptArray = new Uint8Array(serializedNoteScriptArrayBuffer);
+                serializedNoteScriptBase64 = uint8ArrayToBase64(serializedNoteScriptArray);
+            }
+        }
+
+        // Perform a "join" with the transactions table
+        let consumerAccountId = null;
+        if (transactionMap.has(note.consumerTransactionId)) { 
+            consumerAccountId = transactionMap.get(note.consumerTransactionId);
+        }
+
+        return {
+            assets: note.assets,
+            details: note.details,
+            recipient: note.recipient,
+            status: note.status,
+            metadata: note.metadata ? note.metadata : null,
+            inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
+            serialized_note_script: serializedNoteScriptBase64,
+            consumer_account_id: consumerAccountId
+        };
+    }));
+    console.log("processedNotes: ", processedNotes);
+    return processedNotes;
+}
+
+async function processOutputNotes(
+    notes
+) {
+    console.log("called processOutputNotes");
+    // Fetch all scripts from the scripts table for joining
+    const scripts = await notesScripts.toArray();
+    const scriptMap = new Map(scripts.map(script => [script.scriptHash, script.serializedNoteScript]));
+
+    const transactionRecords = await transactions.toArray();
+    const transactionMap = new Map(transactionRecords.map(transaction => [transaction.id, transaction.accountId]));
+
+    // Process each note to convert 'blobField' from Blob to Uint8Array
+    const processedNotes = await Promise.all(notes.map(async note => {
+        const assetsArrayBuffer = await note.assets.arrayBuffer();
+        const assetsArray = new Uint8Array(assetsArrayBuffer);
+        const assetsBase64 = uint8ArrayToBase64(assetsArray);
+        note.assets = assetsBase64;
+
+        let serializedNoteScriptBase64 = null;
+        // Parse details JSON and perform a "join"
+        if (note.details) {
+            const details = JSON.parse(note.details);
+            if (details.script_hash) {
+                let serializedNoteScript = scriptMap.get(details.script_hash);
+                let serializedNoteScriptArrayBuffer = await serializedNoteScript.arrayBuffer();
+                const serializedNoteScriptArray = new Uint8Array(serializedNoteScriptArrayBuffer);
+                serializedNoteScriptBase64 = uint8ArrayToBase64(serializedNoteScriptArray);
+            }
+        }
+
+        // Perform a "join" with the transactions table
+        let consumerAccountId = null;
+        if (transactionMap.has(note.consumerTransactionId)) { 
+            consumerAccountId = transactionMap.get(note.consumerTransactionId);
+        }
+
+        return {
+            assets: note.assets,
+            details: note.details ? note.details : null,
+            recipient: note.recipient,
+            status: note.status,
+            metadata: note.metadata,
+            inclusion_proof: note.inclusionProof ? note.inclusionProof : null,
+            serialized_note_script: serializedNoteScriptBase64,
+            consumer_account_id: consumerAccountId
+        };
+    }));
+    return processedNotes;
 }
 
 function uint8ArrayToBase64(bytes) {

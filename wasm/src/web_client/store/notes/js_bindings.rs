@@ -12,14 +12,19 @@ extern "C" {
         status: String
     ) -> js_sys::Promise;
 
-    #[wasm_bindgen(js_name = getInputNote)]
-    pub fn idxdb_get_input_note(
-        note_id: String
+    #[wasm_bindgen(js_name = getInputNotesFromIds)]
+    pub fn idxdb_get_input_notes_from_ids(
+        note_ids: Vec<String>
     ) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = getOutputNotes)]
     pub fn idxdb_get_output_notes(
         status: String
+    ) -> js_sys::Promise;
+
+    #[wasm_bindgen(js_name = getOutputNotesFromIds)]
+    pub fn idxdb_get_output_notes_from_ids(
+        note_ids: Vec<String>
     ) -> js_sys::Promise;
 
     #[wasm_bindgen(js_name = getUnspentInputNoteNullifiers)]
@@ -52,5 +57,11 @@ extern "C" {
         note_script_hash: Option<String>,
         serialized_note_script: Option<Vec<u8>>,
         inclusion_proof: Option<String>
+    ) -> js_sys::Promise;
+
+    #[wasm_bindgen(js_name = updateNoteConsumerTxId)]
+    pub fn idxdb_update_note_consumer_tx_id(
+        note_id: String,
+        consumer_tx_id: String
     ) -> js_sys::Promise;
 }

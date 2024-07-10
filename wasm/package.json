@@ -1,7 +1,11 @@
 {
-  "name": "miden-wasm",
-  "version": "1.0.0",
-  "description": "Wasm build for the Polygon Miden Client",
+  "name": "@demox-labs/miden-sdk",
+  "version": "0.0.3",
+  "description": "Polygon Miden Wasm SDK",
+  "collaborators": [
+    "Polygon Miden",
+    "Demox Labs <hi@demoxlabs.xyz>"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
@@ -9,8 +13,12 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "../LICENSE.md"
+  ],
   "scripts": {
-    "build": "rimraf dist && rollup -c rollup.config.js && rimraf dist/wasm*"
+    "build": "rimraf dist && rollup -c rollup.config.js && cpr js/types dist && rimraf dist/wasm*"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

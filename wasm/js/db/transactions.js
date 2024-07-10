@@ -82,11 +82,11 @@ export async function insertTransactionScript(
         // check if script hash already exists 
         let record = await transactionScripts.where("scriptHash").equals(scriptHash).first();
 
-        if (record !== undefined) {
+        if (record) {
             return;
         }
 
-        if (scriptHash === null) {
+        if (!scriptHash) {
             throw new Error("Script hash must be provided");
         }
 
@@ -159,13 +159,21 @@ export async function markTransactionsAsCommitted(
     transactionIds
 ) {
     try {
-        const updates = transactionIds.map(transactionId => ({
-            id: transactionId,
-            commitHeight: blockNum
+        if (transactionIds.length === 0) {
+            return;
+        }
+
+        // Fetch existing records
+        const existingRecords = await tx.transactions.where('id').anyOf(transactionIds).toArray();
+
+        // Create updates by merging existing records with the new values
+        const updates = existingRecords.map(record => ({
+            ...record, // Spread existing fields
+            commitHeight: blockNum // Update specific field
         }));
 
-        const result = await transactions.bulkPut(updates);
-        return result.length;
+        // Perform the update
+        await tx.transactions.bulkPut(updates);
     } catch (err) {
         console.error("Failed to mark transactions as committed: ", err);
         throw err;

@@ -3,10 +3,15 @@ use std::{collections::BTreeMap, num::NonZeroUsize};
 use wasm_bindgen_futures::JsFuture;
 use serde_wasm_bindgen::from_value;
 
-use crate::native_code::{
-    errors::StoreError, 
+use miden_client::{
+    errors::StoreError,
     store::ChainMmrNodeFilter
 };
+
+// use crate::native_code::{
+//     errors::StoreError, 
+//     store::ChainMmrNodeFilter
+// };
 
 use miden_objects::{crypto::merkle::{InOrderIndex, MmrPeaks}, BlockHeader, Digest};
 
@@ -23,7 +28,7 @@ use utils::*;
 
 impl WebStore {
     pub(crate) async fn insert_block_header(
-        &mut self,
+        &self,
         block_header: BlockHeader,
         chain_mmr_peaks: MmrPeaks,
         has_client_notes: bool
@@ -96,9 +101,9 @@ impl WebStore {
         return results;
     }
 
-    pub(crate) async fn get_chain_mmr_nodes(
-        &self,
-        filter: ChainMmrNodeFilter<'_>,
+    pub(crate) async fn get_chain_mmr_nodes<'a>(
+        &'a self,
+        filter: ChainMmrNodeFilter<'a>,
     ) -> Result<BTreeMap<InOrderIndex, Digest>, StoreError> {
         match filter {
             ChainMmrNodeFilter::All => {
@@ -160,6 +165,7 @@ impl WebStore {
     }
 
     pub(crate) async fn insert_chain_mmr_nodes(
+        &self,
         nodes: &[(InOrderIndex, Digest)],
     ) -> Result<(), StoreError> {
         let mut serialized_node_ids = Vec::new();

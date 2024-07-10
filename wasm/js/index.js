@@ -1,7 +1,6 @@
 import wasm from "../dist/wasm.js";
 
 const {
-    greet,
     WebClient
 } = await wasm({
     importHook: () => {
@@ -10,6 +9,5 @@ const {
 });
 
 export {
-    greet,
     WebClient,
 };

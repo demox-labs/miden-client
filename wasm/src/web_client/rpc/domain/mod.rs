@@ -5,6 +5,7 @@ pub mod blocks;
 pub mod digest;
 pub mod merkle;
 pub mod nullifiers;
+pub mod notes;
 
 // UTILITIES
 // ================================================================================================

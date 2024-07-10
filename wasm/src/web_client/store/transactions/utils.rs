@@ -2,7 +2,11 @@ use miden_objects::{accounts::Account, assembly::AstSerdeOptions, transaction::T
 use miden_tx::utils::Serializable;
 use wasm_bindgen_futures::*;
 
-use crate::native_code::{errors::StoreError, transactions::TransactionResult};
+use miden_client::{
+    client::transactions::TransactionResult,
+    errors::StoreError
+};
+// use crate::native_code::{errors::StoreError, transactions::TransactionResult};
 
 use crate::web_client::store::accounts::utils::{
     insert_account_asset_vault, 
@@ -124,9 +128,9 @@ pub(super) fn serialize_transaction_data(
 }
 
 pub async fn update_account(
-    new_account_state: Account,
+    new_account_state: &Account,
 ) -> Result<(), ()> {
     insert_account_storage(new_account_state.storage()).await;
     insert_account_asset_vault(new_account_state.vault()).await;
-    insert_account_record(&new_account_state, None).await
+    insert_account_record(new_account_state, None).await
 }

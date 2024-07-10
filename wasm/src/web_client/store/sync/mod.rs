@@ -3,14 +3,18 @@ use miden_objects::{
     crypto::merkle::{
         InOrderIndex, MmrPeaks
     }, 
-    notes::NoteInclusionProof, 
+    notes::{NoteInclusionProof, NoteTag}, 
     transaction::TransactionId, 
     BlockHeader, Digest
 };
 use wasm_bindgen_futures::*;
 use serde_wasm_bindgen::from_value;
 
-use crate::native_code::{errors::StoreError, sync::SyncedNewNotes};
+use miden_client::{
+    client::sync::StateSyncUpdate,
+    errors::StoreError
+};
+// use crate::native_code::{errors::StoreError, sync::SyncedNewNotes};
 
 use super::{chain_data::utils::serialize_chain_mmr_node, notes::utils::insert_input_note_tx, transactions::utils::update_account, WebStore};
 
@@ -23,12 +27,12 @@ use models::*;
 impl WebStore {
     pub(crate) async fn get_note_tags(
         &self
-    ) -> Result<Vec<u64>, StoreError>{
-        let promsie = idxdb_get_note_tags();
-        let js_value = JsFuture::from(promsie).await.unwrap();
+    ) -> Result<Vec<NoteTag>, StoreError>{
+        let promise = idxdb_get_note_tags();
+        let js_value = JsFuture::from(promise).await.unwrap();
         let tags_idxdb: NoteTagsIdxdbObject = from_value(js_value).unwrap();
 
-        let tags: Vec<u64> = serde_json::from_str(&tags_idxdb.tags).unwrap();
+        let tags: Vec<NoteTag> = serde_json::from_str(&tags_idxdb.tags).unwrap();
 
         return Ok(tags);
     }
@@ -45,8 +49,8 @@ impl WebStore {
     }
 
     pub(super) async fn add_note_tag(
-        &mut self,
-        tag: u64
+        &self,
+        tag: NoteTag
     ) -> Result<bool, StoreError> {
         let mut tags = self.get_note_tags().await.unwrap();
         if tags.contains(&tag) {
@@ -60,16 +64,39 @@ impl WebStore {
         return Ok(true);
     }
 
+    pub(super) async fn remove_note_tag(
+        &self, 
+        tag: NoteTag
+    ) -> Result<bool, StoreError> {
+        let mut tags = self.get_note_tags().await?;
+        if let Some(index_of_tag) = tags.iter().position(|&tag_candidate| tag_candidate == tag) {
+            tags.remove(index_of_tag);
+
+            let tags = serde_json::to_string(&tags).map_err(StoreError::InputSerializationError)?;
+
+            let promise = idxdb_add_note_tag(tags);
+            JsFuture::from(promise).await.unwrap();
+            return Ok(true);
+        }
+
+        Ok(false)
+    }
+
     pub(super) async fn apply_state_sync(
-        &mut self,
-        block_header: BlockHeader,
-        nullifiers: Vec<Digest>,
-        committed_notes: SyncedNewNotes,
-        committed_transactions: &[TransactionId],
-        new_mmr_peaks: MmrPeaks,
-        new_authentication_nodes: &[(InOrderIndex, Digest)],
-        updated_onchain_accounts: &[Account],
+        &self,
+        state_sync_update: StateSyncUpdate,
     ) -> Result<(), StoreError> {
+        let StateSyncUpdate {
+            block_header,
+            nullifiers,
+            synced_new_notes: committed_notes,
+            transactions_to_commit: committed_transactions,
+            new_mmr_peaks,
+            new_authentication_nodes,
+            updated_onchain_accounts,
+            block_has_relevant_notes,
+        } = state_sync_update;
+
         // Serialize data for updating state sync and block header
         let block_num_as_str = block_header.block_num().to_string();
         
@@ -79,7 +106,6 @@ impl WebStore {
         // Serialize data for updating block header
         let block_header_as_str = serde_json::to_string(&block_header).map_err(StoreError::InputSerializationError)?;
         let new_mmr_peaks_as_str = serde_json::to_string(&new_mmr_peaks.peaks().to_vec()).map_err(StoreError::InputSerializationError)?;
-        let block_has_relevant_notes = !committed_notes.is_empty();
 
         // Serialize data for updating chain MMR nodes
         let mut serialized_node_ids = Vec::new();
@@ -91,8 +117,8 @@ impl WebStore {
         };
 
         // Serialize data for updating committed notes
-        let note_ids_as_str: Vec<String> = committed_notes.new_inclusion_proofs().iter().map(|(note_id, _)| note_id.inner().to_hex()).collect();
-        let inclusion_proofs_as_str: Vec<String> = committed_notes.new_inclusion_proofs().iter().map(|(_, inclusion_proof)| { 
+        let output_note_ids_as_str: Vec<String> = committed_notes.updated_output_notes().iter().map(|(note_id, _)| note_id.inner().to_hex()).collect();
+        let output_note_inclusion_proofs_as_str: Vec<String> = committed_notes.updated_output_notes().iter().map(|(_, inclusion_proof)| { 
             let block_num = inclusion_proof.origin().block_num;
             let sub_hash = inclusion_proof.sub_hash();
             let note_root = inclusion_proof.note_root();
@@ -110,6 +136,16 @@ impl WebStore {
             serde_json::to_string(&proof).unwrap()
         }).collect();
 
+        let input_note_ids_as_str: Vec<String> = committed_notes.updated_input_notes().iter().map(|(input_note)| input_note.id().inner().to_hex()).collect();
+        let input_note_inclusion_proofs_as_str: Vec<String> = committed_notes.updated_input_notes().iter().map(|(input_note)| {
+            let inclusion_proof = input_note.proof();
+            serde_json::to_string(inclusion_proof).unwrap()
+        }).collect();
+        let input_note_metadatas_as_str: Vec<String> = committed_notes.updated_input_notes().iter().map(|(input_note)| {
+            let metadata = input_note.note().metadata();
+            serde_json::to_string(metadata).unwrap()
+        }).collect();
+
         // TODO: LOP INTO idxdb_apply_state_sync call
         // Commit new public notes
         for note in committed_notes.new_public_notes() {
@@ -122,7 +158,7 @@ impl WebStore {
         // TODO: LOP INTO idxdb_apply_state_sync call
         // Update onchain accounts on the db that have been updated onchain
         for account in updated_onchain_accounts {
-            update_account(account.clone()).await.unwrap();
+            update_account(&account.clone()).await.unwrap();
         }
 
         let promise = idxdb_apply_state_sync(
@@ -133,8 +169,11 @@ impl WebStore {
             block_has_relevant_notes,
             serialized_node_ids,
             serialized_nodes,
-            note_ids_as_str,
-            inclusion_proofs_as_str,
+            output_note_ids_as_str,
+            output_note_inclusion_proofs_as_str,
+            input_note_ids_as_str,
+            input_note_inclusion_proofs_as_str,
+            input_note_metadatas_as_str,
             transactions_to_commit_as_str,
         );
         JsFuture::from(promise).await.unwrap();

@@ -3,7 +3,7 @@ use std::fmt::{Debug, Display, Formatter};
 use hex::{FromHex, ToHex};
 use miden_objects::{notes::NoteId, Digest, Felt, StarkField};
 
-use crate::native_code::errors::ConversionError;
+use miden_client::errors::ConversionError;
 use crate::web_client::rpc::client_grpc::digest;
 
 // CONSTANTS

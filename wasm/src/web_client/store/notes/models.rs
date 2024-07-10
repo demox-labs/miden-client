@@ -12,7 +12,8 @@ pub struct InputNoteIdxdbObject {
     pub metadata: Option<String>,
     pub inclusion_proof: Option<String>,
     #[serde(deserialize_with = "base64_to_vec_u8_required", default)]
-    pub serialized_note_script: Vec<u8>
+    pub serialized_note_script: Vec<u8>,
+    pub consumer_account_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -25,7 +26,8 @@ pub struct OutputNoteIdxdbObject {
     pub metadata: String,
     pub inclusion_proof: Option<String>,
     #[serde(deserialize_with = "base64_to_vec_u8_optional", default)]
-    pub serialized_note_script: Option<Vec<u8>>
+    pub serialized_note_script: Option<Vec<u8>>,
+    pub consumer_account_id: Option<String>
 }
 
 fn base64_to_vec_u8_required<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>

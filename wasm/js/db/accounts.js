@@ -71,6 +71,7 @@ export async function getAccountStub(
     accountId
 ) {
     try {
+        let allRecords = await accounts.toArray();
         // Fetch all records matching the given id
         const allMatchingRecords = await accounts
           .where('id')
@@ -159,7 +160,7 @@ export async function getAccountStorage(
             .toArray();
 
         if (allMatchingRecords.length === 0) {
-            console.log('No records found for given code root.');
+            console.log('No records found for given storage root.');
             return null; // No records found
         }
 
@@ -191,7 +192,7 @@ export async function getAccountAssetVault(
             .toArray();
 
         if (allMatchingRecords.length === 0) {
-            console.log('No records found for given code root.');
+            console.log('No records found for given vault root.');
             return null; // No records found
         }
 
@@ -212,11 +213,77 @@ export async function getAccountAuth(
     accountId
 ) {
     try {
+        console.log('called getAccountAuth');
         // Fetch all records matching the given id
         const allMatchingRecords = await accountAuths
             .where('accountId')
             .equals(accountId)
             .toArray();
+
+        if (allMatchingRecords.length === 0) {
+            console.log('No records found for given account ID.');
+            return null; // No records found
+        }
+        console.log('allMatchingRecords', allMatchingRecords);
+
+        // The first record is the only one due to the uniqueness constraint
+        const authRecord = allMatchingRecords[0];
+        console.log('authRecord', authRecord);
+
+        // Convert the authInfo Blob to an ArrayBuffer
+        const authInfoArrayBuffer = await authRecord.authInfo.arrayBuffer();
+        const authInfoArray = new Uint8Array(authInfoArrayBuffer);
+        const authInfoBase64 = uint8ArrayToBase64(authInfoArray);
+        console.log('authInfoBase64', authInfoBase64);
+        console.log('authRecord.accountId', authRecord.accountId);
+        return {
+            id: authRecord.accountId,
+            auth_info: authInfoBase64
+        };
+    } catch (err) {
+        console.error('Error fetching account auth:', err);
+        throw err; // Re-throw the error for further handling
+    }
+}
+
+export function getAccountAuthByPubKey(
+    pubKey
+) {
+    console.log('called getAccountAuthByPubKey');
+    // Try to get the account auth from the cache
+    let pubKeyArray = new Uint8Array(pubKey);
+    let pubKeyBase64 = uint8ArrayToBase64(pubKeyArray);
+    let cachedAccountAuth = ACCOUNT_AUTH_MAP.get(pubKeyBase64);
+    console.log(cachedAccountAuth)
+    // Print the cache for debugging
+    console.log('PubKey', pubKeyBase64);
+    console.log('ACCOUNT_AUTH_MAP', ACCOUNT_AUTH_MAP);
+    console.log('account_info', cachedAccountAuth.auth_info)
+
+    // If it's not in the cache, throw an error
+    if (!cachedAccountAuth) {
+        throw new Error('Account auth not found in cache.');
+    }
+
+    let data = {
+        id: cachedAccountAuth.id,
+        auth_info: cachedAccountAuth.auth_info
+    }
+
+    return data;
+}
+
+var ACCOUNT_AUTH_MAP = new Map();
+export async function fetchAndCacheAccountAuthByPubKey(
+    accountId
+) {
+    try {
+        // Fetch all records matching the given id
+        const allMatchingRecords = await accountAuths
+            .where('accountId')
+            .equals(accountId)
+            .toArray();
+        console.log('allMatchingRecords', allMatchingRecords);
 
         if (allMatchingRecords.length === 0) {
             console.log('No records found for given account ID.');
@@ -228,15 +295,25 @@ export async function getAccountAuth(
 
         // Convert the authInfo Blob to an ArrayBuffer
         const authInfoArrayBuffer = await authRecord.authInfo.arrayBuffer();
+        console.log('authInfoArrayBuffer', authInfoArrayBuffer);
         const authInfoArray = new Uint8Array(authInfoArrayBuffer);
         const authInfoBase64 = uint8ArrayToBase64(authInfoArray);
+
+        // Store the auth info in the map
+        ACCOUNT_AUTH_MAP.set(authRecord.pubKey, {
+            id: authRecord.accountId,
+            auth_info: authInfoBase64
+        });
+
+        console.log('ACCOUNT_AUTH_MAP', ACCOUNT_AUTH_MAP);
+
         return {
             id: authRecord.accountId,
             auth_info: authInfoBase64
         };
     } catch (err) {
-        console.error('Error fetching account auth:', error);
-        throw error; // Re-throw the error for further handling
+        console.error('Error fetching account auth by public key:', err);
+        throw err; // Re-throw the error for further handling
     }
 }
 
@@ -343,15 +420,19 @@ export async function insertAccountRecord(
 
 export async function insertAccountAuth(
     accountId, 
-    authInfo
+    authInfo,
+    pubKey
 ) {
     try {
         let authInfoBlob = new Blob([new Uint8Array(authInfo)]);
+        let pubKeyArray = new Uint8Array(pubKey);
+        let pubKeyBase64 = uint8ArrayToBase64(pubKeyArray);
 
         // Prepare the data object to insert
         const data = {
             accountId: accountId, // Using accountId as the key
             authInfo: authInfoBlob,
+            pubKey: pubKeyBase64
         };
 
         // Perform the insert using Dexie
