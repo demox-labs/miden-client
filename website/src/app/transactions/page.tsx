@@ -211,7 +211,7 @@ function SendTransaction(props: SendTransactionProps) {
           setConsumeLoading={props.setConsumeLoading}
           worker={props.worker}
           transactionId={props.sentTransaction?.transactionId}
-          consumeParams={props.sentTransaction ? { targetAccountId: senderId, listOfNotes: props.sentTransaction?.createdNoteIds } : null }
+          consumeParams={props.sentTransaction ? { targetAccountId: receiverId, listOfNotes: props.sentTransaction?.createdNoteIds } : null }
           consumeType='send' />
       </div>
     </div>
