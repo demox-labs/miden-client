@@ -21,7 +21,7 @@ describe("WASM Integration Test", function () {
     await page.goto("http://localhost:8080");
 
     // Uncomment below to enable console logging
-    // page.on("console", (msg) => console.dir(msg.text(), { depth: null }));
+    // page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
 
     await page.exposeFunction("create_client", async () => {
       await page.evaluate(async () => {

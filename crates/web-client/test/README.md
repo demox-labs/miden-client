@@ -11,7 +11,7 @@ within the context of the web page.
 
 ## Debugging
 
-1. When inside of a `page.evaluate` , console logs are being sent to the servers console rather than your IDE's. You can put this line above the `page.evaluate` :
+1. When inside of a `page.evaluate` , console logs are being sent to the servers console rather than your IDE's. You can put this line in the `before()` block after navigating to the test server (i.e. after `await page.goto("http://localhost:8080")`)
 
 ```
     page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));

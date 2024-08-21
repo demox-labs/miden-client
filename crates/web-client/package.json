@@ -18,8 +18,8 @@
     "../LICENSE.md"
   ],
   "scripts": {
-    "build": "rimraf dist && rollup -c rollup.config.js && cpr js/types dist",
-    "test": "node --loader ts-node/esm --loader esm --experimental-specifier-resolution=node ./node_modules/mocha/bin/mocha"
+    "build": "rimraf dist && rollup -c rollup.config.js && cpr js/types dist && rimraf dist/wasm*",
+    "test": "node --loader ts-node/esm --loader esm ./node_modules/mocha/bin/mocha"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -36,7 +36,8 @@
     "rimraf": "^6.0.1",
     "rollup": "^3.27.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@wasm-tool/rollup-plugin-rust": "wasm-tool/rollup-plugin-rust"
   },
   "dependencies": {
     "dexie": "^4.0.1"
