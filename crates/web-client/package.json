@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && rollup -c rollup.config.js && cpr js/types dist && rimraf dist/wasm*",
-    "test": "node --loader ts-node/esm --loader esm ./node_modules/mocha/bin/mocha"
+    "test": "node --loader ts-node/esm --loader esm ./node_modules/mocha/bin/mocha --file ./test/mocha.global.setup.mjs"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
