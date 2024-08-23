@@ -7,7 +7,7 @@ within the context of the web page.
 ## Running tests
 
 1. In crates/web-client run `yarn test` to run all tests
-2. TODO: Add instructions for matching tests by name / implement that
+2. For running an individual test by name run `yarn test -g <test-name>`
 
 ## Writing tests
 
