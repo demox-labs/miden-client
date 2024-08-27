@@ -11,7 +11,7 @@ import {
   getOutputNote,
   getOutputNotes,
   syncState,
-} from "./webClientTestUtils";
+} from "./webClientTestUtils.js";
 
 describe("notes tests", () => {
   it("get input notes", async () => {

@@ -90,9 +90,9 @@
         
         async function createMidenWebClient(dbName = "MidenClientDB") {
             try {
-                let rpc_url = "http://18.203.155.106:57291"
-                // let rpc_url = "http://localhost:57291"
-                let envoy_proxy_url = "http://localhost:8080"
+                // let rpc_url = "http://18.203.155.106:57291"
+                let rpc_url = "http://localhost:57291"
+                // let envoy_proxy_url = "http://localhost:8080"
                 const webClient = new WebClient();
                 await webClient.create_client(rpc_url);
                 return webClient;
@@ -463,6 +463,7 @@
             let webClient = await createMidenWebClient();
             let targetAccountId = await createNewWallet(webClient, "OffChain", true);
             let faucetId = await createNewFaucet(webClient, "OffChain", false, "DEN", "10", "1000000");
+            console.log("syncing state...");
             await syncState(webClient);
             await new Promise(r => setTimeout(r, 10000));
 
@@ -475,7 +476,9 @@
                 "Private",
                 "1000"
             );
+            console.log({result})
             await new Promise(r => setTimeout(r, 20000));
+            console.log('Syncing state...');
             await syncState(webClient);
 
             console.log('testNewMintTransaction finished');
@@ -1034,18 +1037,18 @@
         // await testCreateNewFaucet();
         // await testGetAccounts();
         // await testGetAccount();
-        // await testNewMintTransaction();
+        await testNewMintTransaction();
         // await testNewConsumeTransaction();
         // await testNewSendTransaction();
         // await testNewSendTransactionWithRecallHeight();
         // await testNewSwapTransaction();
         // await testGetTransactions();
         // await testGetInputNotes();
-        await testGetInputNote();
-        await testGetOutputNotes();
-        await testGetOutputNote();
-        await testExportNote();
-        await testImportInputNote();
+        // await testGetInputNote();
+        // await testGetOutputNotes();
+        // await testGetOutputNote();
+        // await testExportNote();
+        // await testImportInputNote();
 
     </script>
 </body>

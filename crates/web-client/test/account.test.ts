@@ -9,15 +9,14 @@ import {
 
 describe("account tests", () => {
   it("get accounts", async () => {
-    const accountId = await createNewWallet("OffChain", false);
+    const accountId = await createNewWallet("OffChain", true);
     const accounts = await getAccounts();
     expect(accounts.find((acc) => acc.id === accountId)).to.be.not.null;
   });
 
   it("get account", async () => {
-    const accountId = await createNewWallet("OffChain", false);
-    console.log({ accountId });
+    const accountId = await createNewWallet("OffChain", true);
     const account = await getAccount(accountId);
-    expect(account.id).to.be.equal(accountId);
+    expect(account).to.be.equal(accountId);
   });
 });

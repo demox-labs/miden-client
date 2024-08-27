@@ -14,7 +14,7 @@ import {
 } from "./webClientTestUtils.js";
 
 describe("transactions tests", () => {
-  it("new mint transaction", async () => {
+  it.only("new mint transaction", async () => {
     console.log("starting new mint transaction test");
     const targetAccountId = await createNewWallet("OffChain", false);
     let faucetId = await createNewFaucet(
@@ -24,7 +24,9 @@ describe("transactions tests", () => {
       "10",
       "1000000"
     );
+    console.log({ faucetId });
     await fetchCacheAccountAuth(faucetId);
+    console.log("fetchCacheAccountAuth done");
     const result = await createNewMintTransaction(
       targetAccountId,
       faucetId,

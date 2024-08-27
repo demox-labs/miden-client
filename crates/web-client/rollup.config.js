@@ -15,44 +15,44 @@ import commonjs from "@rollup/plugin-commonjs";
  * Both configurations output ES module format files with source maps for easier debugging.
  */
 export default [
-    {
-        input: {
-            wasm: "./js/wasm.js",
-        },
-        output: {
-            dir: `dist`,
-            format: "es",
-            sourcemap: true,
-            assetFileNames: "assets/[name][extname]",
-        },
-        plugins: [
-            rust({
-                cargoArgs: [
-                    "--features", "testing",
-                    "--config", `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
-                    "--no-default-features",
-                ],
-
-                experimental: {
-                    typescriptDeclarationDir: "dist/crates",
-                },
-            }),
-            resolve(),
-            commonjs(),
-        ],
+  {
+    input: {
+      wasm: "./js/wasm.js",
     },
-    {
-        input: {
-            index: "./js/index.js",
-        },
-        output: {
-            dir: `dist`,
-            format: "es",
-            sourcemap: true,
-        },
-        plugins: [
-            resolve(),
-            commonjs(),
+    output: {
+      dir: `dist`,
+      format: "es",
+      sourcemap: true,
+      assetFileNames: "assets/[name][extname]",
+    },
+    plugins: [
+      rust({
+        debug: true,
+        cargoArgs: [
+          "--features",
+          "testing",
+          "--config",
+          `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
+          "--no-default-features",
         ],
-    }
+
+        experimental: {
+          typescriptDeclarationDir: "dist/crates",
+        },
+      }),
+      resolve(),
+      commonjs(),
+    ],
+  },
+  {
+    input: {
+      index: "./js/index.js",
+    },
+    output: {
+      dir: `dist`,
+      format: "es",
+      sourcemap: true,
+    },
+    plugins: [resolve(), commonjs()],
+  },
 ];

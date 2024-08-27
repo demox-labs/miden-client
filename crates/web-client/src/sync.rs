@@ -6,7 +6,9 @@ use crate::WebClient;
 impl WebClient {
     pub async fn sync_state(&mut self, update_ignored: bool) -> Result<JsValue, JsValue> {
         if let Some(client) = self.get_mut_inner() {
+            web_sys::console::log_1(&"wasm syncing...".into());
             let mut sync_summary = client.sync_state().await.unwrap();
+            web_sys::console::log_1(&"wasm synced".into());
             if update_ignored {
                 sync_summary.combine_with(&client.update_ignored_notes().await.unwrap());
             }

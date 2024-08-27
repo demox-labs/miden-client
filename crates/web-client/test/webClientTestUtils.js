@@ -60,7 +60,6 @@ export const getAccount = async (accountId) => {
 
     /** @type {WebClient} */
     const client = window.client;
-    console.log("_accountId: ", _accountId);
     return client.get_account(_accountId);
   }, accountId);
 };
@@ -86,7 +85,6 @@ export const createNewFaucet = async (
       if (!window.client) {
         await window.create_client();
       }
-      console.log("creating new faucet...");
       /** @type {WebClient} */
       const client = window.client;
       return client.new_faucet(

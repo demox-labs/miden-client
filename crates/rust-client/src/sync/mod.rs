@@ -205,17 +205,28 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     ///
     /// Returns the block number the client has been synced to.
     pub async fn sync_state(&mut self) -> Result<SyncSummary, ClientError> {
+        web_sys::console::log_1(&"rust client syncing...".into());
         self.ensure_genesis_in_place().await?;
+        web_sys::console::log_1(&"genesis ensured in place...".into());
+
         let mut total_sync_summary = SyncSummary::new_empty(0);
         loop {
+            web_sys::console::log_1(&"attempting to sync state once...".into());
+
             let response = self.sync_state_once().await?;
             total_sync_summary.combine_with(response.sync_summary());
 
             if let SyncStatus::SyncedToLastBlock(_) = response {
+                web_sys::console::log_1(&"synced to latest block...".into());
+
                 break;
             }
         }
+        web_sys::console::log_1(&"out of syncing loop...".into());
+
         self.update_mmr_data().await?;
+
+        web_sys::console::log_1(&"mmr data updated...".into());
 
         Ok(total_sync_summary)
     }
@@ -265,12 +276,16 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
     }
 
     async fn sync_state_once(&mut self) -> Result<SyncStatus, ClientError> {
+        web_sys::console::log_1(&"getting sync height...".into());
+
         let current_block_num = maybe_await!(self.store.get_sync_height())?;
+        web_sys::console::log_1(&"getting account stubs height...".into());
 
         let accounts: Vec<AccountStub> = maybe_await!(self.store.get_account_stubs())?
             .into_iter()
             .map(|(acc_stub, _)| acc_stub)
             .collect();
+        web_sys::console::log_1(&"collecting account note tags...".into());
 
         let account_note_tags: Vec<NoteTag> = accounts
             .iter()
@@ -278,8 +293,10 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
                 NoteTag::from_account_id(acc.id(), miden_objects::notes::NoteExecutionMode::Local)
             })
             .collect::<Result<Vec<_>, _>>()?;
+        web_sys::console::log_1(&"getting note tags...".into());
 
         let stored_note_tags: Vec<NoteTag> = maybe_await!(self.store.get_note_tags())?;
+        web_sys::console::log_1(&"getting input notes...".into());
 
         let expected_notes = maybe_await!(self.store.get_input_notes(NoteFilter::Expected))?;
 
@@ -308,12 +325,20 @@ impl<N: NodeRpcClient, R: FeltRng, S: Store, A: TransactionAuthenticator> Client
                 .map(|nullifier| (nullifier.inner()[3].as_int() >> FILTER_ID_SHIFT) as u16)
                 .collect();
 
+        web_sys::console::log_1(&"sending request to sync state...".into());
+
         // Send request
         let account_ids: Vec<AccountId> = accounts.iter().map(|acc| acc.id()).collect();
         let response = self
             .rpc_api
             .sync_state(current_block_num, &account_ids, &note_tags, &nullifiers_tags)
-            .await?;
+            .await
+            .map_err(|e| {
+                web_sys::console::log_1(&format!("An error occurred: {:?}", e).into());
+                e // rethrow the error after logging or adding context
+            })?;
+
+        web_sys::console::log_1(&"checking if chain needs to advance...".into());
 
         // We don't need to continue if the chain has not advanced, there are no new changes
         if response.block_header.block_num() == current_block_num {
