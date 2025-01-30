@@ -47,9 +47,18 @@ before(async () => {
 
   testingPage.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
 
+  testingPage.on("pageerror", (err) => {
+    console.error("PAGE ERROR:", err);
+  });
+
+  testingPage.on("error", (err) => {
+    console.error("PUPPETEER ERROR:", err);
+  });
+
   // Creates the client in the test context and attach to window object
   await testingPage.evaluate(
     async (rpc_port, remote_prover_port) => {
+      console.log("MOCHA GLOBAL SETUP: Start of evaluate");
       const {
         Account,
         AccountHeader,
@@ -89,13 +98,19 @@ before(async () => {
         Word,
         WebClient,
       } = await import("./index.js");
+      console.log("MOCHA GLOBAL SETUP: Imported WebClient from index.js");
+  
+      let client = new WebClient();
+      console.log("MOCHA GLOBAL SETUP: Created wrapped WebClient");
+
       let rpc_url = `http://localhost:${rpc_port}`;
       let prover_url = null;
       if (remote_prover_port) {
         prover_url = `http://localhost:${remote_prover_port}`;
       }
-      const client = new WebClient();
+      console.log("MOCHA GLOBAL SETUP: Creating client");
       await client.create_client(rpc_url, prover_url);
+      console.log("MOCHA GLOBAL SETUP: Created client!");
 
       window.client = client;
       window.Account = Account;

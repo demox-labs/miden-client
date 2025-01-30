@@ -11,9 +11,10 @@ import { setupConsumedNote } from "./notes.test";
 // NEW_MINT_TRANSACTION TESTS
 // =======================================================================================================
 
-describe("new_mint_transactions tests", () => {
+describe.only("new_mint_transactions tests", () => {
   it("new_mint_transaction completes successfully", async () => {
     const { faucetId, accountId } = await setupWalletAndFaucet();
+    console.log("TEST: setupWalletAndFaucet finished", JSON.stringify(faucetId), JSON.stringify(accountId));
     const result = await mintTransaction(accountId, faucetId);
 
     expect(result.transactionId).to.not.be.empty;

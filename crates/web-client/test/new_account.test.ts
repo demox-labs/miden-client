@@ -44,12 +44,28 @@ export const createNewWallet = async (
       }
 
       let client = window.client;
-      const accountStorageMode =
-        _storageMode === "private"
-          ? window.AccountStorageMode.private()
-          : window.AccountStorageMode.public();
+      const accountStorageMode = window.AccountStorageMode.from_str(_storageMode);
 
       const newWallet = await client.new_wallet(accountStorageMode, _mutable);
+      console.log("TEST: about to call new_wallet");
+      console.log("TEST: accountStorageMode", JSON.stringify(_storageMode));
+      console.log("TEST: _mutable", JSON.stringify(_mutable));
+      // const newWallet = await client.new_wallet(_storageMode, _mutable);
+      console.log("TEST: new_wallet finished");
+      // const walletArray = new Uint8Array(newWalletBuffer); // Wrap buffer into Uint8Array
+      // console.log("Serialized wallet:", walletArray);
+      // const newWallet = window.Account.deserialize(walletArray); // Deserialize into an Account object
+      console.log("Deserialized wallet:", JSON.stringify(newWallet, null, 2));
+      console.log("Deserialized wallet ID:", newWallet.id().to_string());
+      console.log("Deserialized wallet nonce:", newWallet.nonce().to_string());
+      console.log("Deserialized wallet vault commitment:", newWallet.vault().commitment().to_hex());
+      console.log("Deserialized wallet storage commitment:", newWallet.storage().commitment().to_hex());
+      console.log("Deserialized wallet code commitment:", newWallet.code().commitment().to_hex());
+      console.log("Deserialized wallet is faucet:", newWallet.is_faucet());
+      console.log("Deserialized wallet is regular account:", newWallet.is_regular_account());
+      console.log("Deserialized wallet is updatable:", newWallet.is_updatable());
+      console.log("Deserialized wallet is public:", newWallet.is_public());
+      console.log("Deserialized wallet is new:", newWallet.is_new());
 
       return {
         id: newWallet.id().to_string(),
@@ -155,10 +171,7 @@ export const createNewFaucet = async (
   return await testingPage.evaluate(
     async (_storageMode, _nonFungible, _tokenSymbol, _decimals, _maxSupply) => {
       const client = window.client;
-      const accountStorageMode =
-        _storageMode === "private"
-          ? window.AccountStorageMode.private()
-          : window.AccountStorageMode.public();
+      const accountStorageMode = window.AccountStorageMode.from_str(_storageMode);
       const newFaucet = await client.new_faucet(
         accountStorageMode,
         _nonFungible,

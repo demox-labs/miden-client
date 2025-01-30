@@ -39,12 +39,8 @@ const {
   TransactionScriptInputPair,
   TransactionScriptInputPairArray,
   Word,
-  WebClient,
-} = await wasm({
-  importHook: () => {
-    return new URL("assets/miden_client_web.wasm", import.meta.url); // the name before .wasm needs to match the package name in Cargo.toml
-  },
-});
+  WebClient: WasmWebClient, // Alias the WASM-exported WebClient
+} = wasm;
 
 export {
   Account,
@@ -84,6 +80,137 @@ export {
   TransactionRequestBuilder,
   TransactionScriptInputPair,
   TransactionScriptInputPairArray,
-  Word,
-  WebClient,
+  Word
 };
+
+// Wrapper for WebClient
+export class WebClient {
+  constructor(...args) {
+    this.worker = new Worker(new URL("./workers/web-client-methods-worker.js", import.meta.url), {
+      type: "module",
+    });
+
+    this.ready = new Promise((resolve) => {
+      this.worker.onmessage = (event) => {
+        if (event.data.ready) resolve();
+      };
+    });
+
+    // Ensure worker is fully ready before initializing
+    (async () => {
+      await this.ready;
+      this.worker.postMessage({ action: "init", args });
+    })();
+
+    this.wasmWebClient = new WasmWebClient(...args);
+
+    return new Proxy(this, {
+      get: (target, prop) => {
+        if (typeof prop === "string" && !(prop in target)) {
+          return async (...args) => {
+            if (["new_wallet", "new_faucet"].includes(prop)) {
+              return target.callMethodWithWorker(prop, ...args);
+            } else {
+              return await target.callMethodDirectly(prop, ...args);
+            }
+          };
+        }
+        return target[prop];
+      },
+    });
+  }
+
+  async callMethodWithWorker(methodName, ...args) {
+    await this.ready;
+
+    console.log("INDEX.JS: Sending to worker", JSON.stringify({ methodName, args }, null, 2));
+
+    return new Promise((resolve, reject) => {
+      const requestId = `${methodName}-${Date.now()}`;
+      this.worker.onmessage = (event) => {
+        if (event.data.requestId === requestId) {
+          if (event.data.error) {
+            console.error(`INDEX.JS: Error from worker in ${methodName}:`, event.data.error);
+            reject(new Error(event.data.error)); // Reject the promise with an error
+          } else {
+            resolve(event.data.result);
+          }
+        }
+      };
+      this.worker.postMessage({ action: "callMethod", methodName, args, requestId });
+    });
+  }
+
+  async callMethodDirectly(methodName, ...args) {
+    if (!this.wasmWebClient) {
+      throw new Error("WASM WebClient is not initialized.");
+    }
+
+    const method = this.wasmWebClient[methodName];
+    if (typeof method !== "function") {
+      throw new Error(`Method ${methodName} does not exist on WASM WebClient.`);
+    }
+
+    return await method.apply(this.wasmWebClient, args);
+  }
+
+  async new_wallet(storageMode, mutable) {
+    try {
+      const serializedStorageMode = storageMode.as_str();
+      const serializedAccountBytes = await this.callMethodWithWorker("new_wallet", serializedStorageMode, mutable);
+      return wasm.Account.deserialize(new Uint8Array(serializedAccountBytes));
+    } catch (error) {
+      console.error("INDEX.JS: Error in new_wallet:", error);
+      throw error;
+    }
+  }
+
+  async new_faucet(storageMode, nonFungible, tokenSymbol, decimals, maxSupply) {
+    try {
+      const serializedStorageMode = storageMode.as_str();
+      const serializedMaxSupply = maxSupply.toString();
+      const serializedAccountBytes = await this.callMethodWithWorker(
+        "new_faucet",
+        serializedStorageMode,
+        nonFungible,
+        tokenSymbol,
+        decimals,
+        serializedMaxSupply
+      );
+  
+      console.log("INDEX.JS: Received response from worker:", serializedAccountBytes);
+  
+      return wasm.Account.deserialize(new Uint8Array(serializedAccountBytes));
+    } catch (error) {
+      console.error("INDEX.JS: Error in new_faucet:", error);
+      throw error;
+    }
+  }
+
+  async new_mint_transaction(targetAccountId, faucetId, noteType, amount) {
+    const serializedTargetAccountId = targetAccountId.to_string();
+    const serializedFaucetId = faucetId.to_string();
+    const serializedNoteType = noteType.as_str();
+    const serializedAmount = amount.toString();
+    // console log but JSON stringify each argument
+    console.log("INDEX.JS: Calling new_mint_transaction with", JSON.stringify(serializedTargetAccountId), JSON.stringify(serializedFaucetId), JSON.stringify(serializedNoteType), JSON.stringify(serializedAmount));
+    try {
+      const result = await this.callMethodWithWorker(
+        "new_mint_transaction",
+        serializedTargetAccountId,
+        serializedFaucetId,
+        serializedNoteType,
+        serializedAmount
+      );
+      console.log("INDEX.JS: Received response from worker:", JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error("INDEX.JS: Error in new_mint_transaction:", error);
+      throw error; // Ensure the test catches and asserts
+    }
+  }
+
+  terminate() {
+    this.worker.terminate();
+  }
+}

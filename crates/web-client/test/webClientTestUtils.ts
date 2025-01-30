@@ -189,10 +189,14 @@ export const setupWalletAndFaucet =
   async (): Promise<SetupWalletFaucetResult> => {
     return await testingPage.evaluate(async () => {
       const client = window.client;
+      console.log("TEST: about to call new_wallet");
       const account = await client.new_wallet(
         window.AccountStorageMode.private(),
         true
       );
+      console.log("TEST: new_wallet finished");
+      console.log("TEST: account id string", JSON.stringify(account.id().to_string(), null, 2));
+      console.log("TEST: about to call new_faucet");
       const faucetAccount = await client.new_faucet(
         window.AccountStorageMode.private(),
         false,
@@ -200,7 +204,10 @@ export const setupWalletAndFaucet =
         8,
         BigInt(10000000)
       );
+      console.log("TEST: new_faucet finished");
+      console.log("TEST: faucet account id string", JSON.stringify(faucetAccount.id().to_string(), null, 2));
       await client.sync_state();
+      console.log("TEST: sync_state finished");
 
       return {
         accountId: account.id().to_string(),
