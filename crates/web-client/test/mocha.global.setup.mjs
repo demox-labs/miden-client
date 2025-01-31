@@ -162,6 +162,7 @@ before(async () => {
         maxWaitTime = 20000,
         delayInterval = 1000
       ) => {
+        console.log("Waiting for transaction", JSON.stringify(transactionId));
         const client = window.client;
         let timeWaited = 0;
         while (true) {

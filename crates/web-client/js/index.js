@@ -108,7 +108,8 @@ export class WebClient {
       get: (target, prop) => {
         if (typeof prop === "string" && !(prop in target)) {
           return async (...args) => {
-            if (["new_wallet", "new_faucet"].includes(prop)) {
+            if (["new_wallet", "new_faucet", "new_mint_transaction"].includes(prop)) {
+              console.log("INDEX>JS: Proxying method with worker", JSON.stringify(prop));
               return target.callMethodWithWorker(prop, ...args);
             } else {
               return await target.callMethodDirectly(prop, ...args);
@@ -187,6 +188,24 @@ export class WebClient {
     }
   }
 
+  async new_transaction(accountId, transactionRequest) {
+    const serializedAccountId = accountId.to_string();
+    console.log("INDEX.JS: attempting to serialize transaction request");
+    const serializedTransactionRequest = transactionRequest.serialize();
+    try {
+      const result = await this.callMethodWithWorker(
+        "new_transaction",
+        serializedAccountId,
+        serializedTransactionRequest
+      );
+      console.log("INDEX.JS: Received response from worker:", JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error("INDEX.JS: Error in new_transaction:", error);
+      throw error;
+    }
+  }
+
   async new_mint_transaction(targetAccountId, faucetId, noteType, amount) {
     const serializedTargetAccountId = targetAccountId.to_string();
     const serializedFaucetId = faucetId.to_string();
@@ -207,6 +226,55 @@ export class WebClient {
     } catch (error) {
       console.error("INDEX.JS: Error in new_mint_transaction:", error);
       throw error; // Ensure the test catches and asserts
+    }
+  }
+
+  async new_consume_transaction(targetAccountId, noteId) {
+    const serializedTargetAccountId = targetAccountId.to_string();
+    try {
+      const result = await this.callMethodWithWorker(
+        "new_consume_transaction",
+        serializedTargetAccountId,
+        noteId
+      );
+      console.log("INDEX.JS: Received response from worker:", JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error("INDEX.JS: Error in consume_transaction:", JSON.stringify(error));
+      throw error;
+    }
+  }
+
+  async new_send_transaction(senderAccountId, receiverAccountId, faucetId, noteType, amount, recallHeight = null) {
+    const serializedSenderAccountId = senderAccountId.to_string();
+    const serializedReceiverAccountId = receiverAccountId.to_string();
+    const serializedFaucetId = faucetId.to_string();
+    const serializedNoteType = noteType.as_str();
+    const serializedAmount = amount.toString();
+    try {
+      const result = await this.callMethodWithWorker(
+        "new_send_transaction",
+        serializedSenderAccountId,
+        serializedReceiverAccountId,
+        serializedFaucetId,
+        serializedNoteType,
+        serializedAmount,
+        recallHeight
+      );
+      console.log("INDEX.JS: Received response from worker:", JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error("INDEX.JS: Error in send_transaction:", error);
+      throw error;
+    }
+  }
+
+  async sync_state() {
+    try {
+      await this.callMethodWithWorker("sync_state");
+    } catch (error) {
+      console.error("INDEX.JS: Error in sync_state:", error);
+      throw error
     }
   }
 

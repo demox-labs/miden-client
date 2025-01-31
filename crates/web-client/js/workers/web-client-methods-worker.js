@@ -11,7 +11,11 @@ const MethodName = Object.freeze({
     CREATE_CLIENT: "create_client",
     NEW_WALLET: "new_wallet",
     NEW_FAUCET: "new_faucet",
+    NEW_TRANSACTION: "new_transaction",
     NEW_MINT_TRANSACTION: "new_mint_transaction",
+    NEW_CONSUME_TRANSACTION: "new_consume_transaction",
+    NEW_SEND_TRANSACTION: "new_send_transaction",
+    SYNC_STATE: "sync_state",
 })
 
 let wasmWebClient = null;
@@ -68,12 +72,34 @@ async function processMessage(event) {
                     // Serialize the result for the main thread
                     const serializedFaucet = await faucet.serialize();
                     result = serializedFaucet.buffer; // Send the ArrayBuffer
+                break;
             } catch (error) {
                 console.error("WORKER: Error in new_faucet:", error);
                 self.postMessage({ requestId, error: error });
                 return;
             }
-            break;
+
+        case MethodName.NEW_TRANSACTION:
+            try {
+                console.log("WORKER: Calling new_transaction");
+                const [accountIdStr, serializedTransactionRequest] = args;
+                console.log("WORKER: accountIdStr", JSON.stringify(accountIdStr));
+                console.log("WORKER: serializedTransactionRequest", JSON.stringify(serializedTransactionRequest));
+                const accountId = wasm.AccountId.from_hex(accountIdStr);
+                const transactionRequest = wasm.TransactionRequest.deserialize(new Uint8Array(serializedTransactionRequest));
+                await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(accountId);
+                const transactionResult = await wasmWebClient.new_transaction(accountId, transactionRequest);
+                console.log("WORKER: new_transaction returned", JSON.stringify(transactionResult, null, 2));
+                console.log("WORKER: transactionResult.executed_transaction().id().to_hex()", JSON.stringify(transactionResult.executed_transaction().id().to_hex()));
+                result = {
+                    transactionId: transactionResult.executed_transaction().id().to_hex()
+                }
+                break;
+            } catch (error) {
+                console.error("WORKER: Error in new_transaction:", error);
+                self.postMessage({ requestId, error: error });
+                return;
+            }
         
         case MethodName.NEW_MINT_TRANSACTION:
             try {
@@ -89,9 +115,13 @@ async function processMessage(event) {
                 const amount = BigInt(amountStr);
                 await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
                 const transactionResult = await wasmWebClient.new_mint_transaction(targetAccountId, faucetId, noteType, amount);
-                console.log("WORKER: new_mint_transaction returned", transactionResult);
+                console.log("WORKER: new_mint_transaction returned", JSON.stringify(transactionResult, null, 2));
+                console.log("WORKER: transactionResult.executed_transaction().id().to_hex()", JSON.stringify(transactionResult.executed_transaction().id().to_hex()));
+                console.log("WORKER: transactionResult.created_notes().num_notes()", JSON.stringify(transactionResult.created_notes().num_notes()));
+                console.log("WORKER: transactionResult.account_delta().nonce()", JSON.stringify(transactionResult.account_delta().nonce()?.to_string()));
+                console.log("WORKER: transactionResult.created_notes().notes()[0].id().to_string()", JSON.stringify(transactionResult.created_notes().notes()[0].id().to_string()));
                 // Serialize the result for the main thread
-                const result = {
+                result = {
                     transactionId: transactionResult
                         .executed_transaction().id().to_hex(),
                     numOutputNotesCreated: transactionResult
@@ -105,10 +135,87 @@ async function processMessage(event) {
                         .id()
                         .to_string(),
                 };
+                break;
             } catch (error) {
                 console.error("WORKER: Error in new_mint_transaction:", error);
                 self.postMessage({ requestId, error: error });
+                return;
             }
+        
+        case MethodName.NEW_CONSUME_TRANSACTION:
+            try {
+                console.log("WORKER: Calling consume_transaction");
+                const [targetAccountIdStr, noteId] = args;
+                console.log("WORKER: targetAccountIdStr", JSON.stringify(targetAccountIdStr));
+                console.log("WORKER: noteId", JSON.stringify(noteId));
+                const targetAccountId = wasm.AccountId.from_hex(targetAccountIdStr);
+                await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(targetAccountId);
+                const transactionResult = await wasmWebClient.new_consume_transaction(targetAccountId, noteId);
+                console.log("WORKER: consume_transaction returned", JSON.stringify(transactionResult, null, 2));
+                console.log("WORKER: transactionResult.executed_transaction().id().to_hex()", JSON.stringify(transactionResult.executed_transaction().id().to_hex()));
+                console.log("WORKER: transactionResult.consumedNotes().num_notes()", JSON.stringify(transactionResult.consumed_notes().num_notes()));
+                console.log("WORKER: transactionResult.account_delta().nonce()", JSON.stringify(transactionResult.account_delta().nonce()?.to_string()));
+                // Serialize the result for the main thread
+                result = {
+                    transactionId: transactionResult.executed_transaction().id().to_hex(),
+                    numConsumedNotes: transactionResult.consumed_notes().num_notes(),
+                    nonce: transactionResult.account_delta().nonce()?.to_string(),
+                };
+                break;
+            } catch (error) {
+                console.error("WORKER: Error in consume_transaction:", JSON.stringify(error, null, 2));
+                self.postMessage({ requestId, error: error });
+                return;
+            }
+
+        case MethodName.NEW_SEND_TRANSACTION:
+            try {
+                console.log("WORKER: Calling new_send_transaction");
+                const [senderAccountIdStr, receiverAccountIdStr, faucetIdStr, noteTypeStr, amountStr, recallHeight] = args;
+                console.log("WORKER: senderAccountIdStr", JSON.stringify(senderAccountIdStr));
+                console.log("WORKER: receiverAccountIdStr", JSON.stringify(receiverAccountIdStr));
+                console.log("WORKER: faucetIdStr", JSON.stringify(faucetIdStr));
+                console.log("WORKER: noteTypeStr", JSON.stringify(noteTypeStr));
+                console.log("WORKER: amountStr", JSON.stringify(amountStr));
+                console.log("WORKER: recallHeight", JSON.stringify(recallHeight));
+                const senderAccountId = wasm.AccountId.from_hex(senderAccountIdStr);
+                const receiverAccountId = wasm.AccountId.from_hex(receiverAccountIdStr);
+                const faucetId = wasm.AccountId.from_hex(faucetIdStr);
+                const noteType = wasm.NoteType.from_str(noteTypeStr);
+                const amount = BigInt(amountStr);
+                await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(senderAccountId);
+                const transactionResult = await wasmWebClient.new_send_transaction(senderAccountId, receiverAccountId, faucetId, noteType, amount, recallHeight);
+                console.log("WORKER: new_send_transaction returned", JSON.stringify(transactionResult, null, 2));
+                console.log("WORKER: transactionResult.executed_transaction().id().to_hex()", JSON.stringify(transactionResult.executed_transaction().id().to_hex()));
+                let send_created_notes = transactionResult.created_notes().notes();
+                let send_created_note_ids = send_created_notes.map((note) =>
+                    note.id().to_string()
+                );
+                console.log("WORKER: send_created_note_ids", JSON.stringify(send_created_note_ids));
+                result = {
+                    transactionId: transactionResult.executed_transaction().id().to_hex(),
+                    noteIds: send_created_note_ids
+                }
+                break;
+            } catch (error) {
+                console.error("WORKER: Error in new_send_transaction:", error);
+                self.postMessage({ requestId, error: error });
+                return;
+            }
+        
+        case MethodName.SYNC_STATE:
+            try {
+                console.log("WORKER: Calling sync_state");
+                await wasmWebClient.sync_state();
+                console.log("WORKER: sync_state completed");
+                result = null;
+                break;
+            } catch (error) {
+                console.error("WORKER: Error in sync_state:", error);
+                self.postMessage({ requestId, error: error });
+                return;
+            }
+            break;
 
         default:
           throw new Error(`Unsupported method: ${methodName}`);

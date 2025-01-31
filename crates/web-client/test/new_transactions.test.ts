@@ -11,7 +11,7 @@ import { setupConsumedNote } from "./notes.test";
 // NEW_MINT_TRANSACTION TESTS
 // =======================================================================================================
 
-describe.only("new_mint_transactions tests", () => {
+describe("new_mint_transactions tests", () => {
   it("new_mint_transaction completes successfully", async () => {
     const { faucetId, accountId } = await setupWalletAndFaucet();
     console.log("TEST: setupWalletAndFaucet finished", JSON.stringify(faucetId), JSON.stringify(accountId));
@@ -28,9 +28,13 @@ describe.only("new_mint_transactions tests", () => {
 
 describe("new_consume_transaction tests", () => {
   it("new_consume_transaction completes successfully", async () => {
+    console.log("TEST: about to call setupWalletAndFaucet");
     const { faucetId, accountId } = await setupWalletAndFaucet();
+    console.log("TEST: setupWalletAndFaucet finished");
     const { createdNoteId } = await mintTransaction(accountId, faucetId);
+    console.log("TEST: mintTransaction finished");
     const result = await consumeTransaction(accountId, faucetId, createdNoteId);
+    console.log("TEST: consumeTransaction finished");
 
     expect(result.transactionId).to.not.be.empty;
     expect(result.nonce).to.equal("1");
@@ -75,19 +79,26 @@ export const sendTransaction = async (): Promise<SendTransactionResult> => {
       window.NoteType.private(),
       BigInt(1000)
     );
-    let created_notes = mint_transaction_result.created_notes().notes();
-    let created_note_ids = created_notes.map((note) => note.id().to_string());
+    // TODO: Add Back
+    // let created_notes = mint_transaction_result.created_notes().notes();
+    // let created_note_ids = created_notes.map((note) => note.id().to_string());
     await window.helpers.waitForTransaction(
-      mint_transaction_result.executed_transaction().id().to_hex()
+      mint_transaction_result.transactionId
+      // TODO: Add Back
+      // mint_transaction_result.executed_transaction().id().to_hex()
     );
 
     await client.fetch_and_cache_account_auth_by_pub_key(senderAccount.id());
     const senderConsumeTransactionResult = await client.new_consume_transaction(
       senderAccount.id(),
-      created_note_ids
+      [mint_transaction_result.createdNoteId]
+      // TODO: Add Back
+      // created_note_ids
     );
     await window.helpers.waitForTransaction(
-      senderConsumeTransactionResult.executed_transaction().id().to_hex()
+      senderConsumeTransactionResult.transactionId
+      // TODO: Add Back
+      // senderConsumeTransactionResult.executed_transaction().id().to_hex()
     );
 
     await client.fetch_and_cache_account_auth_by_pub_key(senderAccount.id());
@@ -98,21 +109,28 @@ export const sendTransaction = async (): Promise<SendTransactionResult> => {
       window.NoteType.private(),
       BigInt(100)
     );
-    let send_created_notes = send_transaction_result.created_notes().notes();
-    let send_created_note_ids = send_created_notes.map((note) =>
-      note.id().to_string()
-    );
+    // TODO: Add Back
+    // let send_created_notes = send_transaction_result.created_notes().notes();
+    // let send_created_note_ids = send_created_notes.map((note) =>
+    //   note.id().to_string()
+    // );
     await window.helpers.waitForTransaction(
-      send_transaction_result.executed_transaction().id().to_hex()
+      send_transaction_result.transactionId
+      // TODO: Add Back
+      // send_transaction_result.executed_transaction().id().to_hex()
     );
 
     await client.fetch_and_cache_account_auth_by_pub_key(targetAccount.id());
     const targetConsumeTransactionResult = await client.new_consume_transaction(
       targetAccount.id(),
-      send_created_note_ids
+      send_transaction_result.noteIds
+      // TODO: Add Back
+      // send_created_note_ids
     );
     await window.helpers.waitForTransaction(
-      targetConsumeTransactionResult.executed_transaction().id().to_hex()
+      targetConsumeTransactionResult.transactionId
+      // TODO: Add Back
+      // targetConsumeTransactionResult.executed_transaction().id().to_hex()
     );
 
     const changedSenderAccount = await client.get_account(senderAccount.id());
@@ -352,11 +370,13 @@ export const customTransaction = async (
         .build();
 
       // Execute and Submit Transaction
+      console.log("TEST: about to call new_transaction");
       await client.fetch_and_cache_account_auth_by_pub_key(faucetAccount.id());
       let transaction_result = await client.new_transaction(
         faucetAccount.id(),
         transaction_request
       );
+      console.log("TEST: new_transaction finished... should tank now");
 
       if (_with_custom_prover) {
         await client.submit_transaction_with_prover(
@@ -540,7 +560,7 @@ const customTxWithMultipleNotes = async (
   );
 };
 
-describe("custom transaction tests", () => {
+describe.only("custom transaction tests", () => {
   it("custom transaction completes successfully", async () => {
     await expect(customTransaction("0", false)).to.be.fulfilled;
   });
