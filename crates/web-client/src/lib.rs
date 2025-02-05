@@ -1,7 +1,11 @@
 extern crate alloc;
-use alloc::sync::Arc;
+use alloc::{
+    boxed::Box,
+    sync::Arc
+};
 
 use console_error_panic_hook::set_once;
+use core::cell::RefCell;
 use miden_client::{
     rpc::WebTonicRpcClient,
     store::{web_store::WebStore, StoreAuthenticator},
@@ -11,6 +15,7 @@ use miden_objects::{crypto::rand::RpoRandomCoin, Felt};
 use miden_proving_service_client::RemoteTransactionProver;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use wasm_bindgen::prelude::*;
+use serde_json;
 
 pub mod account;
 pub mod export;
@@ -22,6 +27,16 @@ pub mod notes;
 pub mod sync;
 pub mod tags;
 pub mod transactions;
+
+thread_local!{
+    static MEMORY: RefCell<Option<JsValue>> = RefCell::new(None);
+}
+
+#[wasm_bindgen]
+pub fn init(memory: JsValue) {
+    MEMORY.with(|m| *m.borrow_mut() = Some(memory));
+    web_sys::console::log_1(&JsValue::from_str("Rust WASM memory initialized with shared memory"));
+}
 
 #[wasm_bindgen]
 pub struct WebClient {
@@ -71,6 +86,9 @@ impl WebClient {
             None => StdRng::from_entropy(),
         };
         let coin_seed: [u64; 4] = rng.gen();
+        let coin_seed_str = serde_json::to_string(&coin_seed).unwrap();
+
+        web_sys::console::log_1(&JsValue::from_str(&coin_seed_str));
 
         let rng = RpoRandomCoin::new(coin_seed.map(Felt::new));
         let web_store: WebStore = WebStore::new()

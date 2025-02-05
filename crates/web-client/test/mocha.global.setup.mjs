@@ -34,8 +34,17 @@ before(async () => {
     browser = await puppeteer.launch({
       headless: true,
       protocolTimeout: 360000,
+      args: [
+        "--enable-features=SharedArrayBuffer",
+        "--disable-site-isolation-trials",
+        "--disable-features=IsolateOrigins,site-per-process"
+      ]
     });
     testingPage = await browser.newPage();
+    testingPage.setExtraHTTPHeaders({
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp"
+    })
     await testingPage.goto(TEST_SERVER);
   } catch (error) {
     console.error("Failed to launch Puppeteer:", error);
@@ -96,21 +105,25 @@ before(async () => {
         TransactionScriptInputPair,
         TransactionScriptInputPairArray,
         Word,
+        WasmWebClient,
         WebClient,
       } = await import("./index.js");
       console.log("MOCHA GLOBAL SETUP: Imported WebClient from index.js");
-  
-      let client = new WebClient();
-      console.log("MOCHA GLOBAL SETUP: Created wrapped WebClient");
 
       let rpc_url = `http://localhost:${rpc_port}`;
       let prover_url = null;
       if (remote_prover_port) {
         prover_url = `http://localhost:${remote_prover_port}`;
       }
+      let wasmWebClient = new WasmWebClient(rpc_url, prover_url);
+      console.log("MOCHA GLOBAL SETUP: Created wrapped WebClient");
+      console.log(JSON.stringify(wasmWebClient));
+
       console.log("MOCHA GLOBAL SETUP: Creating client");
-      await client.create_client(rpc_url, prover_url);
+      await wasmWebClient.create_client(rpc_url, prover_url);
       console.log("MOCHA GLOBAL SETUP: Created client!");
+
+      let client = new WebClient(wasmWebClient)
 
       window.client = client;
       window.Account = Account;

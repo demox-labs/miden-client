@@ -21,10 +21,18 @@ impl WebClient {
         mutable: bool,
     ) -> Result<Account, JsValue> {
         if let Some(client) = self.get_mut_inner() {
+            web_sys::console::log_1(&JsValue::from_str("Rust: new_wallet called!"));
+            web_sys::console::log_1(&JsValue::from_str(&format!(
+                "Storage mode: {}, Mutable: {}",
+                storage_mode.as_str(),
+                mutable
+            )));
             let key_pair = SecretKey::with_rng(client.rng());
+            web_sys::console::log_1(&JsValue::from_str("Rust: new_wallet called 2!"));
 
             let mut init_seed = [0u8; 32];
             client.rng().fill_bytes(&mut init_seed);
+            web_sys::console::log_1(&JsValue::from_str("Rust: new_wallet called 3!"));
 
             let account_type = if mutable {
                 AccountType::RegularAccountUpdatableCode
@@ -33,6 +41,7 @@ impl WebClient {
             };
 
             let anchor_block = client.get_latest_epoch_block().await.unwrap();
+            web_sys::console::log_1(&JsValue::from_str("Rust: new_wallet called 4!"));
 
             let (new_account, seed) = match AccountBuilder::new(init_seed)
                 .anchor((&anchor_block).try_into().unwrap())
@@ -48,6 +57,7 @@ impl WebClient {
                     return Err(JsValue::from_str(&error_message));
                 },
             };
+            web_sys::console::log_1(&JsValue::from_str("Rust: new_wallet called 5!"));
 
             match client
                 .add_account(

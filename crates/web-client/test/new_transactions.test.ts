@@ -560,7 +560,7 @@ const customTxWithMultipleNotes = async (
   );
 };
 
-describe.only("custom transaction tests", () => {
+describe("custom transaction tests", () => {
   it("custom transaction completes successfully", async () => {
     await expect(customTransaction("0", false)).to.be.fulfilled;
   });

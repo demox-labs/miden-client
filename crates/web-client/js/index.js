@@ -1,91 +1,192 @@
 import wasm from "../dist/wasm.js";
 
+// Shared WASM memory instance
+let memory = new WebAssembly.Memory({
+  initial: 256, // 256 pages (64KB per page)
+  maximum: 256, // Prevents memory growth
+  shared: true, // Enables shared memory
+});
+
+wasm.init(memory);
+console.log("WASM initiated with shared memory!");
+
+// Export WASM bindings
 const {
-  Account,
-  AccountHeader,
-  AccountId,
-  AccountStorageMode,
-  AdviceMap,
-  AuthSecretKey,
-  ConsumableNoteRecord,
-  Felt,
-  FeltArray,
-  FungibleAsset,
-  InputNoteState,
-  Note,
-  NoteAssets,
-  NoteConsumability,
-  NoteExecutionHint,
-  NoteExecutionMode,
-  NoteFilter,
-  NoteFilterTypes,
-  NoteId,
-  NoteIdAndArgs,
-  NoteIdAndArgsArray,
-  NoteInputs,
-  NoteMetadata,
-  NoteRecipient,
-  NoteScript,
-  NoteTag,
-  NoteType,
-  OutputNote,
-  OutputNotesArray,
-  Rpo256,
-  TestUtils,
-  TransactionFilter,
-  TransactionProver,
-  TransactionRequest,
-  TransactionRequestBuilder,
-  TransactionScriptInputPair,
-  TransactionScriptInputPairArray,
-  Word,
-  WebClient: WasmWebClient, // Alias the WASM-exported WebClient
+    Account,
+    AccountHeader,
+    AccountId,
+    AccountStorageMode,
+    AdviceMap,
+    AuthSecretKey,
+    ConsumableNoteRecord,
+    Felt,
+    FeltArray,
+    FungibleAsset,
+    InputNoteState,
+    Note,
+    NoteAssets,
+    NoteConsumability,
+    NoteExecutionHint,
+    NoteExecutionMode,
+    NoteFilter,
+    NoteFilterTypes,
+    NoteId,
+    NoteIdAndArgs,
+    NoteIdAndArgsArray,
+    NoteInputs,
+    NoteMetadata,
+    NoteRecipient,
+    NoteScript,
+    NoteTag,
+    NoteType,
+    OutputNote,
+    OutputNotesArray,
+    Rpo256,
+    TestUtils,
+    TransactionFilter,
+    TransactionProver,
+    TransactionRequest,
+    TransactionRequestBuilder,
+    TransactionScriptInputPair,
+    TransactionScriptInputPairArray,
+    Word,
+    WebClient: WasmWebClient, // Alias the WASM-exported WebClient
 } = wasm;
 
+console.log("INDEX.JS: Got bindings");
+
 export {
-  Account,
-  AccountHeader,
-  AccountId,
-  AccountStorageMode,
-  AdviceMap,
-  AuthSecretKey,
-  ConsumableNoteRecord,
-  Felt,
-  FeltArray,
-  FungibleAsset,
-  InputNoteState,
-  Note,
-  NoteAssets,
-  NoteConsumability,
-  NoteExecutionHint,
-  NoteExecutionMode,
-  NoteFilter,
-  NoteFilterTypes,
-  NoteId,
-  NoteIdAndArgs,
-  NoteIdAndArgsArray,
-  NoteInputs,
-  NoteMetadata,
-  NoteRecipient,
-  NoteScript,
-  NoteTag,
-  NoteType,
-  OutputNote,
-  OutputNotesArray,
-  Rpo256,
-  TestUtils,
-  TransactionFilter,
-  TransactionProver,
-  TransactionRequest,
-  TransactionRequestBuilder,
-  TransactionScriptInputPair,
-  TransactionScriptInputPairArray,
-  Word
+    Account,
+    AccountHeader,
+    AccountId,
+    AccountStorageMode,
+    AdviceMap,
+    AuthSecretKey,
+    ConsumableNoteRecord,
+    Felt,
+    FeltArray,
+    FungibleAsset,
+    InputNoteState,
+    Note,
+    NoteAssets,
+    NoteConsumability,
+    NoteExecutionHint,
+    NoteExecutionMode,
+    NoteFilter,
+    NoteFilterTypes,
+    NoteId,
+    NoteIdAndArgs,
+    NoteIdAndArgsArray,
+    NoteInputs,
+    NoteMetadata,
+    NoteRecipient,
+    NoteScript,
+    NoteTag,
+    NoteType,
+    OutputNote,
+    OutputNotesArray,
+    Rpo256,
+    TestUtils,
+    TransactionFilter,
+    TransactionProver,
+    TransactionRequest,
+    TransactionRequestBuilder,
+    TransactionScriptInputPair,
+    TransactionScriptInputPairArray,
+    Word,
+    WasmWebClient, // Export WebClient for usage
+    wasm, // Export the instantiated WASM module for debugging
 };
+console.log("INDEX.JS: Exported bindings")
+
+// import wasm from "../dist/wasm.js";
+
+// const {
+//   Account,
+//   AccountHeader,
+//   AccountId,
+//   AccountStorageMode,
+//   AdviceMap,
+//   AuthSecretKey,
+//   ConsumableNoteRecord,
+//   Felt,
+//   FeltArray,
+//   FungibleAsset,
+//   InputNoteState,
+//   Note,
+//   NoteAssets,
+//   NoteConsumability,
+//   NoteExecutionHint,
+//   NoteExecutionMode,
+//   NoteFilter,
+//   NoteFilterTypes,
+//   NoteId,
+//   NoteIdAndArgs,
+//   NoteIdAndArgsArray,
+//   NoteInputs,
+//   NoteMetadata,
+//   NoteRecipient,
+//   NoteScript,
+//   NoteTag,
+//   NoteType,
+//   OutputNote,
+//   OutputNotesArray,
+//   Rpo256,
+//   TestUtils,
+//   TransactionFilter,
+//   TransactionProver,
+//   TransactionRequest,
+//   TransactionRequestBuilder,
+//   TransactionScriptInputPair,
+//   TransactionScriptInputPairArray,
+//   Word,
+//   WebClient: WasmWebClient, // Alias the WASM-exported WebClient
+// } = wasm;
+
+// export {
+//   Account,
+//   AccountHeader,
+//   AccountId,
+//   AccountStorageMode,
+//   AdviceMap,
+//   AuthSecretKey,
+//   ConsumableNoteRecord,
+//   Felt,
+//   FeltArray,
+//   FungibleAsset,
+//   InputNoteState,
+//   Note,
+//   NoteAssets,
+//   NoteConsumability,
+//   NoteExecutionHint,
+//   NoteExecutionMode,
+//   NoteFilter,
+//   NoteFilterTypes,
+//   NoteId,
+//   NoteIdAndArgs,
+//   NoteIdAndArgsArray,
+//   NoteInputs,
+//   NoteMetadata,
+//   NoteRecipient,
+//   NoteScript,
+//   NoteTag,
+//   NoteType,
+//   OutputNote,
+//   OutputNotesArray,
+//   Rpo256,
+//   TestUtils,
+//   TransactionFilter,
+//   TransactionProver,
+//   TransactionRequest,
+//   TransactionRequestBuilder,
+//   TransactionScriptInputPair,
+//   TransactionScriptInputPairArray,
+//   Word
+// };
 
 // Wrapper for WebClient
 export class WebClient {
-  constructor(...args) {
+  constructor(wasmWebClient) {
     this.worker = new Worker(new URL("./workers/web-client-methods-worker.js", import.meta.url), {
       type: "module",
     });
@@ -96,13 +197,34 @@ export class WebClient {
       };
     });
 
+    this.wasmWebClient = wasmWebClient;
+
     // Ensure worker is fully ready before initializing
+    // (async () => {
+    //   await this.ready;
+    //   this.worker.postMessage({ action: "init", args });
+    // })();
     (async () => {
       await this.ready;
-      this.worker.postMessage({ action: "init", args });
+      console.log("INDEX.JS: About to call postMessage with init message");
+      // console.log("INDEX.JS: Calling create_client first on WasmWebClient object");
+      // await this.wasmWebClient.create_client(this.rpc_url, this.prover_url);
+      // console.log("INDEX.JS: Client created successfully!");
+      console.log("INDEX.JS: wasmWebClient ptr", JSON.stringify(this.wasmWebClient.__wbg_ptr));
+      console.log("INDEX.JS: memory:", JSON.stringify(memory));
+      console.log("INDEX.JS: Checking if memory is shared:", memory.buffer instanceof SharedArrayBuffer);
+      console.log("INDEX.JS: Memory.buffer type:", JSON.stringify(Object.prototype.toString.call(memory.buffer)));
+      console.log("INDEX.JS: Memory.buffer byteLength:", JSON.stringify(memory.buffer.byteLength));
+      console.log("INDEX.JS: Memory is transferable?", memory.buffer.byteLength > 0);
+      console.log("INDEX.JS: memoryBuffer:", memory.buffer);
+      try {
+        this.worker.postMessage({ action: "init", wasmWebClientPtr: this.wasmWebClient.__wbg_ptr, memory: memory });
+      } catch (e) {
+        console.error("Transfer failed:", JSON.stringify(e));
+      }
+      
+      console.log("INDEX.JS: sent message successfully");
     })();
-
-    this.wasmWebClient = new WasmWebClient(...args);
 
     return new Proxy(this, {
       get: (target, prop) => {
@@ -157,8 +279,12 @@ export class WebClient {
 
   async new_wallet(storageMode, mutable) {
     try {
+      console.log("INDEX.JS: new_wallet called")
       const serializedStorageMode = storageMode.as_str();
-      const serializedAccountBytes = await this.callMethodWithWorker("new_wallet", serializedStorageMode, mutable);
+      console.log(JSON.stringify(storageMode))
+      const storageModePtr = storageMode.__wbg_ptr;
+      console.log(JSON.stringify(storageModePtr));
+      const serializedAccountBytes = await this.callMethodWithWorker("new_wallet", storageModePtr, mutable);
       return wasm.Account.deserialize(new Uint8Array(serializedAccountBytes));
     } catch (error) {
       console.error("INDEX.JS: Error in new_wallet:", error);

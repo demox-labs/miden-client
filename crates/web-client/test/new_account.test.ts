@@ -45,6 +45,7 @@ export const createNewWallet = async (
 
       let client = window.client;
       const accountStorageMode = window.AccountStorageMode.from_str(_storageMode);
+      console.log("TEST: accountStorageMode object", JSON.stringify(accountStorageMode));
 
       const newWallet = await client.new_wallet(accountStorageMode, _mutable);
       console.log("TEST: about to call new_wallet");
@@ -87,7 +88,7 @@ export const createNewWallet = async (
   );
 };
 
-describe("new_wallet tests", () => {
+describe.only("new_wallet tests", () => {
   const testCases = [
     {
       description: "creates a new private, immutable wallet",

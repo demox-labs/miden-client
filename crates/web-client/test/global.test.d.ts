@@ -1,4 +1,5 @@
 import { Page } from "puppeteer";
+console.log("When does this happen global.test.d.ts?");
 import {
   Account,
   AccountHeader,
@@ -37,6 +38,7 @@ import {
   Word,
   WebClient,
 } from "../dist/index";
+console.log("finished importing in global.test.d.ts?");
 
 declare global {
   interface Window {

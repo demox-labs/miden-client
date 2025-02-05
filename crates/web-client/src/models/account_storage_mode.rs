@@ -5,6 +5,9 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct AccountStorageMode(NativeAccountStorageMode);
 
+unsafe impl Send for AccountStorageMode {}
+unsafe impl Sync for AccountStorageMode {}
+
 #[wasm_bindgen]
 impl AccountStorageMode {
     pub fn private() -> AccountStorageMode {

@@ -30,9 +30,30 @@ async function processMessage(event) {
   try {
     if (action === WorkerAction.INIT) {
       console.log("WORKER: Received init message");
-      wasmWebClient = new wasm.WebClient(...args);
-      await wasmWebClient.create_client();
-      console.log("WORKER: WASM WebClient initialized");
+      const memory = event.data.memory;
+      const wasmWebClientPtr = event.data.wasmWebClientPtr;
+      console.log("WORKER: memory byteLength:", JSON.stringify(memory.buffer.byteLength));
+    //   memory = new WebAssembly.Memory({
+    //     initial: 256, // 256 pages (64KB per page)
+    //     maximum: 256, // Prevents memory growth
+    //     shared: true, // Enables shared memory
+    //   });
+    //   Object.defineProperty(memory, "buffer", {
+    //     get() {
+    //         return memoryBuffer;
+    //     }
+    //   })
+      wasm.init(memory);
+      console.log("WORKER: WASM initialized with shared memory!");
+      wasmWebClient = new wasm.WebClient();
+      await wasmWebClient.create_client("http://localhost:57291", null);
+      console.log(JSON.stringify(wasmWebClient));
+      wasmWebClient.__wbg_ptr = wasmWebClientPtr;
+      console.log("WORKER:", JSON.stringify(wasmWebClient));
+      console.log("WORKER: Worker now has same wasmWebClient instance!");
+    //   wasmWebClient = new wasm.WebClient();
+    //   await wasmWebClient.create_client();
+    //   console.log("WORKER: WASM WebClient initialized");
       ready = true;
       self.postMessage({ ready: true });
     } else if (action === WorkerAction.CALL_METHOD) {
@@ -44,12 +65,16 @@ async function processMessage(event) {
       switch (methodName) {
         case MethodName.NEW_WALLET:
           console.log("WORKER: Calling new_wallet");
-          const [walletStorageModeStr, mutable] = args;
-          console.log("WORKER: storageModeStr", JSON.stringify(walletStorageModeStr));
+          const [storageModePtr, mutable] = args;
+          console.log("WORKER: storageModeStr", JSON.stringify(storageModePtr));
             console.log("WORKER: mutable", JSON.stringify(mutable));
 
           // Convert storage mode string to WASM AccountStorageMode object
-          const walletStorageMode = wasm.AccountStorageMode.from_str(walletStorageModeStr);
+        //   const walletStorageMode = wasm.AccountStorageMode.from_str(walletStorageModeStr);
+        const walletStorageMode = wasm.AccountStorageMode.__wrap(storageModePtr);
+        console.log("WORKER: Successfully wrapped walletStorageMode")
+        // console.log("WORKER: walletStorageMode as str", JSON.stringify(walletStorageMode.as_str()))
+        // console.log(JSON.stringify(walletStorageMode));
 
           // Call the WASM WebClient's `new_wallet` method
           const wallet = await wasmWebClient.new_wallet(walletStorageMode, mutable);
