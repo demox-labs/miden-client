@@ -41,7 +41,7 @@ import {
 declare global {
   interface Window {
     client: WebClient;
-    remote_prover_url: string;
+    remoteProverUrl: string;
     Account: typeof Account;
     AccountHeader: typeof AccountHeader;
     AccountId: typeof AccountId;
