@@ -40,21 +40,16 @@ const getAllTransactions = async (): Promise<GetAllTransactionsResult> => {
 
 describe("get_transactions tests", () => {
   it("get_transactions retrieves all transactions successfully", async () => {
-    console.log("setting up wallet and faucet");
     const { accountId, faucetId } = await setupWalletAndFaucet();
-    console.log("minting transaction");
     const { transactionId: mintTransactionId, createdNoteId } =
       await mintTransaction(accountId, faucetId);
-    console.log("consuming transaction");
     const { transactionId: consumeTransactionId } = await consumeTransaction(
       accountId,
       faucetId,
       createdNoteId
     );
 
-    console.log("getting all transactions");
     const result = await getAllTransactions();
-    console.log("got all transactions");
 
     expect(result.transactionIds).to.include(mintTransactionId);
     expect(result.transactionIds).to.include(consumeTransactionId);
