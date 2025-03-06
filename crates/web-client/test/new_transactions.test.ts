@@ -353,7 +353,7 @@ export const customTransaction = async (
       );
 
       if (_withCustomProver) {
-        await client.submitTransactionWithProver(
+        await client.submitTransaction(
           transactionResult,
           await selectProver()
         );
@@ -408,7 +408,7 @@ export const customTransaction = async (
       );
 
       if (_withCustomProver) {
-        await client.submitTransactionWithProver(
+        await client.submitTransaction(
           transactionResult2,
           await selectProver()
         );

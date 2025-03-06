@@ -23,12 +23,16 @@ pub mod notes;
 pub mod sync;
 pub mod tags;
 pub mod transactions;
+pub mod utils;
 
 #[wasm_bindgen]
 pub struct WebClient {
     store: Option<Arc<WebStore>>,
+<<<<<<< HEAD
     remote_prover: Option<Arc<RemoteTransactionProver>>,
     keystore: Option<WebKeyStore>,
+=======
+>>>>>>> upstream/main
     inner: Option<Client<RpoRandomCoin>>,
 }
 
@@ -45,7 +49,6 @@ impl WebClient {
         set_once();
         WebClient {
             inner: None,
-            remote_prover: None,
             store: None,
             keystore: None,
         }
@@ -59,7 +62,6 @@ impl WebClient {
     pub async fn create_client(
         &mut self,
         node_url: Option<String>,
-        prover_url: Option<String>,
         seed: Option<Vec<u8>>,
     ) -> Result<JsValue, JsValue> {
         let mut rng = match seed {
@@ -92,8 +94,6 @@ impl WebClient {
 
         let web_rpc_client = Box::new(TonicRpcClient::new(&endpoint, 0));
 
-        self.remote_prover =
-            prover_url.map(|prover_url| Arc::new(RemoteTransactionProver::new(prover_url)));
         self.inner =
             Some(Client::new(web_rpc_client, rng, web_store.clone(), authenticator, false));
         self.store = Some(web_store);

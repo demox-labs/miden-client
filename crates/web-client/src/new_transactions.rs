@@ -45,20 +45,20 @@ impl WebClient {
     pub async fn submit_transaction(
         &mut self,
         transaction_result: &TransactionResult,
+        prover: Option<TransactionProver>,
     ) -> Result<(), JsValue> {
-        let remote_prover = self.remote_prover.clone();
         if let Some(client) = self.get_mut_inner() {
             let native_transaction_result: NativeTransactionResult = transaction_result.into();
-            match remote_prover {
-                Some(ref remote_prover) => {
+            match prover {
+                Some(p) => {
                     client
-                        .submit_transaction_with_prover(
-                            native_transaction_result,
-                            remote_prover.clone(),
-                        )
+                        .submit_transaction_with_prover(native_transaction_result, p.get_prover())
                         .await
                         .map_err(|err| {
-                            JsValue::from_str(&format!("Failed to submit Transaction: {err}"))
+                            JsValue::from_str(&format!(
+                                "Failed to submit Transaction with prover: {}",
+                                err
+                            ))
                         })?;
                 },
                 None => {
@@ -67,28 +67,6 @@ impl WebClient {
                     })?;
                 },
             }
-
-            Ok(())
-        } else {
-            Err(JsValue::from_str("Client not initialized"))
-        }
-    }
-
-    #[wasm_bindgen(js_name = "submitTransactionWithProver")]
-    pub async fn submit_transaction_with_prover(
-        &mut self,
-        transaction_result: &TransactionResult,
-        prover: TransactionProver,
-    ) -> Result<(), JsValue> {
-        if let Some(client) = self.get_mut_inner() {
-            let native_transaction_result: NativeTransactionResult = transaction_result.into();
-            client
-                .submit_transaction_with_prover(native_transaction_result, prover.get_prover())
-                .await
-                .map_err(|err| {
-                    JsValue::from_str(&format!("Failed to submit Transaction: {err}"))
-                })?;
-
             Ok(())
         } else {
             Err(JsValue::from_str("Client not initialized"))
