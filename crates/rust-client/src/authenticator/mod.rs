@@ -19,6 +19,7 @@
 //! #    crypto::{FeltRng, SecretKey}
 //! # };
 //! # use miden_objects::account::{AuthSecretKey, AccountStorageMode};
+//! # use winter_maybe_async::maybe_await;
 //! # async fn add_new_account_example(
 //! #     client: &mut miden_client::Client<impl FeltRng>,
 //! #     keystore: &mut FilesystemKeyStore,
@@ -32,7 +33,7 @@
 //!     .unwrap();
 //!
 //! // Add the secret key to the keystore so the account can sign transactions
-//! keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair)).unwrap();
+//! maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair))).unwrap();
 //!
 //! // Add the account to the client. The account seed and authentication key are required
 //! // for new accounts.

@@ -1422,7 +1422,6 @@ dependencies = [
  "miden-client",
  "miden-lib",
  "miden-objects",
- "miden-tx",
  "rand",
  "serde-wasm-bindgen",
  "wasm-bindgen",

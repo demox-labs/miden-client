@@ -77,10 +77,7 @@ pub async fn create_test_client() -> (TestClient, FilesystemKeyStore) {
 }
 
 pub fn get_client_config() -> (Endpoint, u64, PathBuf, PathBuf) {
-    let rpc_config_toml = std::fs::read_to_string(TEST_CLIENT_RPC_CONFIG_FILE)
-        .unwrap()
-        .parse::<Table>()
-        .unwrap();
+    let rpc_config_toml = TEST_CLIENT_RPC_CONFIG_FILE.parse::<Table>().unwrap();
     let rpc_endpoint_toml = rpc_config_toml["endpoint"].as_table().unwrap();
 
     let protocol = rpc_endpoint_toml["protocol"].as_str().unwrap().to_string();
