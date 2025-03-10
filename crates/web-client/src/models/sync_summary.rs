@@ -4,7 +4,7 @@ use wasm_bindgen_futures::js_sys::Uint8Array;
 
 use crate::{
     models::{account_id::AccountId, note_id::NoteId, transaction_id::TransactionId},
-    utils::*,
+    utils::{deserialize_from_uint8array, serialize_to_uint8array},
 };
 
 #[wasm_bindgen]
@@ -46,7 +46,7 @@ impl SyncSummary {
         serialize_to_uint8array(&self.0)
     }
 
-    pub fn deserialize(bytes: Uint8Array) -> Result<SyncSummary, JsValue> {
+    pub fn deserialize(bytes: &Uint8Array) -> Result<SyncSummary, JsValue> {
         deserialize_from_uint8array::<NativeSyncSummary>(bytes).map(SyncSummary)
     }
 }

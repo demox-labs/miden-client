@@ -16,6 +16,7 @@ use miden_client::{
     utils::Deserializable,
     Client, Felt,
 };
+use winter_maybe_async::maybe_await;
 
 use crate::{
     commands::account::maybe_set_default_account, errors::CliError, utils::load_config_file,
@@ -164,8 +165,7 @@ impl NewFaucetCmd {
             .build()
             .map_err(|err| CliError::Account(err, "error building account".into()))?;
 
-        keystore
-            .add_key(&AuthSecretKey::RpoFalcon512(key_pair))
+        maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair)))
             .map_err(CliError::KeyStore)?;
         client.add_account(&new_account, Some(seed), false).await?;
 
@@ -243,8 +243,7 @@ impl NewWalletCmd {
             .build()
             .map_err(|err| CliError::Account(err, "failed to create a wallet".to_string()))?;
 
-        keystore
-            .add_key(&AuthSecretKey::RpoFalcon512(key_pair))
+        maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair)))
             .map_err(CliError::KeyStore)?;
         client.add_account(&new_account, Some(seed), false).await?;
 

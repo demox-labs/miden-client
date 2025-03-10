@@ -13,6 +13,7 @@ use miden_client::{
     Client, ClientError,
 };
 use tracing::info;
+use winter_maybe_async::maybe_await;
 
 use crate::{
     commands::account::maybe_set_default_account, errors::CliError, utils::load_config_file, Parser,
@@ -82,7 +83,7 @@ async fn import_account(
         .map_err(ClientError::DataDeserializationError)?;
     let account_id = account_data.account.id();
 
-    keystore.add_key(&account_data.auth_secret_key).map_err(CliError::KeyStore)?;
+    maybe_await!(keystore.add_key(&account_data.auth_secret_key)).map_err(CliError::KeyStore)?;
 
     client
         .add_account(&account_data.account, account_data.account_seed, overwrite)

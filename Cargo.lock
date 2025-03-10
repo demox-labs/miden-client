@@ -1360,6 +1360,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+ "winter-maybe-async",
 ]
 
 [[package]]

@@ -76,7 +76,7 @@ const methodHandlers = {
     const transactionRequest = wasm.TransactionRequest.deserialize(
       new Uint8Array(serializedTransactionRequest)
     );
-    
+
     await wasmWebClient.fetchAndCacheAccountAuthByAccountId(accountId);
     const transactionResult = await wasmWebClient.newTransaction(
       accountId,
@@ -91,7 +91,7 @@ const methodHandlers = {
     const faucetId = wasm.AccountId.fromHex(faucetIdStr);
     const noteType = wasm.NoteType.deserialize(new Uint8Array(noteTypeBytes));
     const amount = BigInt(amountStr);
-    
+
     await wasmWebClient.fetchAndCacheAccountAuthByAccountId(faucetId);
     const transactionResult = await wasmWebClient.newMintTransaction(
       targetAccountId,
@@ -105,7 +105,7 @@ const methodHandlers = {
   [MethodName.NEW_CONSUME_TRANSACTION]: async (args) => {
     const [targetAccountIdStr, noteId] = args;
     const targetAccountId = wasm.AccountId.fromHex(targetAccountIdStr);
-    
+
     await wasmWebClient.fetchAndCacheAccountAuthByAccountId(targetAccountId);
     const transactionResult = await wasmWebClient.newConsumeTransaction(
       targetAccountId,
@@ -128,7 +128,7 @@ const methodHandlers = {
     const faucetId = wasm.AccountId.fromHex(faucetIdStr);
     const noteType = wasm.NoteType.deserialize(new Uint8Array(noteTypeBytes));
     const amount = BigInt(amountStr);
-    
+
     await wasmWebClient.fetchAndCacheAccountAuthByAccountId(senderAccountId);
     const transactionResult = await wasmWebClient.newSendTransaction(
       senderAccountId,

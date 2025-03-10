@@ -1039,6 +1039,7 @@ mod test {
         Word,
     };
     use miden_tx::utils::{Deserializable, Serializable};
+    use winter_maybe_async::maybe_await;
 
     use super::PaymentTransactionData;
     use crate::{
@@ -1061,7 +1062,7 @@ mod test {
 
         let secret_key = SecretKey::new();
         let pub_key = secret_key.public_key();
-        keystore.add_key(&AuthSecretKey::RpoFalcon512(secret_key)).unwrap();
+        maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(secret_key))).unwrap();
 
         let wallet_component = AccountComponent::compile(
             BASIC_WALLET_CODE,

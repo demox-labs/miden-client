@@ -32,6 +32,7 @@ use miden_objects::{
 use rand::Rng;
 use toml::Table;
 use uuid::Uuid;
+use winter_maybe_async::maybe_await;
 
 pub const ACCOUNT_ID_REGULAR: u128 = ACCOUNT_ID_REGULAR_ACCOUNT_UPDATABLE_CODE_OFF_CHAIN;
 
@@ -76,7 +77,7 @@ pub async fn create_test_client() -> (TestClient, FilesystemKeyStore) {
 }
 
 pub fn get_client_config() -> (Endpoint, u64, PathBuf, PathBuf) {
-    let rpc_config_toml = std::fs::read_to_string(TEST_CLIENT_RPC_CONFIG_FILE_PATH)
+    let rpc_config_toml = std::fs::read_to_string(TEST_CLIENT_RPC_CONFIG_FILE)
         .unwrap()
         .parse::<Table>()
         .unwrap();
@@ -126,7 +127,7 @@ pub async fn insert_new_wallet_with_seed<R: FeltRng>(
     let key_pair = SecretKey::with_rng(client.rng());
     let pub_key = key_pair.public_key();
 
-    keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair.clone())).unwrap();
+    maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair.clone()))).unwrap();
 
     let anchor_block = client.get_latest_epoch_block().await.unwrap();
 
@@ -152,7 +153,7 @@ pub async fn insert_new_fungible_faucet<R: FeltRng>(
     let key_pair = SecretKey::with_rng(client.rng());
     let pub_key = key_pair.public_key();
 
-    keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair.clone())).unwrap();
+    maybe_await!(keystore.add_key(&AuthSecretKey::RpoFalcon512(key_pair.clone()))).unwrap();
 
     // we need to use an initial seed to create the wallet account
     let mut init_seed = [0u8; 32];

@@ -246,36 +246,6 @@ export async function getAccountAssetVault(vaultRoot) {
   }
 }
 
-export async function getAccountAuth(accountId) {
-  try {
-    // Fetch all records matching the given id
-    const allMatchingRecords = await accountAuths
-      .where("accountId")
-      .equals(accountId)
-      .toArray();
-
-    if (allMatchingRecords.length === 0) {
-      console.log("No account auth records found for given account ID.");
-      return null; // No records found
-    }
-
-    // The first record is the only one due to the uniqueness constraint
-    const authRecord = allMatchingRecords[0];
-
-    // Convert the authInfo Blob to an ArrayBuffer
-    const authInfoArrayBuffer = await authRecord.authInfo.arrayBuffer();
-    const authInfoArray = new Uint8Array(authInfoArrayBuffer);
-    const authInfoBase64 = uint8ArrayToBase64(authInfoArray);
-
-    return {
-      id: authRecord.accountId,
-      authInfo: authInfoBase64,
-    };
-  } catch (err) {
-    throw err; // Re-throw the error for further handling
-  }
-}
-
 export function getAccountAuthByPubKey(pubKey) {
   // Try to get the account auth from the cache
   let cachedSecretKey = ACCOUNT_AUTH_MAP.get(pubKey);
@@ -286,7 +256,7 @@ export function getAccountAuthByPubKey(pubKey) {
   }
 
   let data = {
-    secretKey: cachedSecretKey
+    secretKey: cachedSecretKey,
   };
 
   return data;
@@ -313,7 +283,7 @@ export async function fetchAndCacheAccountAuthByPubKey(pubKey) {
     ACCOUNT_AUTH_MAP.set(authRecord.pubKey, authRecord.secretKey);
 
     return {
-      secretKey: authRecord.secretKey
+      secretKey: authRecord.secretKey,
     };
   } catch (err) {
     throw err; // Re-throw the error for further handling
@@ -419,7 +389,7 @@ export async function insertAccountAuth(pubKey, secretKey) {
     // Prepare the data object to insert
     const data = {
       pubKey: pubKey,
-      secretKey: secretKey
+      secretKey: secretKey,
     };
 
     // Perform the insert using Dexie

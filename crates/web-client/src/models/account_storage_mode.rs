@@ -19,9 +19,8 @@ impl AccountStorageMode {
 
     #[wasm_bindgen(js_name = "tryFromStr")]
     pub fn try_from_str(s: &str) -> Result<AccountStorageMode, JsValue> {
-        let mode = NativeAccountStorageMode::from_str(s).map_err(|e| {
-            JsValue::from_str(&format!("Invalid AccountStorageMode string: {:?}", e))
-        })?;
+        let mode = NativeAccountStorageMode::from_str(s)
+            .map_err(|e| JsValue::from_str(&format!("Invalid AccountStorageMode string: {e:?}")))?;
         Ok(AccountStorageMode(mode))
     }
 

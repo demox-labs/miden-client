@@ -46,7 +46,6 @@ declare global {
     Account: typeof Account;
     AccountHeader: typeof AccountHeader;
     AccountId: typeof AccountId;
-    AccountStorage: typeof AccountStorage;
     AccountStorageMode: typeof AccountStorageMode;
     AdviceMap: typeof AdviceMap;
     AuthSecretKey: typeof AuthSecretKey;

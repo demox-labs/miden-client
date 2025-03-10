@@ -24,7 +24,7 @@ use crate::{
         transaction_script::TransactionScript,
         word::Word,
     },
-    utils::*,
+    utils::{deserialize_from_uint8array, serialize_to_uint8array},
 };
 
 // NoteAndArgs Helper Structs
@@ -235,7 +235,7 @@ impl TransactionRequest {
         serialize_to_uint8array(&self.0)
     }
 
-    pub fn deserialize(bytes: Uint8Array) -> Result<TransactionRequest, JsValue> {
+    pub fn deserialize(bytes: &Uint8Array) -> Result<TransactionRequest, JsValue> {
         deserialize_from_uint8array::<NativeTransactionRequest>(bytes).map(TransactionRequest)
     }
 }

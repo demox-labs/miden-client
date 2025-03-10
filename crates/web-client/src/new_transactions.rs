@@ -56,8 +56,7 @@ impl WebClient {
                         .await
                         .map_err(|err| {
                             JsValue::from_str(&format!(
-                                "Failed to submit Transaction with prover: {}",
-                                err
+                                "Failed to submit Transaction with prover: {err}"
                             ))
                         })?;
                 },

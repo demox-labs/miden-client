@@ -7,10 +7,10 @@
 //! **Note:** This implementation is only available when targeting WebAssembly with the `web_store`
 //! feature enabled.
 
-use alloc::{boxed::Box, collections::BTreeMap, string::String, vec::Vec};
+use alloc::{boxed::Box, collections::BTreeMap, vec::Vec};
 
 use miden_objects::{
-    account::{Account, AccountCode, AccountHeader, AccountId, AuthSecretKey},
+    account::{Account, AccountCode, AccountHeader, AccountId},
     block::{BlockHeader, BlockNumber},
     crypto::merkle::{InOrderIndex, MmrPeaks},
     note::Nullifier,
@@ -56,29 +56,6 @@ impl WebStore {
         let _ = JsFuture::from(setup_indexed_db()).await;
         Ok(WebStore {})
     }
-
-    pub async fn insert_account_with_auth_info(
-        &self,
-        account: &Account,
-        account_seed: Option<Word>,
-        auth_info: &AuthSecretKey,
-    ) -> Result<(), StoreError> {
-        self.insert_account_with_auth_info_x(account, account_seed, auth_info).await
-    }
-
-    // pub async fn get_account_auth_by_pub_key(
-    //     &self,
-    //     pub_key: String,
-    // ) -> Result<Option<String>, StoreError> {
-    //     self.get_account_auth_by_pub_key_x(pub_key)
-    // }
-
-    // pub async fn get_account_auth(
-    //     &self,
-    //     account_id: AccountId,
-    // ) -> Result<Option<AuthSecretKey>, StoreError> {
-    //     self.get_account_auth_x(account_id).await
-    // }
 }
 
 #[async_trait(?Send)]
@@ -202,7 +179,7 @@ impl Store for WebStore {
     async fn insert_account(
         &self,
         account: &Account,
-        account_seed: Option<Word>
+        account_seed: Option<Word>,
     ) -> Result<(), StoreError> {
         self.insert_account(account, account_seed).await
     }

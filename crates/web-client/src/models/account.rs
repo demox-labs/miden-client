@@ -7,7 +7,7 @@ use crate::{
         account_code::AccountCode, account_id::AccountId, account_storage::AccountStorage,
         asset_vault::AssetVault, felt::Felt, rpo_digest::RpoDigest,
     },
-    utils::*,
+    utils::{deserialize_from_uint8array, serialize_to_uint8array},
 };
 
 #[wasm_bindgen]
@@ -68,7 +68,7 @@ impl Account {
         serialize_to_uint8array(&self.0)
     }
 
-    pub fn deserialize(bytes: Uint8Array) -> Result<Account, JsValue> {
+    pub fn deserialize(bytes: &Uint8Array) -> Result<Account, JsValue> {
         deserialize_from_uint8array::<NativeAccount>(bytes).map(Account)
     }
 }

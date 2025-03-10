@@ -6,7 +6,7 @@ use miden_client::{
     authenticator::{keystore::WebKeyStore, ClientAuthenticator},
     rpc::{Endpoint, TonicRpcClient},
     store::web_store::WebStore,
-    Client
+    Client,
 };
 use miden_objects::{crypto::rand::RpoRandomCoin, Felt};
 use rand::{rngs::StdRng, Rng, SeedableRng};
@@ -43,11 +43,7 @@ impl WebClient {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         set_once();
-        WebClient {
-            inner: None,
-            store: None,
-            keystore: None,
-        }
+        WebClient { inner: None, store: None, keystore: None }
     }
 
     pub(crate) fn get_mut_inner(&mut self) -> Option<&mut Client<RpoRandomCoin>> {

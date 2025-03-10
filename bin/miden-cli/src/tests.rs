@@ -6,6 +6,7 @@ use std::{
 };
 
 use assert_cmd::Command;
+use config::RpcConfig;
 use miden_client::{
     self,
     account::{AccountId, AccountStorageMode},

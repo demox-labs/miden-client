@@ -1,9 +1,8 @@
-use alloc::string::String;
-use alloc::boxed::Box;
+use alloc::{boxed::Box, string::String};
 
 use miden_objects::{account::AuthSecretKey, Word};
 use thiserror::Error;
-use winter_maybe_async::*;
+use winter_maybe_async::maybe_async_trait;
 
 #[derive(Debug, Error)]
 pub enum KeyStoreError {
@@ -17,7 +16,7 @@ pub enum KeyStoreError {
 pub trait KeyStore {
     /// Adds a new key to the keystore. If a key with the same public key already exists, it
     /// will be overwritten.
-    #[maybe_async] 
+    #[maybe_async]
     fn add_key(&self, key: &AuthSecretKey) -> Result<(), KeyStoreError>;
 
     /// Gets a secret key by public key. If the public key isn't found, `None` is returned.

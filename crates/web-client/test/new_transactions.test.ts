@@ -357,10 +357,7 @@ export const customTransaction = async (
       );
 
       if (_withCustomProver) {
-        await client.submitTransaction(
-          transactionResult,
-          await selectProver()
-        );
+        await client.submitTransaction(transactionResult, await selectProver());
       } else {
         await client.submitTransaction(transactionResult);
       }
@@ -508,7 +505,7 @@ const customTxWithMultipleNotes = async (
         )
         .build();
 
-        await client.fetchAndCacheAccountAuthByAccountId(senderAccountId);
+      await client.fetchAndCacheAccountAuthByAccountId(senderAccountId);
       let transactionResult = await client.newTransaction(
         senderAccountId,
         transactionRequest

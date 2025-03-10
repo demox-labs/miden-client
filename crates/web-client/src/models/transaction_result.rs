@@ -7,7 +7,7 @@ use crate::{
         account_delta::AccountDelta, executed_transaction::ExecutedTransaction,
         input_notes::InputNotes, output_notes::OutputNotes, transaction_args::TransactionArgs,
     },
-    utils::*,
+    utils::{deserialize_from_uint8array, serialize_to_uint8array},
 };
 
 #[wasm_bindgen]
@@ -51,7 +51,7 @@ impl TransactionResult {
         serialize_to_uint8array(&self.0)
     }
 
-    pub fn deserialize(bytes: Uint8Array) -> Result<TransactionResult, JsValue> {
+    pub fn deserialize(bytes: &Uint8Array) -> Result<TransactionResult, JsValue> {
         deserialize_from_uint8array::<NativeTransactionResult>(bytes).map(TransactionResult)
     }
 }

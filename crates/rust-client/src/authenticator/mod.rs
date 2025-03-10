@@ -49,7 +49,6 @@ use miden_tx::{auth::TransactionAuthenticator, utils::sync::RwLock, Authenticati
 use rand::Rng;
 
 use crate::authenticator::keystore::KeyStore;
-use crate::store::web_store::account::utils::insert_account_auth;
 
 pub mod keystore;
 

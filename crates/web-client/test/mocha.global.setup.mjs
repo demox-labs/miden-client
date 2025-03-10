@@ -63,7 +63,6 @@ before(async () => {
         Account,
         AccountHeader,
         AccountId,
-        AccountStorage,
         AccountStorageMode,
         AdviceMap,
         AuthSecretKey,
@@ -111,7 +110,6 @@ before(async () => {
       window.Account = Account;
       window.AccountHeader = AccountHeader;
       window.AccountId = AccountId;
-      window.AccountStorage = AccountStorage;
       window.AccountStorageMode = AccountStorageMode;
       window.AdviceMap = AdviceMap;
       window.AuthSecretKey = AuthSecretKey;

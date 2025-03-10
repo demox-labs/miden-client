@@ -1,16 +1,14 @@
-use alloc::string::ToString;
-use alloc::boxed::Box;
+use alloc::{boxed::Box, string::ToString};
 
 use miden_objects::{
     account::AuthSecretKey,
     utils::{Deserializable, Serializable},
     Digest, Word,
 };
-use crate::store::web_store::account::utils::insert_account_auth;
-use crate::store::web_store::account::utils::get_account_auth_by_pub_key;
-use winter_maybe_async::*;
+use winter_maybe_async::{maybe_async_trait, maybe_await};
 
 use super::{KeyStore, KeyStoreError};
+use crate::store::web_store::account::utils::{get_account_auth_by_pub_key, insert_account_auth};
 
 /// A web-based keystore that stores keys in [browser's local storage](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API).
 #[derive(Clone)]
@@ -25,7 +23,9 @@ impl KeyStore for WebKeyStore {
         };
         let secret_key_hex = hex::encode(key.to_bytes());
 
-        maybe_await!(insert_account_auth(pub_key, secret_key_hex));
+        maybe_await!(insert_account_auth(pub_key, secret_key_hex)).map_err(|_| {
+            KeyStoreError::StorageError("Failed to insert item into local storage".to_string())
+        })?;
 
         Ok(())
     }
@@ -36,20 +36,14 @@ impl KeyStore for WebKeyStore {
             KeyStoreError::StorageError("Failed to get item from local storage".to_string())
         })?;
 
-        match secret_key_hex {
-            Some(secret_key_hex) => {
-                let secret_key_bytes = hex::decode(secret_key_hex).map_err(|err| {
-                    KeyStoreError::DecodingError(format!("error decoding secret key hex: {err:?}"))
-                })?;
+        let secret_key_bytes = hex::decode(secret_key_hex).map_err(|err| {
+            KeyStoreError::DecodingError(format!("error decoding secret key hex: {err:?}"))
+        })?;
 
-                let secret_key = AuthSecretKey::read_from_bytes(secret_key_bytes.as_slice())
-                    .map_err(|err| {
-                        KeyStoreError::DecodingError(format!("error reading secret key: {err:?}"))
-                    })?;
+        let secret_key = AuthSecretKey::read_from_bytes(&secret_key_bytes).map_err(|err| {
+            KeyStoreError::DecodingError(format!("error reading secret key: {err:?}"))
+        })?;
 
-                Ok(Some(secret_key))
-            },
-            None => Ok(None),
-        }
+        Ok(Some(secret_key))
     }
 }

@@ -1,4 +1,4 @@
-use alloc::string::String;
+use alloc::{boxed::Box, string::String};
 use std::{
     fs::OpenOptions,
     io::{BufRead, BufReader, BufWriter, Write},
@@ -7,7 +7,7 @@ use std::{
 
 use miden_objects::{account::AuthSecretKey, Digest, Word};
 use miden_tx::utils::{Deserializable, Serializable};
-use winter_maybe_async::*;
+use winter_maybe_async::maybe_async_trait;
 
 use super::{KeyStore, KeyStoreError};
 
