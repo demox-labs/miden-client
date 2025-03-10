@@ -28,7 +28,7 @@ impl WebClient {
 
             keystore
                 .expect("KeyStore should be initialized")
-                .add_key(&AuthSecretKey::RpoFalcon512(key_pair))
+                .add_key(&AuthSecretKey::RpoFalcon512(key_pair)).await
                 .map_err(|err| err.to_string())?;
 
             match client.add_account(&new_account, Some(account_seed), false).await {
@@ -90,7 +90,7 @@ impl WebClient {
 
             keystore
                 .expect("KeyStore should be initialized")
-                .add_key(&AuthSecretKey::RpoFalcon512(key_pair))
+                .add_key(&AuthSecretKey::RpoFalcon512(key_pair)).await
                 .map_err(|err| err.to_string())?;
 
             match client.add_account(&new_account, Some(seed), false).await {

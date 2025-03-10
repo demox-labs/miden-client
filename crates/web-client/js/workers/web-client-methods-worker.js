@@ -10,7 +10,7 @@ import { MethodName, WorkerAction } from "../constants.js";
  *
  * 1. **Initialization (init):**
  *    - The worker receives an "init" message along with user parameters (RPC URL and seed).
- *    - It instantiates the WASM WebClient and calls its create_client method.
+ *    - It instantiates the WASM WebClient and calls its createClient method.
  *    - Once initialization is complete, the worker sends a `{ ready: true }` message back to signal
  *      that it is fully initialized.
  *
@@ -44,8 +44,8 @@ const methodHandlers = {
   [MethodName.NEW_WALLET]: async (args) => {
     const [walletStorageModeStr, mutable] = args;
     const walletStorageMode =
-      wasm.AccountStorageMode.try_from_str(walletStorageModeStr);
-    const wallet = await wasmWebClient.new_wallet(walletStorageMode, mutable);
+      wasm.AccountStorageMode.tryFromStr(walletStorageModeStr);
+    const wallet = await wasmWebClient.newWallet(walletStorageMode, mutable);
     const serializedWallet = await wallet.serialize();
     return serializedWallet.buffer;
   },
@@ -58,9 +58,9 @@ const methodHandlers = {
       maxSupplyStr,
     ] = args;
     const faucetStorageMode =
-      wasm.AccountStorageMode.try_from_str(faucetStorageModeStr);
+      wasm.AccountStorageMode.tryFromStr(faucetStorageModeStr);
     const maxSupply = BigInt(maxSupplyStr);
-    const faucet = await wasmWebClient.new_faucet(
+    const faucet = await wasmWebClient.newFaucet(
       faucetStorageMode,
       nonFungible,
       tokenSymbol,
@@ -72,12 +72,13 @@ const methodHandlers = {
   },
   [MethodName.NEW_TRANSACTION]: async (args) => {
     const [accountIdStr, serializedTransactionRequest] = args;
-    const accountId = wasm.AccountId.from_hex(accountIdStr);
+    const accountId = wasm.AccountId.fromHex(accountIdStr);
     const transactionRequest = wasm.TransactionRequest.deserialize(
       new Uint8Array(serializedTransactionRequest)
     );
-    await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(accountId);
-    const transactionResult = await wasmWebClient.new_transaction(
+    
+    await wasmWebClient.fetchAndCacheAccountAuthByAccountId(accountId);
+    const transactionResult = await wasmWebClient.newTransaction(
       accountId,
       transactionRequest
     );
@@ -86,12 +87,13 @@ const methodHandlers = {
   },
   [MethodName.NEW_MINT_TRANSACTION]: async (args) => {
     const [targetAccountIdStr, faucetIdStr, noteTypeBytes, amountStr] = args;
-    const targetAccountId = wasm.AccountId.from_hex(targetAccountIdStr);
-    const faucetId = wasm.AccountId.from_hex(faucetIdStr);
+    const targetAccountId = wasm.AccountId.fromHex(targetAccountIdStr);
+    const faucetId = wasm.AccountId.fromHex(faucetIdStr);
     const noteType = wasm.NoteType.deserialize(new Uint8Array(noteTypeBytes));
     const amount = BigInt(amountStr);
-    await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(faucetId);
-    const transactionResult = await wasmWebClient.new_mint_transaction(
+    
+    await wasmWebClient.fetchAndCacheAccountAuthByAccountId(faucetId);
+    const transactionResult = await wasmWebClient.newMintTransaction(
       targetAccountId,
       faucetId,
       noteType,
@@ -102,11 +104,10 @@ const methodHandlers = {
   },
   [MethodName.NEW_CONSUME_TRANSACTION]: async (args) => {
     const [targetAccountIdStr, noteId] = args;
-    const targetAccountId = wasm.AccountId.from_hex(targetAccountIdStr);
-    await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(
-      targetAccountId
-    );
-    const transactionResult = await wasmWebClient.new_consume_transaction(
+    const targetAccountId = wasm.AccountId.fromHex(targetAccountIdStr);
+    
+    await wasmWebClient.fetchAndCacheAccountAuthByAccountId(targetAccountId);
+    const transactionResult = await wasmWebClient.newConsumeTransaction(
       targetAccountId,
       noteId
     );
@@ -122,15 +123,14 @@ const methodHandlers = {
       amountStr,
       recallHeight,
     ] = args;
-    const senderAccountId = wasm.AccountId.from_hex(senderAccountIdStr);
-    const receiverAccountId = wasm.AccountId.from_hex(receiverAccountIdStr);
-    const faucetId = wasm.AccountId.from_hex(faucetIdStr);
+    const senderAccountId = wasm.AccountId.fromHex(senderAccountIdStr);
+    const receiverAccountId = wasm.AccountId.fromHex(receiverAccountIdStr);
+    const faucetId = wasm.AccountId.fromHex(faucetIdStr);
     const noteType = wasm.NoteType.deserialize(new Uint8Array(noteTypeBytes));
     const amount = BigInt(amountStr);
-    await wasmWebClient.fetch_and_cache_account_auth_by_pub_key(
-      senderAccountId
-    );
-    const transactionResult = await wasmWebClient.new_send_transaction(
+    
+    await wasmWebClient.fetchAndCacheAccountAuthByAccountId(senderAccountId);
+    const transactionResult = await wasmWebClient.newSendTransaction(
       senderAccountId,
       receiverAccountId,
       faucetId,
@@ -163,11 +163,11 @@ const methodHandlers = {
     }
 
     // Call the unified submit_transaction method with an optional prover.
-    await wasmWebClient.submit_transaction(transactionResult, prover);
+    await wasmWebClient.submitTransaction(transactionResult, prover);
     return;
   },
   [MethodName.SYNC_STATE]: async () => {
-    const syncSummary = await wasmWebClient.sync_state();
+    const syncSummary = await wasmWebClient.syncState();
     const serializedSyncSummary = await syncSummary.serialize();
     return serializedSyncSummary.buffer;
   },
@@ -183,7 +183,7 @@ async function processMessage(event) {
       const [rpcUrl, seed] = args;
       // Initialize the WASM WebClient.
       wasmWebClient = new wasm.WebClient();
-      await wasmWebClient.create_client(rpcUrl, seed);
+      await wasmWebClient.createClient(rpcUrl, seed);
       ready = true;
       // Signal that the worker is fully initialized.
       self.postMessage({ ready: true });

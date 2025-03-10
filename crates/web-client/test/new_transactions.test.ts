@@ -67,6 +67,7 @@ export const sendTransaction = async (): Promise<SendTransactionResult> => {
     );
     await client.syncState();
 
+    await client.fetchAndCacheAccountAuthByAccountId(faucetAccount.id());
     let mintTransactionResult = await client.newMintTransaction(
       senderAccount.id(),
       faucetAccount.id(),
@@ -79,6 +80,7 @@ export const sendTransaction = async (): Promise<SendTransactionResult> => {
       mintTransactionResult.executedTransaction().id().toHex()
     );
 
+    await client.fetchAndCacheAccountAuthByAccountId(senderAccount.id());
     const senderConsumeTransactionResult = await client.newConsumeTransaction(
       senderAccount.id(),
       createdNoteIds
@@ -102,6 +104,7 @@ export const sendTransaction = async (): Promise<SendTransactionResult> => {
       sendTransactionResult.executedTransaction().id().toHex()
     );
 
+    await client.fetchAndCacheAccountAuthByAccountId(targetAccount.id());
     const targetConsumeTransactionResult = await client.newConsumeTransaction(
       targetAccount.id(),
       sendCreatedNoteIds
@@ -328,7 +331,7 @@ export const customTransaction = async (
         ])
       );
 
-      const serialNum = window.Word.new_from_u64s(
+      const serialNum = window.Word.newFromU64s(
         new BigUint64Array([BigInt(1), BigInt(2), BigInt(3), BigInt(4)])
       );
       let noteRecipient = new window.NoteRecipient(
@@ -347,6 +350,7 @@ export const customTransaction = async (
         .build();
 
       // Execute and Submit Transaction
+      await client.fetchAndCacheAccountAuthByAccountId(faucetAccount.id());
       let transactionResult = await client.newTransaction(
         faucetAccount.id(),
         transactionRequest
@@ -402,6 +406,7 @@ export const customTransaction = async (
         .build();
 
       // Execute and Submit Transaction
+      await client.fetchAndCacheAccountAuthByAccountId(walletAccount.id());
       let transactionResult2 = await client.newTransaction(
         walletAccount.id(),
         transactionRequest2
@@ -464,10 +469,10 @@ const customTxWithMultipleNotes = async (
         undefined
       );
 
-      let serialNum1 = window.Word.new_from_u64s(
+      let serialNum1 = window.Word.newFromU64s(
         new BigUint64Array([BigInt(1), BigInt(2), BigInt(3), BigInt(4)])
       );
-      let serialNum2 = window.Word.new_from_u64s(
+      let serialNum2 = window.Word.newFromU64s(
         new BigUint64Array([BigInt(5), BigInt(6), BigInt(7), BigInt(8)])
       );
 
@@ -503,6 +508,7 @@ const customTxWithMultipleNotes = async (
         )
         .build();
 
+        await client.fetchAndCacheAccountAuthByAccountId(senderAccountId);
       let transactionResult = await client.newTransaction(
         senderAccountId,
         transactionRequest

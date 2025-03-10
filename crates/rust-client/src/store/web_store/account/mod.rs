@@ -5,7 +5,7 @@ use alloc::{
 };
 
 use miden_objects::{
-    account::{Account, AccountCode, AccountHeader, AccountId, AccountStorage},
+    account::{Account, AccountCode, AccountHeader, AccountId, AccountStorage, AuthSecretKey},
     asset::{Asset, AssetVault},
     Digest, Word,
 };
@@ -18,7 +18,7 @@ use crate::store::{AccountRecord, AccountStatus, StoreError};
 
 mod js_bindings;
 use js_bindings::{
-    idxdb_get_account_asset_vault, idxdb_get_account_code, idxdb_get_account_header,
+    idxdb_fetch_and_cache_account_auth_by_pub_key, idxdb_get_account_asset_vault, idxdb_get_account_auth, idxdb_get_account_auth_by_pub_key, idxdb_get_account_code, idxdb_get_account_header,
     idxdb_get_account_header_by_hash, idxdb_get_account_headers, idxdb_get_account_ids,
     idxdb_get_account_storage, idxdb_get_foreign_account_code, idxdb_lock_account,
     idxdb_upsert_foreign_account_code,
@@ -26,13 +26,13 @@ use js_bindings::{
 
 mod models;
 use models::{
-    AccountCodeIdxdbObject, AccountRecordIdxdbObject, AccountStorageIdxdbObject,
+    AccountAuthIdxdbObject, AccountCodeIdxdbObject, AccountRecordIdxdbObject, AccountStorageIdxdbObject,
     AccountVaultIdxdbObject, ForeignAcountCodeIdxdbObject,
 };
 
 pub(crate) mod utils;
 use utils::{
-    insert_account_asset_vault, insert_account_code, insert_account_record, insert_account_storage,
+    insert_account_asset_vault, insert_account_auth, insert_account_code, insert_account_record, insert_account_storage,
     parse_account_record_idxdb_object, update_account,
 };
 
@@ -188,6 +188,55 @@ impl WebStore {
         Ok(assets)
     }
 
+    // pub(crate) async fn get_account_auth_x(
+    //     &self,
+    //     account_id: AccountId,
+    // ) -> Result<Option<AuthSecretKey>, StoreError> {
+    //     let account_id_str = account_id.to_string();
+    //     let promise = idxdb_get_account_auth(account_id_str);
+
+    //     let js_value = JsFuture::from(promise)
+    //         .await
+    //         .map_err(|_| StoreError::AccountDataNotFound(account_id))?;
+
+    //     let account_auth_idxdb: Option<AccountAuthIdxdbObject> =
+    //         from_value(js_value).map_err(|err| {
+    //             StoreError::DataDeserializationError(DeserializationError::InvalidValue(format!(
+    //                 "Failed to deserialize {err:?}"
+    //             )))
+    //         })?;
+
+    //     match account_auth_idxdb {
+    //         None => Ok(None),
+    //         Some(account_auth_idxdb) => {
+    //             let auth_info = AuthSecretKey::read_from_bytes(&account_auth_idxdb.auth_info)
+    //                 .map_err(|err| {
+    //                     StoreError::DataDeserializationError(DeserializationError::InvalidValue(
+    //                         format!("Failed to read auth info: {err:?}"),
+    //                     ))
+    //                 })?;
+    //             Ok(Some(auth_info))
+    //         },
+    //     }
+    // }
+
+    pub(crate) async fn insert_account_with_auth_info_x(
+        &self,
+        account: &Account,
+        account_seed: Option<Word>,
+        auth_info: &AuthSecretKey,
+    ) -> Result<(), StoreError> {
+        insert_account_code(account.code()).await.unwrap();
+
+        insert_account_storage(account.storage()).await.unwrap();
+
+        insert_account_asset_vault(account.vault()).await.unwrap();
+
+        insert_account_record(account, account_seed).await.unwrap();
+
+        Ok(())
+    }
+
     pub(crate) async fn insert_account(
         &self,
         account: &Account,
@@ -218,6 +267,47 @@ impl WebStore {
         update_account(new_account_state)
             .await
             .map_err(|_| StoreError::DatabaseError("Failed to update account".to_string()))
+    }
+
+    /// Returns an [`AuthSecretKey`] by a public key represented by a [Word].
+    // pub fn get_account_auth_by_pub_key_x(
+    //     &self,
+    //     pub_key: String,
+    // ) -> Result<Option<String>, StoreError> {
+    //     let js_value = idxdb_get_account_auth_by_pub_key(pub_key);
+    //     let account_auth_idxdb: Option<AccountAuthIdxdbObject> = from_value(js_value).unwrap();
+
+    //     match account_auth_idxdb {
+    //         Some(account_auth_idxdb) => {
+    //             Ok(Some(account_auth_idxdb.secret_key))
+    //         },
+    //         None => Ok(None),
+    //     }
+    // }
+
+    /// Fetches an [`AuthSecretKey`] by a public key represented by a [Word] and caches it in the
+    /// store. This is used in the `web_client` so adding this to ignore the dead code warning.
+    pub async fn fetch_and_cache_account_auth_by_pub_key(
+        &self,
+        pub_key: String,
+    ) -> Result<Option<String>, StoreError> {
+        let promise = idxdb_fetch_and_cache_account_auth_by_pub_key(pub_key);
+
+        let js_value = JsFuture::from(promise).await.unwrap();
+        let account_auth_idxdb: Option<AccountAuthIdxdbObject> =
+            from_value(js_value).map_err(|err| {
+                StoreError::DataDeserializationError(DeserializationError::InvalidValue(format!(
+                    "Failed to deserialize {err:?}"
+                )))
+            })?;
+
+        match account_auth_idxdb {
+            None => Ok(None),
+            Some(account_auth_idxdb) => {
+                // Convert the auth_info to the appropriate AuthInfo enum variant
+                Ok(Some(account_auth_idxdb.secret_key))
+            },
+        }
     }
 
     pub(crate) async fn upsert_foreign_account_code(

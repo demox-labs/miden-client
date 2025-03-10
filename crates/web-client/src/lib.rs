@@ -6,7 +6,7 @@ use miden_client::{
     authenticator::{keystore::WebKeyStore, ClientAuthenticator},
     rpc::{Endpoint, TonicRpcClient},
     store::web_store::WebStore,
-    Client, RemoteTransactionProver,
+    Client
 };
 use miden_objects::{crypto::rand::RpoRandomCoin, Felt};
 use rand::{rngs::StdRng, Rng, SeedableRng};
@@ -28,11 +28,7 @@ pub mod utils;
 #[wasm_bindgen]
 pub struct WebClient {
     store: Option<Arc<WebStore>>,
-<<<<<<< HEAD
-    remote_prover: Option<Arc<RemoteTransactionProver>>,
     keystore: Option<WebKeyStore>,
-=======
->>>>>>> upstream/main
     inner: Option<Client<RpoRandomCoin>>,
 }
 

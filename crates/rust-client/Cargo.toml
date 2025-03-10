@@ -19,9 +19,10 @@ crate-type = ["lib"]
 workspace = true
 
 [features]
+async = []
 concurrent = ["miden-tx/concurrent", "std"]
 default = []
-idxdb = ["dep:base64", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:serde"]
+idxdb = ["dep:base64", "dep:serde-wasm-bindgen", "dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:serde", "async"]
 sqlite = ["dep:rusqlite", "dep:deadpool-sqlite", "std"]
 std = ["miden-objects/std","miden-proving-service-client/std"]
 testing = ["miden-objects/testing", "miden-lib/testing", "miden-tx/testing"]
@@ -50,6 +51,7 @@ tonic-web-wasm-client = { version = "0.6", optional = true, default-features = f
 tracing = { workspace = true }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"], optional = true }
 wasm-bindgen-futures = { version = "0.4", optional = true }
+winter-maybe-async = { version = "0.11" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = ["console", "Window", "Storage"] }
@@ -61,6 +63,7 @@ miden-objects = { workspace = true, default-features = false, features = ["testi
 tokio = { workspace = true }
 uuid = { version = "1.10", features = ["serde", "v4"] }
 web-sys = { version = "0.3", features = ["console"]}
+winter-maybe-async = { version = "0.11" }
 
 [build-dependencies]
 miden-rpc-proto = { git = "https://github.com/0xPolygonMiden/miden-node", branch = "next" }

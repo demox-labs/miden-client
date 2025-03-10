@@ -21,7 +21,7 @@ impl WebClient {
 
             keystore
                 .expect("KeyStore should be initialized")
-                .add_key(&account_data.auth_secret_key)
+                .add_key(&account_data.auth_secret_key).await
                 .map_err(|err| err.to_string())?;
             match client
                 .add_account(&account_data.account, account_data.account_seed, false)

@@ -54,7 +54,7 @@ export declare class WebClient extends WasmWebClient {
    * @param seed - The seed for the account (optional).
    * @returns A promise that resolves to a fully initialized WebClient.
    */
-  static create_client(rpcUrl?: string, seed?: string): Promise<WebClient>;
+  static createClient(rpcUrl?: string, seed?: string): Promise<WebClient>;
 
   /**
    * Terminates the underlying worker.

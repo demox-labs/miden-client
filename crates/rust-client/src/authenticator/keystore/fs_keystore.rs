@@ -7,6 +7,7 @@ use std::{
 
 use miden_objects::{account::AuthSecretKey, Digest, Word};
 use miden_tx::utils::{Deserializable, Serializable};
+use winter_maybe_async::*;
 
 use super::{KeyStore, KeyStoreError};
 
@@ -32,7 +33,9 @@ impl FilesystemKeyStore {
     }
 }
 
+#[maybe_async_trait]
 impl KeyStore for FilesystemKeyStore {
+    #[maybe_async]
     fn add_key(&self, key: &AuthSecretKey) -> Result<(), KeyStoreError> {
         let pub_key = match &key {
             AuthSecretKey::RpoFalcon512(k) => Digest::from(Word::from(k.public_key())).to_hex(),

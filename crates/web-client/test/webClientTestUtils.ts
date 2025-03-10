@@ -27,6 +27,7 @@ export const mintTransaction = async (
       const targetAccountId = window.AccountId.fromHex(_targetAccountId);
       const faucetAccountId = window.AccountId.fromHex(_faucetAccountId);
 
+      await client.fetchAndCacheAccountAuthByAccountId(faucetAccountId!);
       const newMintTransactionResult = await client.newMintTransaction(
         targetAccountId,
         faucetAccountId,
@@ -83,6 +84,7 @@ export const sendTransaction = async (
       const targetAccountId = window.AccountId.fromHex(_targetAccountId);
       const faucetAccountId = window.AccountId.fromHex(_faucetAccountId);
 
+      await client.fetchAndCacheAccountAuthByAccountId(faucetAccountId!);
       let mintTransactionResult = await client.newMintTransaction(
         senderAccountId,
         window.AccountId.fromHex(_faucetAccountId),
@@ -95,6 +97,7 @@ export const sendTransaction = async (
         mintTransactionResult.executedTransaction().id().toHex()
       );
 
+      await client.fetchAndCacheAccountAuthByAccountId(senderAccountId!);
       const consumeTransactionResult = await client.newConsumeTransaction(
         senderAccountId,
         createdNoteIds
@@ -103,6 +106,7 @@ export const sendTransaction = async (
         consumeTransactionResult.executedTransaction().id().toHex()
       );
 
+      await client.fetchAndCacheAccountAuthByAccountId(senderAccountId!);
       let sendTransactionResult = await client.newSendTransaction(
         senderAccountId,
         targetAccountId,
@@ -310,6 +314,7 @@ export const consumeTransaction = async (
       const targetAccountId = window.AccountId.fromHex(_targetAccountId);
       const faucetId = window.AccountId.fromHex(_faucetId);
 
+      await client.fetchAndCacheAccountAuthByAccountId(targetAccountId!);
       const consumeTransactionResult = await client.newConsumeTransaction(
         targetAccountId,
         [_noteId]

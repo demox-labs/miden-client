@@ -63,6 +63,7 @@ before(async () => {
         Account,
         AccountHeader,
         AccountId,
+        AccountStorage,
         AccountStorageMode,
         AdviceMap,
         AuthSecretKey,
@@ -104,12 +105,13 @@ before(async () => {
       if (remoteProverPort) {
         proverUrl = `http://localhost:${remoteProverPort}`;
       }
-      const client = await WebClient.create_client(rpcUrl);
+      const client = await WebClient.createClient(rpcUrl);
 
       window.client = client;
       window.Account = Account;
       window.AccountHeader = AccountHeader;
       window.AccountId = AccountId;
+      window.AccountStorage = AccountStorage;
       window.AccountStorageMode = AccountStorageMode;
       window.AdviceMap = AdviceMap;
       window.AuthSecretKey = AuthSecretKey;
@@ -179,12 +181,7 @@ before(async () => {
       };
 
       window.helpers.refreshClient = async (initSeed) => {
-<<<<<<< HEAD
-        const client = new WebClient();
-        await client.createClient(rpcUrl, proverUrl, initSeed);
-=======
-        const client = await WebClient.create_client(rpc_url, initSeed);
->>>>>>> upstream/main
+        const client = await WebClient.createClient(rpcUrl, initSeed);
         window.client = client;
       };
     },
