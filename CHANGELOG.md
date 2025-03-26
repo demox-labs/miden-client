@@ -27,6 +27,7 @@
 * [BREAKING] Removed the `TransactionScriptBuilder` and associated errors from the `rust-client` (#781).
 * [BREAKING] Renamed "hash" with "commitment" for block headers, note scripts and accounts (#788, #789).
 * Added recency validations for the client (#776).
+* Updated Web Client README and Documentation (#808).
 
 ### Fixes
 
