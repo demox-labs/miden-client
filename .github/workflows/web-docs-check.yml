@@ -19,6 +19,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+      
+      - name: Add WASM target
+        run: rustup target add wasm32-unknown-unknown
 
       - name: Install Dependencies
         working-directory: crates/web-client
