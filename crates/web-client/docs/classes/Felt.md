@@ -6,15 +6,11 @@
 
 # Class: Felt
 
-Defined in: miden\_client\_web.d.ts:152
-
 ## Constructors
 
 ### Constructor
 
 > **new Felt**(`value`): `Felt`
-
-Defined in: miden\_client\_web.d.ts:154
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:154
 
 > **asInt**(): `bigint`
 
-Defined in: miden\_client\_web.d.ts:155
-
 #### Returns
 
 `bigint`
@@ -44,8 +38,6 @@ Defined in: miden\_client\_web.d.ts:155
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:153
-
 #### Returns
 
 `void`
@@ -55,8 +47,6 @@ Defined in: miden\_client\_web.d.ts:153
 ### toString()
 
 > **toString**(): `string`
-
-Defined in: miden\_client\_web.d.ts:156
 
 #### Returns
 

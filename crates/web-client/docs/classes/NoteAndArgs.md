@@ -6,15 +6,11 @@
 
 # Class: NoteAndArgs
 
-Defined in: miden\_client\_web.d.ts:251
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:253
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:253
 ### new()
 
 > `static` **new**(`note`, `args`?): `NoteAndArgs`
-
-Defined in: miden\_client\_web.d.ts:254
 
 #### Parameters
 

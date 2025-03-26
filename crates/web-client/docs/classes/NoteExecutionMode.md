@@ -6,15 +6,11 @@
 
 # Class: NoteExecutionMode
 
-Defined in: miden\_client\_web.d.ts:303
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:305
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:305
 
 > **toString**(): `string`
 
-Defined in: miden\_client\_web.d.ts:308
-
 #### Returns
 
 `string`
@@ -38,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:308
 
 > `static` **newLocal**(): `NoteExecutionMode`
 
-Defined in: miden\_client\_web.d.ts:306
-
 #### Returns
 
 `NoteExecutionMode`
@@ -49,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:306
 ### newNetwork()
 
 > `static` **newNetwork**(): `NoteExecutionMode`
-
-Defined in: miden\_client\_web.d.ts:307
 
 #### Returns
 

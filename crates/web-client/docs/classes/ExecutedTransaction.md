@@ -6,15 +6,11 @@
 
 # Class: ExecutedTransaction
 
-Defined in: miden\_client\_web.d.ts:139
-
 ## Methods
 
 ### accountDelta()
 
 > **accountDelta**(): [`AccountDelta`](AccountDelta.md)
-
-Defined in: miden\_client\_web.d.ts:150
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:150
 
 > **accountId**(): [`AccountId`](AccountId.md)
 
-Defined in: miden\_client\_web.d.ts:143
-
 #### Returns
 
 [`AccountId`](AccountId.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:143
 ### blockHeader()
 
 > **blockHeader**(): [`BlockHeader`](BlockHeader.md)
-
-Defined in: miden\_client\_web.d.ts:149
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:149
 
 > **finalAccount**(): [`AccountHeader`](AccountHeader.md)
 
-Defined in: miden\_client\_web.d.ts:145
-
 #### Returns
 
 [`AccountHeader`](AccountHeader.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:145
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:141
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:141
 
 > **id**(): [`TransactionId`](TransactionId.md)
 
-Defined in: miden\_client\_web.d.ts:142
-
 #### Returns
 
 [`TransactionId`](TransactionId.md)
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:142
 ### initialAccount()
 
 > **initialAccount**(): [`Account`](Account.md)
-
-Defined in: miden\_client\_web.d.ts:144
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:144
 
 > **inputNotes**(): [`InputNotes`](InputNotes.md)
 
-Defined in: miden\_client\_web.d.ts:146
-
 #### Returns
 
 [`InputNotes`](InputNotes.md)
@@ -110,8 +92,6 @@ Defined in: miden\_client\_web.d.ts:146
 
 > **outputNotes**(): [`OutputNotes`](OutputNotes.md)
 
-Defined in: miden\_client\_web.d.ts:147
-
 #### Returns
 
 [`OutputNotes`](OutputNotes.md)
@@ -121,8 +101,6 @@ Defined in: miden\_client\_web.d.ts:147
 ### txArgs()
 
 > **txArgs**(): [`TransactionArgs`](TransactionArgs.md)
-
-Defined in: miden\_client\_web.d.ts:148
 
 #### Returns
 

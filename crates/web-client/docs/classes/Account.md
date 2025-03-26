@@ -6,15 +6,11 @@
 
 # Class: Account
 
-Defined in: miden\_client\_web.d.ts:31
-
 ## Methods
 
 ### code()
 
 > **code**(): [`AccountCode`](AccountCode.md)
-
-Defined in: miden\_client\_web.d.ts:39
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:39
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:35
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:35
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:33
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:33
 
 > **id**(): [`AccountId`](AccountId.md)
 
-Defined in: miden\_client\_web.d.ts:34
-
 #### Returns
 
 [`AccountId`](AccountId.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:34
 ### isFaucet()
 
 > **isFaucet**(): `boolean`
-
-Defined in: miden\_client\_web.d.ts:40
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:40
 
 > **isNew**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:44
-
 #### Returns
 
 `boolean`
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:44
 ### isPublic()
 
 > **isPublic**(): `boolean`
-
-Defined in: miden\_client\_web.d.ts:43
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:43
 
 > **isRegularAccount**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:41
-
 #### Returns
 
 `boolean`
@@ -109,8 +91,6 @@ Defined in: miden\_client\_web.d.ts:41
 ### isUpdatable()
 
 > **isUpdatable**(): `boolean`
-
-Defined in: miden\_client\_web.d.ts:42
 
 #### Returns
 
@@ -122,8 +102,6 @@ Defined in: miden\_client\_web.d.ts:42
 
 > **nonce**(): [`Felt`](Felt.md)
 
-Defined in: miden\_client\_web.d.ts:36
-
 #### Returns
 
 [`Felt`](Felt.md)
@@ -133,8 +111,6 @@ Defined in: miden\_client\_web.d.ts:36
 ### serialize()
 
 > **serialize**(): `Uint8Array`
-
-Defined in: miden\_client\_web.d.ts:45
 
 #### Returns
 
@@ -146,8 +122,6 @@ Defined in: miden\_client\_web.d.ts:45
 
 > **storage**(): [`AccountStorage`](AccountStorage.md)
 
-Defined in: miden\_client\_web.d.ts:38
-
 #### Returns
 
 [`AccountStorage`](AccountStorage.md)
@@ -158,8 +132,6 @@ Defined in: miden\_client\_web.d.ts:38
 
 > **vault**(): [`AssetVault`](AssetVault.md)
 
-Defined in: miden\_client\_web.d.ts:37
-
 #### Returns
 
 [`AssetVault`](AssetVault.md)
@@ -169,8 +141,6 @@ Defined in: miden\_client\_web.d.ts:37
 ### deserialize()
 
 > `static` **deserialize**(`bytes`): `Account`
-
-Defined in: miden\_client\_web.d.ts:46
 
 #### Parameters
 

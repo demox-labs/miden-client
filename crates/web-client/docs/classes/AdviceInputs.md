@@ -6,15 +6,11 @@
 
 # Class: AdviceInputs
 
-Defined in: miden\_client\_web.d.ts:93
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:95
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:95
 ### mappedValues()
 
 > **mappedValues**(`key`): [`Felt`](Felt.md)[]
-
-Defined in: miden\_client\_web.d.ts:97
 
 #### Parameters
 
@@ -43,8 +37,6 @@ Defined in: miden\_client\_web.d.ts:97
 ### stack()
 
 > **stack**(): [`Felt`](Felt.md)[]
-
-Defined in: miden\_client\_web.d.ts:96
 
 #### Returns
 

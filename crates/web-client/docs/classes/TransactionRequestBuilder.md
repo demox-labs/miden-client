@@ -6,15 +6,11 @@
 
 # Class: TransactionRequestBuilder
 
-Defined in: miden\_client\_web.d.ts:503
-
 ## Constructors
 
 ### Constructor
 
 > **new TransactionRequestBuilder**(): `TransactionRequestBuilder`
-
-Defined in: miden\_client\_web.d.ts:505
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:505
 
 > **build**(): [`TransactionRequest`](TransactionRequest.md)
 
-Defined in: miden\_client\_web.d.ts:513
-
 #### Returns
 
 [`TransactionRequest`](TransactionRequest.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:513
 ### extendAdviceMap()
 
 > **extendAdviceMap**(`advice_map`): `TransactionRequestBuilder`
-
-Defined in: miden\_client\_web.d.ts:512
 
 #### Parameters
 
@@ -56,8 +48,6 @@ Defined in: miden\_client\_web.d.ts:512
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:504
-
 #### Returns
 
 `void`
@@ -67,8 +57,6 @@ Defined in: miden\_client\_web.d.ts:504
 ### withAuthenticatedInputNotes()
 
 > **withAuthenticatedInputNotes**(`notes`): `TransactionRequestBuilder`
-
-Defined in: miden\_client\_web.d.ts:507
 
 #### Parameters
 
@@ -86,8 +74,6 @@ Defined in: miden\_client\_web.d.ts:507
 
 > **withCustomScript**(`script`): `TransactionRequestBuilder`
 
-Defined in: miden\_client\_web.d.ts:509
-
 #### Parameters
 
 ##### script
@@ -103,8 +89,6 @@ Defined in: miden\_client\_web.d.ts:509
 ### withExpectedFutureNotes()
 
 > **withExpectedFutureNotes**(`note_details_and_tag`): `TransactionRequestBuilder`
-
-Defined in: miden\_client\_web.d.ts:511
 
 #### Parameters
 
@@ -122,8 +106,6 @@ Defined in: miden\_client\_web.d.ts:511
 
 > **withExpectedOutputNotes**(`notes`): `TransactionRequestBuilder`
 
-Defined in: miden\_client\_web.d.ts:510
-
 #### Parameters
 
 ##### notes
@@ -140,8 +122,6 @@ Defined in: miden\_client\_web.d.ts:510
 
 > **withOwnOutputNotes**(`notes`): `TransactionRequestBuilder`
 
-Defined in: miden\_client\_web.d.ts:508
-
 #### Parameters
 
 ##### notes
@@ -157,8 +137,6 @@ Defined in: miden\_client\_web.d.ts:508
 ### withUnauthenticatedInputNotes()
 
 > **withUnauthenticatedInputNotes**(`notes`): `TransactionRequestBuilder`
-
-Defined in: miden\_client\_web.d.ts:506
 
 #### Parameters
 

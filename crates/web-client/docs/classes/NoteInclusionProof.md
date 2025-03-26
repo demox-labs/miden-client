@@ -6,15 +6,11 @@
 
 # Class: NoteInclusionProof
 
-Defined in: miden\_client\_web.d.ts:335
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:337
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:337
 
 > **location**(): [`NoteLocation`](NoteLocation.md)
 
-Defined in: miden\_client\_web.d.ts:338
-
 #### Returns
 
 [`NoteLocation`](NoteLocation.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:338
 ### notePath()
 
 > **notePath**(): [`MerklePath`](MerklePath.md)
-
-Defined in: miden\_client\_web.d.ts:339
 
 #### Returns
 

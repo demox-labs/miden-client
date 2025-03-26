@@ -6,15 +6,11 @@
 
 # Class: NoteTag
 
-Defined in: miden\_client\_web.d.ts:370
-
 ## Methods
 
 ### executionMode()
 
 > **executionMode**(): [`NoteExecutionMode`](NoteExecutionMode.md)
-
-Defined in: miden\_client\_web.d.ts:377
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:377
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:372
-
 #### Returns
 
 `void`
@@ -38,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:372
 
 > **isSingleTarget**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:376
-
 #### Returns
 
 `boolean`
@@ -49,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:376
 ### forLocalUseCase()
 
 > `static` **forLocalUseCase**(`use_case_id`, `payload`): `NoteTag`
-
-Defined in: miden\_client\_web.d.ts:375
 
 #### Parameters
 
@@ -71,8 +61,6 @@ Defined in: miden\_client\_web.d.ts:375
 ### forPublicUseCase()
 
 > `static` **forPublicUseCase**(`use_case_id`, `payload`, `execution`): `NoteTag`
-
-Defined in: miden\_client\_web.d.ts:374
 
 #### Parameters
 
@@ -97,8 +85,6 @@ Defined in: miden\_client\_web.d.ts:374
 ### fromAccountId()
 
 > `static` **fromAccountId**(`account_id`, `execution`): `NoteTag`
-
-Defined in: miden\_client\_web.d.ts:373
 
 #### Parameters
 

@@ -6,15 +6,11 @@
 
 # Class: NoteType
 
-Defined in: miden\_client\_web.d.ts:379
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:381
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:381
 
 > **serialize**(): `Uint8Array`
 
-Defined in: miden\_client\_web.d.ts:385
-
 #### Returns
 
 `Uint8Array`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:385
 ### deserialize()
 
 > `static` **deserialize**(`bytes`): `NoteType`
-
-Defined in: miden\_client\_web.d.ts:386
 
 #### Parameters
 
@@ -56,8 +48,6 @@ Defined in: miden\_client\_web.d.ts:386
 
 > `static` **encrypted**(): `NoteType`
 
-Defined in: miden\_client\_web.d.ts:384
-
 #### Returns
 
 `NoteType`
@@ -68,8 +58,6 @@ Defined in: miden\_client\_web.d.ts:384
 
 > `static` **private**(): `NoteType`
 
-Defined in: miden\_client\_web.d.ts:382
-
 #### Returns
 
 `NoteType`
@@ -79,8 +67,6 @@ Defined in: miden\_client\_web.d.ts:382
 ### public()
 
 > `static` **public**(): `NoteType`
-
-Defined in: miden\_client\_web.d.ts:383
 
 #### Returns
 

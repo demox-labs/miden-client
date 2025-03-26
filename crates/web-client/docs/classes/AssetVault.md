@@ -6,15 +6,11 @@
 
 # Class: AssetVault
 
-Defined in: miden\_client\_web.d.ts:104
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:106
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:106
 ### getBalance()
 
 > **getBalance**(`faucet_id`): `bigint`
-
-Defined in: miden\_client\_web.d.ts:108
 
 #### Parameters
 
@@ -43,8 +37,6 @@ Defined in: miden\_client\_web.d.ts:108
 ### root()
 
 > **root**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:107
 
 #### Returns
 

@@ -6,15 +6,11 @@
 
 # Class: NewSwapTransactionResult
 
-Defined in: miden\_client\_web.d.ts:231
-
 ## Methods
 
 ### expectedOutputNoteIds()
 
 > **expectedOutputNoteIds**(): `any`
-
-Defined in: miden\_client\_web.d.ts:237
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:237
 
 > **expectedPartialNoteIds**(): `any`
 
-Defined in: miden\_client\_web.d.ts:238
-
 #### Returns
 
 `any`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:238
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:233
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:233
 
 > **paybackNoteTag**(): `string`
 
-Defined in: miden\_client\_web.d.ts:239
-
 #### Returns
 
 `string`
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:239
 ### setNoteTag()
 
 > **setNoteTag**(`payback_note_tag`): `void`
-
-Defined in: miden\_client\_web.d.ts:235
 
 #### Parameters
 
@@ -80,8 +68,6 @@ Defined in: miden\_client\_web.d.ts:235
 
 > **transactionId**(): `string`
 
-Defined in: miden\_client\_web.d.ts:236
-
 #### Returns
 
 `string`
@@ -91,8 +77,6 @@ Defined in: miden\_client\_web.d.ts:236
 ### new()
 
 > `static` **new**(`transaction_id`, `expected_output_note_ids`, `expected_partial_note_ids`, `payback_note_tag`?): `NewSwapTransactionResult`
-
-Defined in: miden\_client\_web.d.ts:234
 
 #### Parameters
 

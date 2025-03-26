@@ -6,15 +6,11 @@
 
 # Class: TransactionScript
 
-Defined in: miden\_client\_web.d.ts:527
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:529
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:529
 ### root()
 
 > **root**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:530
 
 #### Returns
 

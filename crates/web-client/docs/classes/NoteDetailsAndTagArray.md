@@ -6,15 +6,11 @@
 
 # Class: NoteDetailsAndTagArray
 
-Defined in: miden\_client\_web.d.ts:283
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteDetailsAndTagArray**(`note_details_and_tag_array`?): `NoteDetailsAndTagArray`
-
-Defined in: miden\_client\_web.d.ts:285
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:285
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:284
-
 #### Returns
 
 `void`
@@ -43,8 +37,6 @@ Defined in: miden\_client\_web.d.ts:284
 ### push()
 
 > **push**(`note_details_and_tag`): `void`
-
-Defined in: miden\_client\_web.d.ts:286
 
 #### Parameters
 

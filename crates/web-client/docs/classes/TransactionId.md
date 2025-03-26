@@ -6,15 +6,11 @@
 
 # Class: TransactionId
 
-Defined in: miden\_client\_web.d.ts:468
-
 ## Methods
 
 ### asBytes()
 
 > **asBytes**(): `Uint8Array`
-
-Defined in: miden\_client\_web.d.ts:472
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:472
 
 > **asElements**(): [`Felt`](Felt.md)[]
 
-Defined in: miden\_client\_web.d.ts:471
-
 #### Returns
 
 [`Felt`](Felt.md)[]
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:471
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:470
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:470
 
 > **inner**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:474
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:474
 ### toHex()
 
 > **toHex**(): `string`
-
-Defined in: miden\_client\_web.d.ts:473
 
 #### Returns
 

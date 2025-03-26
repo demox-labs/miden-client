@@ -6,15 +6,11 @@
 
 # Class: AccountStorageMode
 
-Defined in: miden\_client\_web.d.ts:85
-
 ## Methods
 
 ### asStr()
 
 > **asStr**(): `string`
-
-Defined in: miden\_client\_web.d.ts:91
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:91
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:87
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:87
 ### private()
 
 > `static` **private**(): `AccountStorageMode`
-
-Defined in: miden\_client\_web.d.ts:88
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:88
 
 > `static` **public**(): `AccountStorageMode`
 
-Defined in: miden\_client\_web.d.ts:89
-
 #### Returns
 
 `AccountStorageMode`
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:89
 ### tryFromStr()
 
 > `static` **tryFromStr**(`s`): `AccountStorageMode`
-
-Defined in: miden\_client\_web.d.ts:90
 
 #### Parameters
 

@@ -6,15 +6,11 @@
 
 # Class: WebClient
 
-Defined in: miden\_client\_web.d.ts:554
-
 ## Constructors
 
 ### Constructor
 
 > **new WebClient**(): `WebClient`
-
-Defined in: miden\_client\_web.d.ts:591
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:591
 ### addTag()
 
 > **addTag**(`tag`): `Promise`\<`void`\>
-
-Defined in: miden\_client\_web.d.ts:585
 
 #### Parameters
 
@@ -44,8 +38,6 @@ Defined in: miden\_client\_web.d.ts:585
 
 > **compileNoteScript**(`script`): [`NoteScript`](NoteScript.md)
 
-Defined in: miden\_client\_web.d.ts:582
-
 #### Parameters
 
 ##### script
@@ -62,8 +54,6 @@ Defined in: miden\_client\_web.d.ts:582
 
 > **compileTxScript**(`script`): [`TransactionScript`](TransactionScript.md)
 
-Defined in: miden\_client\_web.d.ts:589
-
 #### Parameters
 
 ##### script
@@ -79,8 +69,6 @@ Defined in: miden\_client\_web.d.ts:589
 ### createClient()
 
 > **createClient**(`node_url`?, `seed`?): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:592
 
 #### Parameters
 
@@ -102,8 +90,6 @@ Defined in: miden\_client\_web.d.ts:592
 
 > **exportNote**(`note_id`, `export_type`): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:559
-
 #### Parameters
 
 ##### note\_id
@@ -124,8 +110,6 @@ Defined in: miden\_client\_web.d.ts:559
 
 > **exportStore**(): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:565
-
 Retrieves the entire underlying web store and returns it as a JsValue
 
 Meant to be used in conjunction with the force_import_store method
@@ -139,8 +123,6 @@ Meant to be used in conjunction with the force_import_store method
 ### fetchAndCacheAccountAuthByAccountId()
 
 > **fetchAndCacheAccountAuthByAccountId**(`account_id`): `Promise`\<`string`\>
-
-Defined in: miden\_client\_web.d.ts:558
 
 #### Parameters
 
@@ -158,8 +140,6 @@ Defined in: miden\_client\_web.d.ts:558
 
 > **forceImportStore**(`store_dump`): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:569
-
 #### Parameters
 
 ##### store\_dump
@@ -176,8 +156,6 @@ Defined in: miden\_client\_web.d.ts:569
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:555
-
 #### Returns
 
 `void`
@@ -187,8 +165,6 @@ Defined in: miden\_client\_web.d.ts:555
 ### getAccount()
 
 > **getAccount**(`account_id`): `Promise`\<[`Account`](Account.md)\>
-
-Defined in: miden\_client\_web.d.ts:557
 
 #### Parameters
 
@@ -206,8 +182,6 @@ Defined in: miden\_client\_web.d.ts:557
 
 > **getAccounts**(): `Promise`\<[`AccountHeader`](AccountHeader.md)[]\>
 
-Defined in: miden\_client\_web.d.ts:556
-
 #### Returns
 
 `Promise`\<[`AccountHeader`](AccountHeader.md)[]\>
@@ -217,8 +191,6 @@ Defined in: miden\_client\_web.d.ts:556
 ### getConsumableNotes()
 
 > **getConsumableNotes**(`account_id`?): `Promise`\<[`ConsumableNoteRecord`](ConsumableNoteRecord.md)[]\>
-
-Defined in: miden\_client\_web.d.ts:583
 
 #### Parameters
 
@@ -236,8 +208,6 @@ Defined in: miden\_client\_web.d.ts:583
 
 > **getInputNote**(`note_id`): `Promise`\<[`InputNoteRecord`](InputNoteRecord.md)\>
 
-Defined in: miden\_client\_web.d.ts:579
-
 #### Parameters
 
 ##### note\_id
@@ -253,8 +223,6 @@ Defined in: miden\_client\_web.d.ts:579
 ### getInputNotes()
 
 > **getInputNotes**(`filter`): `Promise`\<[`InputNoteRecord`](InputNoteRecord.md)[]\>
-
-Defined in: miden\_client\_web.d.ts:578
 
 #### Parameters
 
@@ -272,8 +240,6 @@ Defined in: miden\_client\_web.d.ts:578
 
 > **getOutputNote**(`note_id`): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:581
-
 #### Parameters
 
 ##### note\_id
@@ -289,8 +255,6 @@ Defined in: miden\_client\_web.d.ts:581
 ### getOutputNotes()
 
 > **getOutputNotes**(`filter`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:580
 
 #### Parameters
 
@@ -308,8 +272,6 @@ Defined in: miden\_client\_web.d.ts:580
 
 > **getTransactions**(`transaction_filter`): `Promise`\<[`TransactionRecord`](TransactionRecord.md)[]\>
 
-Defined in: miden\_client\_web.d.ts:588
-
 #### Parameters
 
 ##### transaction\_filter
@@ -325,8 +287,6 @@ Defined in: miden\_client\_web.d.ts:588
 ### importAccount()
 
 > **importAccount**(`account_bytes`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:566
 
 #### Parameters
 
@@ -344,8 +304,6 @@ Defined in: miden\_client\_web.d.ts:566
 
 > **importNote**(`note_bytes`): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:568
-
 #### Parameters
 
 ##### note\_bytes
@@ -361,8 +319,6 @@ Defined in: miden\_client\_web.d.ts:568
 ### importPublicAccountFromSeed()
 
 > **importPublicAccountFromSeed**(`init_seed`, `mutable`): `Promise`\<[`Account`](Account.md)\>
-
-Defined in: miden\_client\_web.d.ts:567
 
 #### Parameters
 
@@ -384,8 +340,6 @@ Defined in: miden\_client\_web.d.ts:567
 
 > **listTags**(): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:587
-
 #### Returns
 
 `Promise`\<`any`\>
@@ -395,8 +349,6 @@ Defined in: miden\_client\_web.d.ts:587
 ### newConsumeTransactionRequest()
 
 > **newConsumeTransactionRequest**(`list_of_note_ids`): [`TransactionRequest`](TransactionRequest.md)
-
-Defined in: miden\_client\_web.d.ts:576
 
 #### Parameters
 
@@ -413,8 +365,6 @@ Defined in: miden\_client\_web.d.ts:576
 ### newFaucet()
 
 > **newFaucet**(`storage_mode`, `non_fungible`, `token_symbol`, `decimals`, `max_supply`): `Promise`\<[`Account`](Account.md)\>
-
-Defined in: miden\_client\_web.d.ts:571
 
 #### Parameters
 
@@ -448,8 +398,6 @@ Defined in: miden\_client\_web.d.ts:571
 
 > **newMintTransactionRequest**(`target_account_id`, `faucet_id`, `note_type`, `amount`): [`TransactionRequest`](TransactionRequest.md)
 
-Defined in: miden\_client\_web.d.ts:574
-
 #### Parameters
 
 ##### target\_account\_id
@@ -477,8 +425,6 @@ Defined in: miden\_client\_web.d.ts:574
 ### newSendTransactionRequest()
 
 > **newSendTransactionRequest**(`sender_account_id`, `target_account_id`, `faucet_id`, `note_type`, `amount`, `recall_height`?): [`TransactionRequest`](TransactionRequest.md)
-
-Defined in: miden\_client\_web.d.ts:575
 
 #### Parameters
 
@@ -516,8 +462,6 @@ Defined in: miden\_client\_web.d.ts:575
 
 > **newSwapTransaction**(`sender_account_id`, `offered_asset_faucet_id`, `offered_asset_amount`, `requested_asset_faucet_id`, `requested_asset_amount`, `note_type`): `Promise`\<[`NewSwapTransactionResult`](NewSwapTransactionResult.md)\>
 
-Defined in: miden\_client\_web.d.ts:577
-
 #### Parameters
 
 ##### sender\_account\_id
@@ -554,8 +498,6 @@ Defined in: miden\_client\_web.d.ts:577
 
 > **newTransaction**(`account_id`, `transaction_request`): `Promise`\<[`TransactionResult`](TransactionResult.md)\>
 
-Defined in: miden\_client\_web.d.ts:572
-
 #### Parameters
 
 ##### account\_id
@@ -575,8 +517,6 @@ Defined in: miden\_client\_web.d.ts:572
 ### newWallet()
 
 > **newWallet**(`storage_mode`, `mutable`, `init_seed`?): `Promise`\<[`Account`](Account.md)\>
-
-Defined in: miden\_client\_web.d.ts:570
 
 #### Parameters
 
@@ -602,8 +542,6 @@ Defined in: miden\_client\_web.d.ts:570
 
 > **removeTag**(`tag`): `Promise`\<`void`\>
 
-Defined in: miden\_client\_web.d.ts:586
-
 #### Parameters
 
 ##### tag
@@ -619,8 +557,6 @@ Defined in: miden\_client\_web.d.ts:586
 ### submitTransaction()
 
 > **submitTransaction**(`transaction_result`, `prover`?): `Promise`\<`void`\>
-
-Defined in: miden\_client\_web.d.ts:573
 
 #### Parameters
 
@@ -642,8 +578,6 @@ Defined in: miden\_client\_web.d.ts:573
 
 > **syncState**(): `Promise`\<[`SyncSummary`](SyncSummary.md)\>
 
-Defined in: miden\_client\_web.d.ts:584
-
 #### Returns
 
 `Promise`\<[`SyncSummary`](SyncSummary.md)\>
@@ -653,8 +587,6 @@ Defined in: miden\_client\_web.d.ts:584
 ### testingApplyTransaction()
 
 > **testingApplyTransaction**(`tx_result`): `Promise`\<`void`\>
-
-Defined in: miden\_client\_web.d.ts:590
 
 #### Parameters
 

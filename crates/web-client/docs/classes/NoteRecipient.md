@@ -6,15 +6,11 @@
 
 # Class: NoteRecipient
 
-Defined in: miden\_client\_web.d.ts:358
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteRecipient**(`serial_num`, `note_script`, `inputs`): `NoteRecipient`
-
-Defined in: miden\_client\_web.d.ts:360
 
 #### Parameters
 
@@ -40,8 +36,6 @@ Defined in: miden\_client\_web.d.ts:360
 
 > **digest**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:361
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -51,8 +45,6 @@ Defined in: miden\_client\_web.d.ts:361
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:359
 
 #### Returns
 

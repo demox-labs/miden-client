@@ -6,15 +6,11 @@
 
 # Class: NoteDetailsAndTag
 
-Defined in: miden\_client\_web.d.ts:279
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteDetailsAndTag**(`note_details`, `tag`): `NoteDetailsAndTag`
-
-Defined in: miden\_client\_web.d.ts:281
 
 #### Parameters
 
@@ -35,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:281
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:280
 
 #### Returns
 

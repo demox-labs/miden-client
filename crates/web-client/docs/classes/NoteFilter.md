@@ -6,15 +6,11 @@
 
 # Class: NoteFilter
 
-Defined in: miden\_client\_web.d.ts:310
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteFilter**(`note_type`, `note_ids`?): `NoteFilter`
-
-Defined in: miden\_client\_web.d.ts:312
 
 #### Parameters
 
@@ -35,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:312
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:311
 
 #### Returns
 

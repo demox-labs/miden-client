@@ -6,15 +6,11 @@
 
 # Class: AccountStorage
 
-Defined in: miden\_client\_web.d.ts:79
-
 ## Methods
 
 ### commitment()
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:82
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:82
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:81
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:81
 ### getItem()
 
 > **getItem**(`index`): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:83
 
 #### Parameters
 

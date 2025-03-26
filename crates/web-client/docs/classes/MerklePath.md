@@ -6,15 +6,11 @@
 
 # Class: MerklePath
 
-Defined in: miden\_client\_web.d.ts:223
-
 ## Methods
 
 ### computeRoot()
 
 > **computeRoot**(`index`, `node`): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:228
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:228
 
 > **depth**(): `number`
 
-Defined in: miden\_client\_web.d.ts:226
-
 #### Returns
 
 `number`
@@ -47,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:226
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:225
 
 #### Returns
 
@@ -60,8 +52,6 @@ Defined in: miden\_client\_web.d.ts:225
 
 > **nodes**(): [`RpoDigest`](RpoDigest.md)[]
 
-Defined in: miden\_client\_web.d.ts:227
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)[]
@@ -71,8 +61,6 @@ Defined in: miden\_client\_web.d.ts:227
 ### verify()
 
 > **verify**(`index`, `node`, `root`): `boolean`
-
-Defined in: miden\_client\_web.d.ts:229
 
 #### Parameters
 

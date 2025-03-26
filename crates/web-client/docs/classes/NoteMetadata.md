@@ -6,15 +6,11 @@
 
 # Class: NoteMetadata
 
-Defined in: miden\_client\_web.d.ts:351
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteMetadata**(`sender`, `note_type`, `note_tag`, `note_execution_hint`, `aux`?): `NoteMetadata`
-
-Defined in: miden\_client\_web.d.ts:353
 
 #### Parameters
 
@@ -48,8 +44,6 @@ Defined in: miden\_client\_web.d.ts:353
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:352
-
 #### Returns
 
 `void`
@@ -59,8 +53,6 @@ Defined in: miden\_client\_web.d.ts:352
 ### noteType()
 
 > **noteType**(): [`NoteType`](NoteType.md)
-
-Defined in: miden\_client\_web.d.ts:356
 
 #### Returns
 
@@ -72,8 +64,6 @@ Defined in: miden\_client\_web.d.ts:356
 
 > **sender**(): [`AccountId`](AccountId.md)
 
-Defined in: miden\_client\_web.d.ts:354
-
 #### Returns
 
 [`AccountId`](AccountId.md)
@@ -83,8 +73,6 @@ Defined in: miden\_client\_web.d.ts:354
 ### tag()
 
 > **tag**(): [`NoteTag`](NoteTag.md)
-
-Defined in: miden\_client\_web.d.ts:355
 
 #### Returns
 

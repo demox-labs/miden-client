@@ -6,15 +6,11 @@
 
 # Class: Note
 
-Defined in: miden\_client\_web.d.ts:241
-
 ## Constructors
 
 ### Constructor
 
 > **new Note**(`note_assets`, `note_metadata`, `note_recipient`): `Note`
-
-Defined in: miden\_client\_web.d.ts:243
 
 #### Parameters
 
@@ -40,8 +36,6 @@ Defined in: miden\_client\_web.d.ts:243
 
 > **assets**(): [`NoteAssets`](NoteAssets.md)
 
-Defined in: miden\_client\_web.d.ts:247
-
 #### Returns
 
 [`NoteAssets`](NoteAssets.md)
@@ -51,8 +45,6 @@ Defined in: miden\_client\_web.d.ts:247
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:242
 
 #### Returns
 
@@ -64,8 +56,6 @@ Defined in: miden\_client\_web.d.ts:242
 
 > **id**(): [`NoteId`](NoteId.md)
 
-Defined in: miden\_client\_web.d.ts:244
-
 #### Returns
 
 [`NoteId`](NoteId.md)
@@ -75,8 +65,6 @@ Defined in: miden\_client\_web.d.ts:244
 ### metadata()
 
 > **metadata**(): [`NoteMetadata`](NoteMetadata.md)
-
-Defined in: miden\_client\_web.d.ts:245
 
 #### Returns
 
@@ -88,8 +76,6 @@ Defined in: miden\_client\_web.d.ts:245
 
 > **recipient**(): [`NoteRecipient`](NoteRecipient.md)
 
-Defined in: miden\_client\_web.d.ts:246
-
 #### Returns
 
 [`NoteRecipient`](NoteRecipient.md)
@@ -99,8 +85,6 @@ Defined in: miden\_client\_web.d.ts:246
 ### createP2IDNote()
 
 > `static` **createP2IDNote**(`sender`, `target`, `assets`, `note_type`, `serial_num`, `aux`): `Note`
-
-Defined in: miden\_client\_web.d.ts:248
 
 #### Parameters
 
@@ -137,8 +121,6 @@ Defined in: miden\_client\_web.d.ts:248
 ### createP2IDRNote()
 
 > `static` **createP2IDRNote**(`sender`, `target`, `assets`, `note_type`, `serial_num`, `recall_height`, `aux`): `Note`
-
-Defined in: miden\_client\_web.d.ts:249
 
 #### Parameters
 

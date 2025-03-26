@@ -6,15 +6,11 @@
 
 # Class: TransactionStatus
 
-Defined in: miden\_client\_web.d.ts:543
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:545
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:545
 
 > **getBlockNum**(): `number`
 
-Defined in: miden\_client\_web.d.ts:552
-
 #### Returns
 
 `number`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:552
 ### isCommitted()
 
 > **isCommitted**(): `boolean`
-
-Defined in: miden\_client\_web.d.ts:550
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:550
 
 > **isDiscarded**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:551
-
 #### Returns
 
 `boolean`
@@ -62,8 +52,6 @@ Defined in: miden\_client\_web.d.ts:551
 
 > **isPending**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:549
-
 #### Returns
 
 `boolean`
@@ -73,8 +61,6 @@ Defined in: miden\_client\_web.d.ts:549
 ### committed()
 
 > `static` **committed**(`block_num`): `TransactionStatus`
-
-Defined in: miden\_client\_web.d.ts:547
 
 #### Parameters
 
@@ -92,8 +78,6 @@ Defined in: miden\_client\_web.d.ts:547
 
 > `static` **discarded**(): `TransactionStatus`
 
-Defined in: miden\_client\_web.d.ts:548
-
 #### Returns
 
 `TransactionStatus`
@@ -103,8 +87,6 @@ Defined in: miden\_client\_web.d.ts:548
 ### pending()
 
 > `static` **pending**(): `TransactionStatus`
-
-Defined in: miden\_client\_web.d.ts:546
 
 #### Returns
 

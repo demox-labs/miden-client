@@ -6,15 +6,11 @@
 
 # Class: AccountDelta
 
-Defined in: miden\_client\_web.d.ts:53
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:55
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:55
 
 > **isEmpty**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:56
-
 #### Returns
 
 `boolean`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:56
 ### nonce()
 
 > **nonce**(): [`Felt`](Felt.md)
-
-Defined in: miden\_client\_web.d.ts:57
 
 #### Returns
 

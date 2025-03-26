@@ -6,15 +6,11 @@
 
 # Class: InputNote
 
-Defined in: miden\_client\_web.d.ts:170
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:172
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:172
 
 > **id**(): [`NoteId`](NoteId.md)
 
-Defined in: miden\_client\_web.d.ts:173
-
 #### Returns
 
 [`NoteId`](NoteId.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:173
 ### location()
 
 > **location**(): [`NoteLocation`](NoteLocation.md)
-
-Defined in: miden\_client\_web.d.ts:176
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:176
 
 > **note**(): [`Note`](Note.md)
 
-Defined in: miden\_client\_web.d.ts:174
-
 #### Returns
 
 [`Note`](Note.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:174
 ### proof()
 
 > **proof**(): [`NoteInclusionProof`](NoteInclusionProof.md)
-
-Defined in: miden\_client\_web.d.ts:175
 
 #### Returns
 

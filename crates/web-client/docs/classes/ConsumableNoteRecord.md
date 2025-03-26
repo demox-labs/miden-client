@@ -6,15 +6,11 @@
 
 # Class: ConsumableNoteRecord
 
-Defined in: miden\_client\_web.d.ts:133
-
 ## Constructors
 
 ### Constructor
 
 > **new ConsumableNoteRecord**(`input_note_record`, `note_consumability`): `ConsumableNoteRecord`
-
-Defined in: miden\_client\_web.d.ts:135
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:135
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:134
-
 #### Returns
 
 `void`
@@ -48,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:134
 
 > **inputNoteRecord**(): [`InputNoteRecord`](InputNoteRecord.md)
 
-Defined in: miden\_client\_web.d.ts:136
-
 #### Returns
 
 [`InputNoteRecord`](InputNoteRecord.md)
@@ -59,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:136
 ### noteConsumability()
 
 > **noteConsumability**(): [`NoteConsumability`](NoteConsumability.md)[]
-
-Defined in: miden\_client\_web.d.ts:137
 
 #### Returns
 

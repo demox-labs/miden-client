@@ -6,15 +6,11 @@
 
 # Class: NoteInputs
 
-Defined in: miden\_client\_web.d.ts:341
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteInputs**(`felt_array`): `NoteInputs`
-
-Defined in: miden\_client\_web.d.ts:343
 
 #### Parameters
 
@@ -31,8 +27,6 @@ Defined in: miden\_client\_web.d.ts:343
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:342
 
 #### Returns
 

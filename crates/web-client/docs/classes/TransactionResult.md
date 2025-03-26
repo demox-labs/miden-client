@@ -6,15 +6,11 @@
 
 # Class: TransactionResult
 
-Defined in: miden\_client\_web.d.ts:515
-
 ## Methods
 
 ### accountDelta()
 
 > **accountDelta**(): [`AccountDelta`](AccountDelta.md)
-
-Defined in: miden\_client\_web.d.ts:522
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:522
 
 > **blockNum**(): `number`
 
-Defined in: miden\_client\_web.d.ts:520
-
 #### Returns
 
 `number`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:520
 ### consumedNotes()
 
 > **consumedNotes**(): [`InputNotes`](InputNotes.md)
-
-Defined in: miden\_client\_web.d.ts:523
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:523
 
 > **createdNotes**(): [`OutputNotes`](OutputNotes.md)
 
-Defined in: miden\_client\_web.d.ts:519
-
 #### Returns
 
 [`OutputNotes`](OutputNotes.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:519
 ### executedTransaction()
 
 > **executedTransaction**(): [`ExecutedTransaction`](ExecutedTransaction.md)
-
-Defined in: miden\_client\_web.d.ts:518
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:518
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:517
-
 #### Returns
 
 `void`
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:517
 ### serialize()
 
 > **serialize**(): `Uint8Array`
-
-Defined in: miden\_client\_web.d.ts:524
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:524
 
 > **transactionArguments**(): [`TransactionArgs`](TransactionArgs.md)
 
-Defined in: miden\_client\_web.d.ts:521
-
 #### Returns
 
 [`TransactionArgs`](TransactionArgs.md)
@@ -109,8 +91,6 @@ Defined in: miden\_client\_web.d.ts:521
 ### deserialize()
 
 > `static` **deserialize**(`bytes`): `TransactionResult`
-
-Defined in: miden\_client\_web.d.ts:525
 
 #### Parameters
 

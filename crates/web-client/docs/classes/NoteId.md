@@ -6,15 +6,11 @@
 
 # Class: NoteId
 
-Defined in: miden\_client\_web.d.ts:321
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteId**(`recipient_digest`, `asset_commitment_digest`): `NoteId`
-
-Defined in: miden\_client\_web.d.ts:323
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:323
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:322
-
 #### Returns
 
 `void`
@@ -47,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:322
 ### toString()
 
 > **toString**(): `string`
-
-Defined in: miden\_client\_web.d.ts:324
 
 #### Returns
 

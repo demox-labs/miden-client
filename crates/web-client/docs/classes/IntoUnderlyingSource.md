@@ -6,15 +6,11 @@
 
 # Class: IntoUnderlyingSource
 
-Defined in: miden\_client\_web.d.ts:217
-
 ## Methods
 
 ### cancel()
 
 > **cancel**(): `void`
-
-Defined in: miden\_client\_web.d.ts:221
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:221
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:219
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:219
 ### pull()
 
 > **pull**(`controller`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:220
 
 #### Parameters
 

@@ -6,15 +6,11 @@
 
 # Class: AuthSecretKey
 
-Defined in: miden\_client\_web.d.ts:110
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:112
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:112
 
 > **getRpoFalcon512PublicKeyAsWord**(): [`Word`](Word.md)
 
-Defined in: miden\_client\_web.d.ts:113
-
 #### Returns
 
 [`Word`](Word.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:113
 ### getRpoFalcon512SecretKeyAsFelts()
 
 > **getRpoFalcon512SecretKeyAsFelts**(): [`Felt`](Felt.md)[]
-
-Defined in: miden\_client\_web.d.ts:114
 
 #### Returns
 

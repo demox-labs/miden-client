@@ -6,15 +6,11 @@
 
 # Class: AccountHeader
 
-Defined in: miden\_client\_web.d.ts:59
-
 ## Methods
 
 ### codeCommitment()
 
 > **codeCommitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:67
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:67
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:62
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:62
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:61
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:61
 
 > **id**(): [`AccountId`](AccountId.md)
 
-Defined in: miden\_client\_web.d.ts:63
-
 #### Returns
 
 [`AccountId`](AccountId.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:63
 ### nonce()
 
 > **nonce**(): [`Felt`](Felt.md)
-
-Defined in: miden\_client\_web.d.ts:64
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:64
 
 > **storageCommitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:66
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:66
 ### vaultCommitment()
 
 > **vaultCommitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:65
 
 #### Returns
 

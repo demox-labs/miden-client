@@ -6,15 +6,11 @@
 
 # Class: TransactionRecord
 
-Defined in: miden\_client\_web.d.ts:485
-
 ## Methods
 
 ### accountId()
 
 > **accountId**(): [`AccountId`](AccountId.md)
-
-Defined in: miden\_client\_web.d.ts:489
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:489
 
 > **blockNum**(): `number`
 
-Defined in: miden\_client\_web.d.ts:494
-
 #### Returns
 
 `number`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:494
 ### finalAccountState()
 
 > **finalAccountState**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:491
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:491
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:487
-
 #### Returns
 
 `void`
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:487
 ### id()
 
 > **id**(): [`TransactionId`](TransactionId.md)
-
-Defined in: miden\_client\_web.d.ts:488
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:488
 
 > **initAccountState**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:490
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:490
 ### inputNoteNullifiers()
 
 > **inputNoteNullifiers**(): [`RpoDigest`](RpoDigest.md)[]
-
-Defined in: miden\_client\_web.d.ts:492
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:492
 
 > **outputNotes**(): [`OutputNotes`](OutputNotes.md)
 
-Defined in: miden\_client\_web.d.ts:493
-
 #### Returns
 
 [`OutputNotes`](OutputNotes.md)
@@ -109,8 +91,6 @@ Defined in: miden\_client\_web.d.ts:493
 ### transactionStatus()
 
 > **transactionStatus**(): [`TransactionStatus`](TransactionStatus.md)
-
-Defined in: miden\_client\_web.d.ts:495
 
 #### Returns
 

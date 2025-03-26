@@ -4,5 +4,5 @@
   "readme": "none",
   "out": "docs",
   "plugin": ["typedoc-plugin-markdown"],
-  "hideSources": true
+  "disableSources": true
 }

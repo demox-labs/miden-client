@@ -6,15 +6,11 @@
 
 # Class: AdviceMap
 
-Defined in: miden\_client\_web.d.ts:99
-
 ## Constructors
 
 ### Constructor
 
 > **new AdviceMap**(): `AdviceMap`
-
-Defined in: miden\_client\_web.d.ts:101
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:101
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:100
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:100
 ### insert()
 
 > **insert**(`key`, `value`): [`Felt`](Felt.md)[]
-
-Defined in: miden\_client\_web.d.ts:102
 
 #### Parameters
 

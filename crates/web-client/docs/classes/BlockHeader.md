@@ -6,15 +6,11 @@
 
 # Class: BlockHeader
 
-Defined in: miden\_client\_web.d.ts:116
-
 ## Methods
 
 ### accountRoot()
 
 > **accountRoot**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:125
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:125
 
 > **blockNum**(): `number`
 
-Defined in: miden\_client\_web.d.ts:123
-
 #### Returns
 
 `number`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:123
 ### chainCommitment()
 
 > **chainCommitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:124
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:124
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:120
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:120
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:118
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:118
 
 > **noteRoot**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:127
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:127
 ### nullifierRoot()
 
 > **nullifierRoot**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:126
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:126
 
 > **prevBlockCommitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:122
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -109,8 +91,6 @@ Defined in: miden\_client\_web.d.ts:122
 ### proofCommitment()
 
 > **proofCommitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:130
 
 #### Returns
 
@@ -122,8 +102,6 @@ Defined in: miden\_client\_web.d.ts:130
 
 > **subCommitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:121
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -133,8 +111,6 @@ Defined in: miden\_client\_web.d.ts:121
 ### timestamp()
 
 > **timestamp**(): `number`
-
-Defined in: miden\_client\_web.d.ts:131
 
 #### Returns
 
@@ -146,8 +122,6 @@ Defined in: miden\_client\_web.d.ts:131
 
 > **txCommitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:128
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -158,8 +132,6 @@ Defined in: miden\_client\_web.d.ts:128
 
 > **txKernelCommitment**(): [`RpoDigest`](RpoDigest.md)
 
-Defined in: miden\_client\_web.d.ts:129
-
 #### Returns
 
 [`RpoDigest`](RpoDigest.md)
@@ -169,8 +141,6 @@ Defined in: miden\_client\_web.d.ts:129
 ### version()
 
 > **version**(): `number`
-
-Defined in: miden\_client\_web.d.ts:119
 
 #### Returns
 

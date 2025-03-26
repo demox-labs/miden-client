@@ -6,15 +6,11 @@
 
 # Class: NoteScript
 
-Defined in: miden\_client\_web.d.ts:363
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:365
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:365
 
 > `static` **p2id**(): `NoteScript`
 
-Defined in: miden\_client\_web.d.ts:366
-
 #### Returns
 
 `NoteScript`
@@ -38,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:366
 
 > `static` **p2idr**(): `NoteScript`
 
-Defined in: miden\_client\_web.d.ts:367
-
 #### Returns
 
 `NoteScript`
@@ -49,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:367
 ### swap()
 
 > `static` **swap**(): `NoteScript`
-
-Defined in: miden\_client\_web.d.ts:368
 
 #### Returns
 

@@ -6,15 +6,11 @@
 
 # Class: IntoUnderlyingByteSource
 
-Defined in: miden\_client\_web.d.ts:201
-
 ## Properties
 
 ### autoAllocateChunkSize
 
 > `readonly` **autoAllocateChunkSize**: `number`
-
-Defined in: miden\_client\_web.d.ts:208
 
 ***
 
@@ -22,15 +18,11 @@ Defined in: miden\_client\_web.d.ts:208
 
 > `readonly` **type**: `"bytes"`
 
-Defined in: miden\_client\_web.d.ts:207
-
 ## Methods
 
 ### cancel()
 
 > **cancel**(): `void`
-
-Defined in: miden\_client\_web.d.ts:206
 
 #### Returns
 
@@ -42,8 +34,6 @@ Defined in: miden\_client\_web.d.ts:206
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:203
-
 #### Returns
 
 `void`
@@ -53,8 +43,6 @@ Defined in: miden\_client\_web.d.ts:203
 ### pull()
 
 > **pull**(`controller`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:205
 
 #### Parameters
 
@@ -71,8 +59,6 @@ Defined in: miden\_client\_web.d.ts:205
 ### start()
 
 > **start**(`controller`): `void`
-
-Defined in: miden\_client\_web.d.ts:204
 
 #### Parameters
 

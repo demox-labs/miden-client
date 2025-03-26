@@ -6,15 +6,11 @@
 
 # Class: PartialNote
 
-Defined in: miden\_client\_web.d.ts:419
-
 ## Methods
 
 ### assets()
 
 > **assets**(): [`NoteAssets`](NoteAssets.md)
-
-Defined in: miden\_client\_web.d.ts:425
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:425
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:421
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:421
 ### id()
 
 > **id**(): [`NoteId`](NoteId.md)
-
-Defined in: miden\_client\_web.d.ts:422
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:422
 
 > **metadata**(): [`NoteMetadata`](NoteMetadata.md)
 
-Defined in: miden\_client\_web.d.ts:423
-
 #### Returns
 
 [`NoteMetadata`](NoteMetadata.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:423
 ### recipientDigest()
 
 > **recipientDigest**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:424
 
 #### Returns
 

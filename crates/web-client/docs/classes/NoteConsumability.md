@@ -6,15 +6,11 @@
 
 # Class: NoteConsumability
 
-Defined in: miden\_client\_web.d.ts:267
-
 ## Methods
 
 ### accountId()
 
 > **accountId**(): [`AccountId`](AccountId.md)
-
-Defined in: miden\_client\_web.d.ts:270
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:270
 
 > **consumableAfterBlock**(): `number`
 
-Defined in: miden\_client\_web.d.ts:271
-
 #### Returns
 
 `number`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:271
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:269
 
 #### Returns
 

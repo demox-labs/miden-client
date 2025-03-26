@@ -6,15 +6,11 @@
 
 # Class: NoteIdAndArgs
 
-Defined in: miden\_client\_web.d.ts:326
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteIdAndArgs**(`note_id`, `args`?): `NoteIdAndArgs`
-
-Defined in: miden\_client\_web.d.ts:328
 
 #### Parameters
 
@@ -35,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:328
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:327
 
 #### Returns
 

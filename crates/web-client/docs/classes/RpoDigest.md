@@ -6,15 +6,11 @@
 
 # Class: RpoDigest
 
-Defined in: miden\_client\_web.d.ts:432
-
 ## Constructors
 
 ### Constructor
 
 > **new RpoDigest**(`value`): `RpoDigest`
-
-Defined in: miden\_client\_web.d.ts:434
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:434
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:433
-
 #### Returns
 
 `void`
@@ -44,8 +38,6 @@ Defined in: miden\_client\_web.d.ts:433
 
 > **toHex**(): `string`
 
-Defined in: miden\_client\_web.d.ts:436
-
 #### Returns
 
 `string`
@@ -55,8 +47,6 @@ Defined in: miden\_client\_web.d.ts:436
 ### toWord()
 
 > **toWord**(): [`Word`](Word.md)
-
-Defined in: miden\_client\_web.d.ts:435
 
 #### Returns
 

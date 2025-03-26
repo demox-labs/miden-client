@@ -6,15 +6,11 @@
 
 # Class: NoteLocation
 
-Defined in: miden\_client\_web.d.ts:345
-
 ## Methods
 
 ### blockNum()
 
 > **blockNum**(): `number`
-
-Defined in: miden\_client\_web.d.ts:348
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:348
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:347
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:347
 ### nodeIndexInBlock()
 
 > **nodeIndexInBlock**(): `number`
-
-Defined in: miden\_client\_web.d.ts:349
 
 #### Returns
 

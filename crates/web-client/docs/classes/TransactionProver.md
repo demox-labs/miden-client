@@ -6,15 +6,11 @@
 
 # Class: TransactionProver
 
-Defined in: miden\_client\_web.d.ts:476
-
 ## Methods
 
 ### endpoint()
 
 > **endpoint**(): `string`
-
-Defined in: miden\_client\_web.d.ts:483
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:483
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:478
-
 #### Returns
 
 `void`
@@ -38,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:478
 
 > **serialize**(): `string`
 
-Defined in: miden\_client\_web.d.ts:481
-
 #### Returns
 
 `string`
@@ -49,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:481
 ### deserialize()
 
 > `static` **deserialize**(`prover_type`, `endpoint`?): `TransactionProver`
-
-Defined in: miden\_client\_web.d.ts:482
 
 #### Parameters
 
@@ -72,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:482
 
 > `static` **newLocalProver**(): `TransactionProver`
 
-Defined in: miden\_client\_web.d.ts:479
-
 #### Returns
 
 `TransactionProver`
@@ -83,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:479
 ### newRemoteProver()
 
 > `static` **newRemoteProver**(`endpoint`): `TransactionProver`
-
-Defined in: miden\_client\_web.d.ts:480
 
 #### Parameters
 

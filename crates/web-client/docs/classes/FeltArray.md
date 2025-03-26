@@ -6,15 +6,11 @@
 
 # Class: FeltArray
 
-Defined in: miden\_client\_web.d.ts:158
-
 ## Constructors
 
 ### Constructor
 
 > **new FeltArray**(`felts_array`?): `FeltArray`
-
-Defined in: miden\_client\_web.d.ts:160
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:160
 
 > **append**(`felt`): `void`
 
-Defined in: miden\_client\_web.d.ts:161
-
 #### Parameters
 
 ##### felt
@@ -49,8 +43,6 @@ Defined in: miden\_client\_web.d.ts:161
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:159
 
 #### Returns
 

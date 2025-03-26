@@ -6,15 +6,11 @@
 
 # Class: NoteAssets
 
-Defined in: miden\_client\_web.d.ts:261
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteAssets**(`assets_array`?): `NoteAssets`
-
-Defined in: miden\_client\_web.d.ts:263
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:263
 
 > **assets**(): [`FungibleAsset`](FungibleAsset.md)[]
 
-Defined in: miden\_client\_web.d.ts:265
-
 #### Returns
 
 [`FungibleAsset`](FungibleAsset.md)[]
@@ -44,8 +38,6 @@ Defined in: miden\_client\_web.d.ts:265
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:262
-
 #### Returns
 
 `void`
@@ -55,8 +47,6 @@ Defined in: miden\_client\_web.d.ts:262
 ### push()
 
 > **push**(`asset`): `void`
-
-Defined in: miden\_client\_web.d.ts:264
 
 #### Parameters
 

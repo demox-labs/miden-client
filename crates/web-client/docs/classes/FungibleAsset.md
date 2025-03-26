@@ -6,15 +6,11 @@
 
 # Class: FungibleAsset
 
-Defined in: miden\_client\_web.d.ts:163
-
 ## Constructors
 
 ### Constructor
 
 > **new FungibleAsset**(`faucet_id`, `amount`): `FungibleAsset`
-
-Defined in: miden\_client\_web.d.ts:165
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:165
 
 > **amount**(): `bigint`
 
-Defined in: miden\_client\_web.d.ts:167
-
 #### Returns
 
 `bigint`
@@ -47,8 +41,6 @@ Defined in: miden\_client\_web.d.ts:167
 ### faucetId()
 
 > **faucetId**(): [`AccountId`](AccountId.md)
-
-Defined in: miden\_client\_web.d.ts:166
 
 #### Returns
 
@@ -60,8 +52,6 @@ Defined in: miden\_client\_web.d.ts:166
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:164
-
 #### Returns
 
 `void`
@@ -71,8 +61,6 @@ Defined in: miden\_client\_web.d.ts:164
 ### intoWord()
 
 > **intoWord**(): [`Word`](Word.md)
-
-Defined in: miden\_client\_web.d.ts:168
 
 #### Returns
 

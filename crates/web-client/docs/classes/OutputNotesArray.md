@@ -6,15 +6,11 @@
 
 # Class: OutputNotesArray
 
-Defined in: miden\_client\_web.d.ts:414
-
 ## Constructors
 
 ### Constructor
 
 > **new OutputNotesArray**(`output_notes_array`?): `OutputNotesArray`
-
-Defined in: miden\_client\_web.d.ts:416
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:416
 
 > **append**(`output_note`): `void`
 
-Defined in: miden\_client\_web.d.ts:417
-
 #### Parameters
 
 ##### output\_note
@@ -49,8 +43,6 @@ Defined in: miden\_client\_web.d.ts:417
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:415
 
 #### Returns
 

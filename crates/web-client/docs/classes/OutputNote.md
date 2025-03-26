@@ -6,15 +6,11 @@
 
 # Class: OutputNote
 
-Defined in: miden\_client\_web.d.ts:393
-
 ## Methods
 
 ### assets()
 
 > **assets**(): [`NoteAssets`](NoteAssets.md)
-
-Defined in: miden\_client\_web.d.ts:399
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:399
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:395
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:395
 ### id()
 
 > **id**(): [`NoteId`](NoteId.md)
-
-Defined in: miden\_client\_web.d.ts:400
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:400
 
 > **metadata**(): [`NoteMetadata`](NoteMetadata.md)
 
-Defined in: miden\_client\_web.d.ts:402
-
 #### Returns
 
 [`NoteMetadata`](NoteMetadata.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:402
 ### recipientDigest()
 
 > **recipientDigest**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:401
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:401
 
 > **shrink**(): `OutputNote`
 
-Defined in: miden\_client\_web.d.ts:403
-
 #### Returns
 
 `OutputNote`
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:403
 ### full()
 
 > `static` **full**(`note`): `OutputNote`
-
-Defined in: miden\_client\_web.d.ts:396
 
 #### Parameters
 
@@ -104,8 +88,6 @@ Defined in: miden\_client\_web.d.ts:396
 
 > `static` **header**(`note_header`): `OutputNote`
 
-Defined in: miden\_client\_web.d.ts:398
-
 #### Parameters
 
 ##### note\_header
@@ -121,8 +103,6 @@ Defined in: miden\_client\_web.d.ts:398
 ### partial()
 
 > `static` **partial**(`partial_note`): `OutputNote`
-
-Defined in: miden\_client\_web.d.ts:397
 
 #### Parameters
 

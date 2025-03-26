@@ -6,15 +6,11 @@
 
 # Class: Word
 
-Defined in: miden\_client\_web.d.ts:594
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:596
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:596
 ### newFromFelts()
 
 > `static` **newFromFelts**(`felt_vec`): `Word`
-
-Defined in: miden\_client\_web.d.ts:598
 
 #### Parameters
 
@@ -43,8 +37,6 @@ Defined in: miden\_client\_web.d.ts:598
 ### newFromU64s()
 
 > `static` **newFromU64s**(`u64_vec`): `Word`
-
-Defined in: miden\_client\_web.d.ts:597
 
 #### Parameters
 

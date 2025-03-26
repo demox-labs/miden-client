@@ -6,15 +6,11 @@
 
 # Class: AccountCode
 
-Defined in: miden\_client\_web.d.ts:48
-
 ## Methods
 
 ### commitment()
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:51
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:51
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:50
 
 #### Returns
 

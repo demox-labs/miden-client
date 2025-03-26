@@ -6,15 +6,11 @@
 
 # Class: NoteExecutionHint
 
-Defined in: miden\_client\_web.d.ts:293
-
 ## Methods
 
 ### canBeConsumed()
 
 > **canBeConsumed**(`block_num`): `boolean`
-
-Defined in: miden\_client\_web.d.ts:301
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:301
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:295
-
 #### Returns
 
 `void`
@@ -43,8 +37,6 @@ Defined in: miden\_client\_web.d.ts:295
 ### afterBlock()
 
 > `static` **afterBlock**(`block_num`): `NoteExecutionHint`
-
-Defined in: miden\_client\_web.d.ts:298
 
 #### Parameters
 
@@ -62,8 +54,6 @@ Defined in: miden\_client\_web.d.ts:298
 
 > `static` **always**(): `NoteExecutionHint`
 
-Defined in: miden\_client\_web.d.ts:297
-
 #### Returns
 
 `NoteExecutionHint`
@@ -73,8 +63,6 @@ Defined in: miden\_client\_web.d.ts:297
 ### fromParts()
 
 > `static` **fromParts**(`tag`, `payload`): `NoteExecutionHint`
-
-Defined in: miden\_client\_web.d.ts:300
 
 #### Parameters
 
@@ -96,8 +84,6 @@ Defined in: miden\_client\_web.d.ts:300
 
 > `static` **none**(): `NoteExecutionHint`
 
-Defined in: miden\_client\_web.d.ts:296
-
 #### Returns
 
 `NoteExecutionHint`
@@ -107,8 +93,6 @@ Defined in: miden\_client\_web.d.ts:296
 ### onBlockSlot()
 
 > `static` **onBlockSlot**(`epoch_len`, `slot_len`, `slot_offset`): `NoteExecutionHint`
-
-Defined in: miden\_client\_web.d.ts:299
 
 #### Parameters
 

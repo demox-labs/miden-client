@@ -6,15 +6,11 @@
 
 # Class: TransactionFilter
 
-Defined in: miden\_client\_web.d.ts:462
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:464
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:464
 
 > `static` **all**(): `TransactionFilter`
 
-Defined in: miden\_client\_web.d.ts:465
-
 #### Returns
 
 `TransactionFilter`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:465
 ### uncomitted()
 
 > `static` **uncomitted**(): `TransactionFilter`
-
-Defined in: miden\_client\_web.d.ts:466
 
 #### Returns
 

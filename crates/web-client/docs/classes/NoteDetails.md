@@ -6,15 +6,11 @@
 
 # Class: NoteDetails
 
-Defined in: miden\_client\_web.d.ts:273
-
 ## Constructors
 
 ### Constructor
 
 > **new NoteDetails**(`note_assets`, `note_recipient`): `NoteDetails`
-
-Defined in: miden\_client\_web.d.ts:275
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: miden\_client\_web.d.ts:275
 
 > **assets**(): [`NoteAssets`](NoteAssets.md)
 
-Defined in: miden\_client\_web.d.ts:276
-
 #### Returns
 
 [`NoteAssets`](NoteAssets.md)
@@ -48,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:276
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:274
-
 #### Returns
 
 `void`
@@ -59,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:274
 ### recipient()
 
 > **recipient**(): [`NoteRecipient`](NoteRecipient.md)
-
-Defined in: miden\_client\_web.d.ts:277
 
 #### Returns
 

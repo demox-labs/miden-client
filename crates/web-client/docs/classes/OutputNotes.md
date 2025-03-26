@@ -6,15 +6,11 @@
 
 # Class: OutputNotes
 
-Defined in: miden\_client\_web.d.ts:405
-
 ## Methods
 
 ### commitment()
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:408
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:408
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:407
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:407
 ### getNote()
 
 > **getNote**(`index`): [`OutputNote`](OutputNote.md)
-
-Defined in: miden\_client\_web.d.ts:411
 
 #### Parameters
 
@@ -56,8 +48,6 @@ Defined in: miden\_client\_web.d.ts:411
 
 > **isEmpty**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:410
-
 #### Returns
 
 `boolean`
@@ -68,8 +58,6 @@ Defined in: miden\_client\_web.d.ts:410
 
 > **notes**(): [`OutputNote`](OutputNote.md)[]
 
-Defined in: miden\_client\_web.d.ts:412
-
 #### Returns
 
 [`OutputNote`](OutputNote.md)[]
@@ -79,8 +67,6 @@ Defined in: miden\_client\_web.d.ts:412
 ### numNotes()
 
 > **numNotes**(): `number`
-
-Defined in: miden\_client\_web.d.ts:409
 
 #### Returns
 

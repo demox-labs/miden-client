@@ -6,15 +6,11 @@
 
 # Class: InputNotes
 
-Defined in: miden\_client\_web.d.ts:192
-
 ## Methods
 
 ### commitment()
 
 > **commitment**(): [`RpoDigest`](RpoDigest.md)
-
-Defined in: miden\_client\_web.d.ts:195
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:195
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:194
-
 #### Returns
 
 `void`
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:194
 ### getNote()
 
 > **getNote**(`index`): [`InputNote`](InputNote.md)
-
-Defined in: miden\_client\_web.d.ts:198
 
 #### Parameters
 
@@ -56,8 +48,6 @@ Defined in: miden\_client\_web.d.ts:198
 
 > **isEmpty**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:197
-
 #### Returns
 
 `boolean`
@@ -68,8 +58,6 @@ Defined in: miden\_client\_web.d.ts:197
 
 > **notes**(): [`InputNote`](InputNote.md)[]
 
-Defined in: miden\_client\_web.d.ts:199
-
 #### Returns
 
 [`InputNote`](InputNote.md)[]
@@ -79,8 +67,6 @@ Defined in: miden\_client\_web.d.ts:199
 ### numNotes()
 
 > **numNotes**(): `number`
-
-Defined in: miden\_client\_web.d.ts:196
 
 #### Returns
 

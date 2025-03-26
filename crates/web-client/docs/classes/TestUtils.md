@@ -6,15 +6,11 @@
 
 # Class: TestUtils
 
-Defined in: miden\_client\_web.d.ts:450
-
 ## Methods
 
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:452
 
 #### Returns
 
@@ -25,8 +21,6 @@ Defined in: miden\_client\_web.d.ts:452
 ### createMockAccountId()
 
 > `static` **createMockAccountId**(): [`AccountId`](AccountId.md)
-
-Defined in: miden\_client\_web.d.ts:453
 
 #### Returns
 

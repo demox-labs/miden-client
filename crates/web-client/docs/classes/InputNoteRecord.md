@@ -6,15 +6,11 @@
 
 # Class: InputNoteRecord
 
-Defined in: miden\_client\_web.d.ts:178
-
 ## Methods
 
 ### consumerTransactionId()
 
 > **consumerTransactionId**(): `string`
-
-Defined in: miden\_client\_web.d.ts:186
 
 #### Returns
 
@@ -26,8 +22,6 @@ Defined in: miden\_client\_web.d.ts:186
 
 > **details**(): [`NoteDetails`](NoteDetails.md)
 
-Defined in: miden\_client\_web.d.ts:183
-
 #### Returns
 
 [`NoteDetails`](NoteDetails.md)
@@ -37,8 +31,6 @@ Defined in: miden\_client\_web.d.ts:183
 ### free()
 
 > **free**(): `void`
-
-Defined in: miden\_client\_web.d.ts:180
 
 #### Returns
 
@@ -50,8 +42,6 @@ Defined in: miden\_client\_web.d.ts:180
 
 > **id**(): [`NoteId`](NoteId.md)
 
-Defined in: miden\_client\_web.d.ts:181
-
 #### Returns
 
 [`NoteId`](NoteId.md)
@@ -61,8 +51,6 @@ Defined in: miden\_client\_web.d.ts:181
 ### inclusionProof()
 
 > **inclusionProof**(): [`NoteInclusionProof`](NoteInclusionProof.md)
-
-Defined in: miden\_client\_web.d.ts:185
 
 #### Returns
 
@@ -74,8 +62,6 @@ Defined in: miden\_client\_web.d.ts:185
 
 > **isAuthenticated**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:188
-
 #### Returns
 
 `boolean`
@@ -85,8 +71,6 @@ Defined in: miden\_client\_web.d.ts:188
 ### isConsumed()
 
 > **isConsumed**(): `boolean`
-
-Defined in: miden\_client\_web.d.ts:189
 
 #### Returns
 
@@ -98,8 +82,6 @@ Defined in: miden\_client\_web.d.ts:189
 
 > **isProcessing**(): `boolean`
 
-Defined in: miden\_client\_web.d.ts:190
-
 #### Returns
 
 `boolean`
@@ -109,8 +91,6 @@ Defined in: miden\_client\_web.d.ts:190
 ### metadata()
 
 > **metadata**(): [`NoteMetadata`](NoteMetadata.md)
-
-Defined in: miden\_client\_web.d.ts:184
 
 #### Returns
 
@@ -122,8 +102,6 @@ Defined in: miden\_client\_web.d.ts:184
 
 > **nullifier**(): `string`
 
-Defined in: miden\_client\_web.d.ts:187
-
 #### Returns
 
 `string`
@@ -133,8 +111,6 @@ Defined in: miden\_client\_web.d.ts:187
 ### state()
 
 > **state**(): [`InputNoteState`](../enumerations/InputNoteState.md)
-
-Defined in: miden\_client\_web.d.ts:182
 
 #### Returns
 

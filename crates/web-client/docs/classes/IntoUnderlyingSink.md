@@ -6,15 +6,11 @@
 
 # Class: IntoUnderlyingSink
 
-Defined in: miden\_client\_web.d.ts:210
-
 ## Methods
 
 ### abort()
 
 > **abort**(`reason`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:215
 
 #### Parameters
 
@@ -32,8 +28,6 @@ Defined in: miden\_client\_web.d.ts:215
 
 > **close**(): `Promise`\<`any`\>
 
-Defined in: miden\_client\_web.d.ts:214
-
 #### Returns
 
 `Promise`\<`any`\>
@@ -44,8 +38,6 @@ Defined in: miden\_client\_web.d.ts:214
 
 > **free**(): `void`
 
-Defined in: miden\_client\_web.d.ts:212
-
 #### Returns
 
 `void`
@@ -55,8 +47,6 @@ Defined in: miden\_client\_web.d.ts:212
 ### write()
 
 > **write**(`chunk`): `Promise`\<`any`\>
-
-Defined in: miden\_client\_web.d.ts:213
 
 #### Parameters
 
