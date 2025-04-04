@@ -197,7 +197,9 @@ export interface NewAccountTestResult {
   isUpdatable: boolean;
   isPublic: boolean;
   isNew: boolean;
+  tokenSymbol(): string | null;
 }
+
 export const createNewWallet = async ({
   storageMode,
   mutable,
@@ -258,6 +260,7 @@ export const createNewWallet = async ({
         isUpdatable: newWallet.isUpdatable(),
         isPublic: newWallet.isPublic(),
         isNew: newWallet.isNew(),
+        tokenSymbol: () => newWallet.tokenSymbol() ?? null,
       };
     },
     storageMode,
@@ -280,6 +283,7 @@ export const createNewFaucet = async (
       const client = window.client;
       const accountStorageMode =
         window.AccountStorageMode.tryFromStr(_storageMode);
+
       const newFaucet = await client.newFaucet(
         accountStorageMode,
         _nonFungible,
@@ -287,6 +291,7 @@ export const createNewFaucet = async (
         _decimals,
         _maxSupply
       );
+
       return {
         id: newFaucet.id().toString(),
         nonce: newFaucet.nonce().toString(),
@@ -298,6 +303,7 @@ export const createNewFaucet = async (
         isUpdatable: newFaucet.isUpdatable(),
         isPublic: newFaucet.isPublic(),
         isNew: newFaucet.isNew(),
+        tokenSymbol: () => newFaucet.tokenSymbol() ?? null,
       };
     },
     storageMode,
@@ -393,7 +399,7 @@ export const consumeTransaction = async (
           .toHex(),
         nonce: consumeTransactionResult.accountDelta().nonce()?.toString(),
         numConsumedNotes: consumeTransactionResult.consumedNotes().numNotes(),
-        targetAccountBalanace: changedTargetAccount
+        targetAccountBalanace: changedTargetAccount!
           .vault()
           .getBalance(faucetId)
           .toString(),
