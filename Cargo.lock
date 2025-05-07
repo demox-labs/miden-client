@@ -1564,7 +1564,7 @@ dependencies = [
 [[package]]
 name = "miden-node-proto-build"
 version = "0.9.0"
-source = "git+https://github.com/0xMiden/miden-node?branch=next#490903d6b9aa0623e47579160f12b046d5995558"
+source = "git+https://github.com/0xMiden/miden-node?branch=next#9ad7bba92f2857dc213118576a2038fe88ba6800"
 dependencies = [
  "anyhow",
  "prost",
