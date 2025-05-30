@@ -6,9 +6,9 @@ use miden_client::{
 use miden_lib::account::{auth::RpoFalcon512, wallets::BasicWallet};
 use miden_objects::Felt;
 use rand::{Rng, SeedableRng, rngs::StdRng};
-use wasm_bindgen::JsValue;
+use wasm_bindgen::prelude::*;
 
-use crate::{js_error_with_context, models::account_storage_mode::AccountStorageMode};
+use crate::{js_error_with_context, log, models::account_storage_mode::AccountStorageMode, now};
 
 // HELPERS
 // ================================================================================================
@@ -28,6 +28,9 @@ pub(crate) async fn generate_wallet(
     mutable: bool,
     seed: Option<Vec<u8>>,
 ) -> Result<(Account, [Felt; 4], SecretKey), JsValue> {
+    let start = unsafe { now() };
+
+    let rng_start = unsafe { now() };
     let mut rng: &mut Box<dyn FeltRng> = match seed {
         Some(seed_bytes) => {
             // Attempt to convert the seed slice into a 32-byte array.
@@ -40,7 +43,15 @@ pub(crate) async fn generate_wallet(
         },
         None => client.rng().inner_mut(),
     };
+    let rng_end = unsafe { now() };
+    let rng_time = rng_end - rng_start;
+    unsafe { log(&format!("RNG setup in {:.2}ms", rng_time)) };
+
+    let key_pair_start = unsafe { now() };
     let key_pair = SecretKey::with_rng(&mut rng);
+    let key_pair_end = unsafe { now() };
+    let key_pair_time = key_pair_end - key_pair_start;
+    unsafe { log(&format!("Generated key pair in {:.2}ms", key_pair_time)) };
 
     let mut init_seed = [0u8; 32];
     rng.fill_bytes(&mut init_seed);
@@ -55,6 +66,9 @@ pub(crate) async fn generate_wallet(
         .ensure_genesis_in_place()
         .await
         .map_err(|err| js_error_with_context(err, "failed to ensure genesis block is in place"))?;
+    let anchor_block_end = unsafe { now() };
+    let anchor_block_time = anchor_block_end - key_pair_end;
+    unsafe { log(&format!("Retrieved anchor block in {:.2}ms", anchor_block_time)) };
 
     let (new_account, account_seed) = AccountBuilder::new(init_seed)
         .anchor(
@@ -68,6 +82,12 @@ pub(crate) async fn generate_wallet(
         .with_component(BasicWallet)
         .build()
         .map_err(|err| js_error_with_context(err, "failed to create new wallet"))?;
+
+    let build_end = unsafe { now() };
+    let build_time = build_end - anchor_block_end;
+    let total_time = build_end - start;
+    unsafe { log(&format!("Built account in {:.2}ms", build_time)) };
+    unsafe { log(&format!("Total wallet generation time: {:.2}ms", total_time)) };
 
     Ok((new_account, account_seed, key_pair))
 }

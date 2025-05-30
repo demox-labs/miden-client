@@ -9,7 +9,7 @@ import {
 // new_wallet tests
 // =======================================================================================================
 
-describe("new_wallet tests", () => {
+describe.only("new_wallet tests", () => {
   const testCases = [
     {
       description: "creates a new private, immutable wallet",
@@ -49,20 +49,43 @@ describe("new_wallet tests", () => {
     },
   ];
 
-  testCases.forEach(({ description, storageMode, mutable, expected }) => {
-    it(description, async () => {
-      const result = await createNewWallet({ storageMode, mutable });
+  const ITERATIONS = 10;
+  const timingResults: { [key: string]: number[] } = {};
 
-      isValidAddress(result.id);
-      expect(result.nonce).to.equal("0");
-      isValidAddress(result.vaultCommitment);
-      isValidAddress(result.storageCommitment);
-      isValidAddress(result.codeCommitment);
-      expect(result.isFaucet).to.equal(false);
-      expect(result.isRegularAccount).to.equal(true);
-      expect(result.isUpdatable).to.equal(expected.isUpdatable);
-      expect(result.isPublic).to.equal(expected.isPublic);
-      expect(result.isNew).to.equal(true);
+  [testCases[0]].forEach(({ description, storageMode, mutable, expected }) => {
+    it(`${description} (${ITERATIONS} iterations)`, async () => {
+      timingResults[description] = [];
+      
+      for (let i = 0; i < ITERATIONS; i++) {
+        const startTime = performance.now();
+        const result = await createNewWallet({ storageMode, mutable });
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+        timingResults[description].push(duration);
+
+        isValidAddress(result.id);
+        expect(result.nonce).to.equal("0");
+        isValidAddress(result.vaultCommitment);
+        isValidAddress(result.storageCommitment);
+        isValidAddress(result.codeCommitment);
+        expect(result.isFaucet).to.equal(false);
+        expect(result.isRegularAccount).to.equal(true);
+        expect(result.isUpdatable).to.equal(expected.isUpdatable);
+        expect(result.isPublic).to.equal(expected.isPublic);
+        expect(result.isNew).to.equal(true);
+      }
+
+      // Calculate and log statistics
+      const times = timingResults[description];
+      const avg = times.reduce((a, b) => a + b, 0) / times.length;
+      const min = Math.min(...times);
+      const max = Math.max(...times);
+      
+      console.log(`\nTiming results for ${description}:`);
+      console.log(`Average: ${avg.toFixed(2)}ms`);
+      console.log(`Min: ${min.toFixed(2)}ms`);
+      console.log(`Max: ${max.toFixed(2)}ms`);
+      console.log(`All timings: ${times.map(t => t.toFixed(2)).join(', ')}`);
     });
   });
 

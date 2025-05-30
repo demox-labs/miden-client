@@ -100,6 +100,16 @@ impl WebClient {
 // ERROR HANDLING HELPERS
 // ================================================================================================
 
+#[wasm_bindgen]
+extern "C" {
+    // Log a &str the console in the browser or console.log in nodejs
+    #[wasm_bindgen(js_namespace = console)]
+    pub fn log(s: &str);
+
+    #[wasm_bindgen(js_namespace = performance)]
+    fn now() -> f64;
+}
+
 fn js_error_with_context<T>(err: T, context: &str) -> JsValue
 where
     T: core::error::Error,

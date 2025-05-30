@@ -42,3 +42,13 @@ module_name_repetitions =     "allow" # Many triggers, and is a stylistic choice
 must_use_candidate =          "allow" # This marks many fn's which isn't helpful.
 should_panic_without_expect = "allow" # We don't care about the specific panic message.
 # End of pedantic lints.
+
+# [profile.release]
+# opt-level = 3
+# lto = true
+# strip = true
+
+# [profile.dev]
+# opt-level = 3
+# lto = true
+# strip = true

@@ -190,7 +190,13 @@ export interface NewAccountTestResult {
   isUpdatable: boolean;
   isPublic: boolean;
   isNew: boolean;
+  timings?: {
+    totalTime: number;
+    clientSetupTime?: number;
+    walletCreationTime: number;
+  };
 }
+
 export const createNewWallet = async ({
   storageMode,
   mutable,
@@ -216,13 +222,18 @@ export const createNewWallet = async ({
       _isolatedClient,
       _serializedWalletSeed
     ) => {
+      const startTime = performance.now();
+      let clientSetupTime: number = 0;
+
       if (_isolatedClient) {
+        const clientSetupStart = performance.now();
         // Reconstruct Uint8Array inside the browser context
         const _clientSeed = _serializedClientSeed
           ? new Uint8Array(_serializedClientSeed)
           : undefined;
 
         await window.helpers.refreshClient(_clientSeed);
+        clientSetupTime = performance.now() - clientSetupStart;
       }
 
       let _walletSeed;
@@ -234,11 +245,15 @@ export const createNewWallet = async ({
       const accountStorageMode =
         window.AccountStorageMode.tryFromStr(_storageMode);
 
+      const walletCreationStart = performance.now();
       const newWallet = await client.newWallet(
         accountStorageMode,
         _mutable,
         _walletSeed
       );
+      const walletCreationTime = performance.now() - walletCreationStart;
+
+      const totalTime = performance.now() - startTime;
 
       return {
         id: newWallet.id().toString(),
@@ -251,6 +266,11 @@ export const createNewWallet = async ({
         isUpdatable: newWallet.isUpdatable(),
         isPublic: newWallet.isPublic(),
         isNew: newWallet.isNew(),
+        timings: {
+          totalTime,
+          clientSetupTime,
+          walletCreationTime,
+        },
       };
     },
     storageMode,

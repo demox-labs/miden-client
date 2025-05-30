@@ -10,7 +10,7 @@ use rand::RngCore;
 use wasm_bindgen::prelude::*;
 
 use super::models::{account::Account, account_storage_mode::AccountStorageMode};
-use crate::{WebClient, helpers::generate_wallet, js_error_with_context};
+use crate::{WebClient, helpers::generate_wallet, js_error_with_context, log, now};
 
 #[wasm_bindgen]
 impl WebClient {
@@ -21,21 +21,38 @@ impl WebClient {
         mutable: bool,
         init_seed: Option<Vec<u8>>,
     ) -> Result<Account, JsValue> {
+        let start = unsafe { now() };
+
         let keystore = self.keystore.clone();
         if let Some(client) = self.get_mut_inner() {
             let (new_account, account_seed, key_pair) =
                 generate_wallet(client, storage_mode, mutable, init_seed).await?;
+
+            let wallet_gen_end = unsafe { now() };
+            let wallet_gen_time = wallet_gen_end - start;
+            unsafe { log(&format!("Generated wallet in {:.2}ms", wallet_gen_time)) };
 
             client
                 .add_account(&new_account, Some(account_seed), false)
                 .await
                 .map_err(|err| js_error_with_context(err, "failed to insert new wallet"))?;
 
+            let add_account_end = unsafe { now() };
+            let add_account_time = add_account_end - wallet_gen_end;
+            unsafe { log(&format!("Added account in {:.2}ms", add_account_time)) };
+
             keystore
                 .expect("KeyStore should be initialized")
                 .add_key(&AuthSecretKey::RpoFalcon512(key_pair))
                 .await
                 .map_err(|err| err.to_string())?;
+
+            let add_key_end = unsafe { now() };
+            let add_key_time = add_key_end - add_account_end;
+            unsafe { log(&format!("Added key in {:.2}ms", add_key_time)) };
+
+            let total_time = add_key_end - start;
+            unsafe { log(&format!("Total wallet creation time: {:.2}ms", total_time)) };
 
             Ok(new_account.into())
         } else {
