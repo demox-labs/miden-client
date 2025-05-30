@@ -6,6 +6,12 @@ import copy from "rollup-plugin-copy";
 // Flag that indicates if the build is meant for testing purposes.
 const testing = process.env.MIDEN_WEB_TESTING === "true";
 
+const wasmOptArgs = [
+  "-O4",
+  "--enable-bulk-memory",
+  "--enable-nontrapping-float-to-int",
+];
+
 /**
  * Rollup configuration file for building a Cargo project and creating a WebAssembly (WASM) module,
  * as well as bundling a dedicated web worker file.
@@ -48,7 +54,7 @@ export default [
             `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
             "--no-default-features",
           ],
-          wasmOpt: ["-O4", "--enable-bulk-memory", "--enable-nontrapping-float-to-int"],
+          wasmOpt: wasmOptArgs,
         },
         experimental: {
           typescriptDeclarationDir: "dist/crates",

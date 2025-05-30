@@ -1,14 +1,18 @@
 use miden_client::{
     Client,
     account::{Account, AccountBuilder, AccountType},
-    crypto::{FeltRng, RpoRandomCoin, SecretKey},
+    crypto::{FeltRng, RpoRandomCoin, SecretKey as NativeSecretKey},
 };
 use miden_lib::account::{auth::RpoFalcon512, wallets::BasicWallet};
 use miden_objects::Felt;
 use rand::{Rng, SeedableRng, rngs::StdRng};
 use wasm_bindgen::prelude::*;
 
-use crate::{js_error_with_context, log, models::account_storage_mode::AccountStorageMode, now};
+use crate::{
+    js_error_with_context, log,
+    models::{account_storage_mode::AccountStorageMode, secret_key::SecretKey},
+    now,
+};
 
 // HELPERS
 // ================================================================================================
@@ -27,28 +31,30 @@ pub(crate) async fn generate_wallet(
     storage_mode: &AccountStorageMode,
     mutable: bool,
     seed: Option<Vec<u8>>,
-) -> Result<(Account, [Felt; 4], SecretKey), JsValue> {
+) -> Result<(Account, [Felt; 4], NativeSecretKey), JsValue> {
     let start = unsafe { now() };
 
     let rng_start = unsafe { now() };
-    let mut rng: &mut Box<dyn FeltRng> = match seed {
+    let mut rng = match seed {
         Some(seed_bytes) => {
             // Attempt to convert the seed slice into a 32-byte array.
             let seed_array: [u8; 32] = seed_bytes
                 .try_into()
                 .map_err(|_| JsValue::from_str("Seed must be exactly 32 bytes"))?;
-            let mut std_rng = StdRng::from_seed(seed_array);
-            let coin_seed: [u64; 4] = std_rng.random();
-            &mut (Box::new(RpoRandomCoin::new(coin_seed.map(Felt::new))) as Box<dyn FeltRng>)
+            &mut StdRng::from_seed(seed_array)
         },
-        None => client.rng().inner_mut(),
+        None => &mut StdRng::from_os_rng(),
     };
+    let coin_seed: [u64; 4] = rng.random();
+    let rng = &mut Box::new(RpoRandomCoin::new(coin_seed.map(Felt::new)));
+
     let rng_end = unsafe { now() };
     let rng_time = rng_end - rng_start;
     unsafe { log(&format!("RNG setup in {:.2}ms", rng_time)) };
 
     let key_pair_start = unsafe { now() };
-    let key_pair = SecretKey::with_rng(&mut rng);
+    let key_pair_wasm = NativeSecretKey::with_rng(rng);
+    let key_pair: NativeSecretKey = key_pair_wasm.into();
     let key_pair_end = unsafe { now() };
     let key_pair_time = key_pair_end - key_pair_start;
     unsafe { log(&format!("Generated key pair in {:.2}ms", key_pair_time)) };

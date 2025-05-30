@@ -70,6 +70,7 @@ pub mod partial_note;
 pub mod provers;
 pub mod rpo256;
 pub mod rpo_digest;
+pub mod secret_key;
 pub mod sync_summary;
 pub mod transaction_args;
 pub mod transaction_filter;

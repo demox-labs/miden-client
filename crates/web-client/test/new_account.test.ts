@@ -49,7 +49,7 @@ describe.only("new_wallet tests", () => {
     },
   ];
 
-  const ITERATIONS = 10;
+  const ITERATIONS = 25;
   const timingResults: { [key: string]: number[] } = {};
 
   [testCases[0]].forEach(({ description, storageMode, mutable, expected }) => {

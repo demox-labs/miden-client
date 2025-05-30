@@ -32,6 +32,7 @@ export {
   OutputNote,
   OutputNotesArray,
   Rpo256,
+  SecretKey,
   SerializedAccountHeader,
   TestUtils,
   TransactionFilter,

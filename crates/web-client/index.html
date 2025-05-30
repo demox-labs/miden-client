@@ -83,6 +83,7 @@
     <div>
         <button id="runAllBenchmarks">Run All Benchmarks</button>
         <button id="runSingleBenchmark">Run Single Test</button>
+        <button id="runSecretKeyBenchmark">Run Secret Key Benchmark (25 iterations)</button>
     </div>
     <div id="loading" class="loading">Running benchmarks...</div>
     
@@ -97,6 +98,11 @@
             <p>Parameters: no seed</p>
             <div class="result" id="result2"></div>
         </div>
+        <div class="test-case">
+            <h3>Secret Key Generation Benchmark</h3>
+            <p>Parameters: 25 iterations</p>
+            <div class="result" id="secretKeyResult"></div>
+        </div>
     </div>
 
     <div class="summary">
@@ -105,8 +111,56 @@
     </div>
 
     <script type="module">
-        import { WebClient, AccountStorageMode } from './dist/index.js';
+        import { WebClient, AccountStorageMode, SecretKey } from './dist/index.js';
         window.MidenWebClient = WebClient;
+
+        async function runSecretKeyBenchmark() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            const resultElement = document.getElementById('secretKeyResult');
+            
+            try {
+                const iterations = 25;
+                const durations = [];
+                
+                for (let i = 0; i < iterations; i++) {
+                    const startTime = performance.now();
+                    const secretKey = new SecretKey();
+                    const secretKeyBytes = secretKey.toBytes();
+                    const endTime = performance.now();
+                    durations.push(endTime - startTime);
+                }
+
+                const avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
+                const minDuration = Math.min(...durations);
+                const maxDuration = Math.max(...durations);
+
+                resultElement.innerHTML = `
+                    <div class="stats">
+                        <div class="stat">
+                            <h4>Average Time</h4>
+                            <p>${avgDuration.toFixed(2)}ms</p>
+                        </div>
+                        <div class="stat">
+                            <h4>Min Time</h4>
+                            <p>${minDuration.toFixed(2)}ms</p>
+                        </div>
+                        <div class="stat">
+                            <h4>Max Time</h4>
+                            <p>${maxDuration.toFixed(2)}ms</p>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultElement.innerHTML = `
+                    <div class="error">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
 
         async function runBenchmark(useSeed = false) {
             const webClient = await WebClient.createClient('https://rpc.testnet.miden.io', undefined);
@@ -207,6 +261,7 @@
         }
 
         document.getElementById('runAllBenchmarks').addEventListener('click', runAllBenchmarks);
+        document.getElementById('runSecretKeyBenchmark').addEventListener('click', runSecretKeyBenchmark);
     </script>
 </body>
 </html> 
