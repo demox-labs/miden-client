@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Wallet Creation Benchmarks</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stat {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat h4 {
+            margin: 0 0 5px 0;
+            color: #666;
+        }
+        .stat p {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+            text-align: center;
+            color: #666;
+        }
+        .test-case {
+            margin: 10px 0;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-case h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .test-results {
+            margin-top: 20px;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wallet Creation Benchmarks</h1>
+    <div>
+        <button id="runAllBenchmarks">Run All Benchmarks</button>
+        <button id="runSingleBenchmark">Run Single Test</button>
+    </div>
+    <div id="loading" class="loading">Running benchmarks...</div>
+    
+    <div class="test-cases">
+        <div class="test-case">
+            <h3>Test Case 1: Private Wallet</h3>
+            <p>Parameters: yes seed</p>
+            <div class="result" id="result1"></div>
+        </div>
+        <div class="test-case">
+            <h3>Test Case 2: Private Wallet</h3>
+            <p>Parameters: no seed</p>
+            <div class="result" id="result2"></div>
+        </div>
+    </div>
+
+    <div class="summary">
+        <h2>Summary Statistics</h2>
+        <div class="stats" id="summaryStats"></div>
+    </div>
+
+    <script type="module">
+        import { WebClient, AccountStorageMode } from './dist/index.js';
+        window.MidenWebClient = WebClient;
+
+        async function runBenchmark(useSeed = false) {
+            const webClient = await WebClient.createClient('https://rpc.testnet.miden.io', undefined);
+            
+            const startTime = performance.now();
+            
+            try {
+                let walletSeed;
+                if (useSeed) {
+                    // Generate a random seed for testing
+                    walletSeed = new Uint8Array(32);
+                    crypto.getRandomValues(walletSeed);
+                }
+
+                const walletCreationStart = performance.now();
+                const newWallet = await webClient.newWallet(
+                    AccountStorageMode.private(),
+                    true,
+                    walletSeed
+                );
+                const walletCreationTime = performance.now() - walletCreationStart;
+                const totalTime = performance.now() - startTime;
+
+                return {
+                    success: true,
+                    walletCreationTime,
+                    totalTime,
+                    wallet: newWallet
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function displayResults(resultElement, result) {
+            if (result.success) {
+                resultElement.innerHTML = `
+                    <div class="stats">
+                        <div class="stat">
+                            <h4>Wallet Creation Time</h4>
+                            <p>${result.walletCreationTime.toFixed(2)}ms</p>
+                        </div>
+                        <div class="stat">
+                            <h4>Total Time</h4>
+                            <p>${result.totalTime.toFixed(2)}ms</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultElement.innerHTML = `
+                    <div class="error">
+                        <p>Error: ${result.error}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function runAllBenchmarks() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+
+            try {
+                // Test Case 1: Default Wallet
+                const result1 = await runBenchmark('seed', true);
+                displayResults(document.getElementById('result1'), result1);
+
+                // Test Case 2: Immutable Wallet
+                const result2 = await runBenchmark('no seed', false);
+                displayResults(document.getElementById('result2'), result2);
+
+                // Calculate and display summary statistics
+                const results = [result1, result2].filter(r => r.success);
+                const avgCreationTime = results.reduce((sum, r) => sum + r.walletCreationTime, 0) / results.length;
+                const avgTotalTime = results.reduce((sum, r) => sum + r.totalTime, 0) / results.length;
+
+                document.getElementById('summaryStats').innerHTML = `
+                    <div class="stat">
+                        <h4>Average Creation Time</h4>
+                        <p>${avgCreationTime.toFixed(2)}ms</p>
+                    </div>
+                    <div class="stat">
+                        <h4>Average Total Time</h4>
+                        <p>${avgTotalTime.toFixed(2)}ms</p>
+                    </div>
+                    <div class="stat">
+                        <h4>Tests Run</h4>
+                        <p>${results.length}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Benchmark error:', error);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        document.getElementById('runAllBenchmarks').addEventListener('click', runAllBenchmarks);
+    </script>
+</body>
+</html> 

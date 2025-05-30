@@ -42,15 +42,13 @@ export default [
       rust({
         extraArgs: {
           cargo: [
+            "--features",
+            "testing",
             "--config",
-            // `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296", "-C", "opt-level=3"]`,
             `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
             "--no-default-features",
           ],
-          wasmOpt: testing
-            ? ["-O0", "--enable-threads", "--enable-bulk-memory-opt"]
-            // : ["-O4", "--enable-threads", "--enable-bulk-memory-opt", "--enable-reference-types"],
-            : ["--enable-threads", "--enable-bulk-memory-opt"],
+          wasmOpt: ["-O4", "--enable-bulk-memory", "--enable-nontrapping-float-to-int"],
         },
         experimental: {
           typescriptDeclarationDir: "dist/crates",
