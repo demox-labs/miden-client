@@ -6,9 +6,37 @@ import copy from "rollup-plugin-copy";
 // Flag that indicates if the build is meant for testing purposes.
 const testing = process.env.MIDEN_WEB_TESTING === "true";
 const wasmOptArgs = [
-  "-O4",
+  "-O3",
   "--enable-bulk-memory",
   "--enable-nontrapping-float-to-int",
+];
+
+// Base cargo arguments that are always included
+const baseCargoArgs = [
+  "--features",
+  "testing",
+  "--config",
+  `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
+  "--no-default-features",
+];
+
+// Cargo arguments for testing builds
+// to ensure release like optimizations are enable
+const testCargoArgs = [
+  "--config",
+  "profile.dev.opt-level=3",
+  "--config",
+  "profile.dev.debug=false",
+  "--config",
+  'profile.dev.panic="abort"',
+  "--config",
+  "profile.dev.lto=true",
+  "--config",
+  'profile.dev.strip="none"',
+  "-Z",
+  "build-std=panic_abort,std",
+  "-Z",
+  "build-std-features=panic_immediate_abort,optimize_for_size",
 ];
 
 /**
@@ -46,24 +74,15 @@ export default [
     plugins: [
       rust({
         extraArgs: {
-          cargo: [
-            "--features",
-            "testing",
-            "--config",
-            `build.rustflags=["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals", "-C", "link-arg=--max-memory=4294967296"]`,
-            "--no-default-features",
-          ],
-          // We need to pass an invalid flag to silently skip the wasm optimization
-          // The correct way of doing this is to build the wasm with the optimize: { release: false }
-          // but building the wasm with the dev profile fails due to a too many locals error
-          // And the plugin doesn't allow us to directly skip the wasm-opt step or specify a non-release/dev profile
-          // We should change this when this issue is fixed: https://github.com/wasm-tool/rollup-plugin-rust/issues/50
-          ...(testing ? { wasmOpt: ["--an-invalid-option"]} : { wasmOpt: wasmOptArgs }),
+          cargo: [...baseCargoArgs, ...(testing ? testCargoArgs : [])],
+          ...(testing ? {} : { wasmOpt: wasmOptArgs }),
         },
         experimental: {
           typescriptDeclarationDir: "dist/crates",
         },
-        optimize: { release: true, rustc: true },
+        ...(testing
+          ? { optimize: { release: false, rustc: false } }
+          : { optimize: { release: true, rustc: true } }),
       }),
       resolve(),
       commonjs(),
