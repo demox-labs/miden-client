@@ -13,6 +13,7 @@
 * Added `NoteUpdate` type to the note update tracker to distinguish between different types of updates (#821).
 * Updated `TonicRpcClient` and `Store` traits to be subtraits of `Send` and `Sync` (#926).
 * Updated `TonicRpcClient` and `Store` trait functions to return futures which are `Send` (#926).
+* Support Operations From Counter Contract FPI Example in Web Client (#958).
 
 ### Changes
 
