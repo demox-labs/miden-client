@@ -1,5 +1,6 @@
 use miden_client::transaction::{
-    ForeignAccount as NativeForeignAccount, NoteArgs as NativeNoteArgs, TransactionRequestBuilder as NativeTransactionRequestBuilder,
+    ForeignAccount as NativeForeignAccount, NoteArgs as NativeNoteArgs,
+    TransactionRequestBuilder as NativeTransactionRequestBuilder,
 };
 use miden_objects::{
     note::{
@@ -91,7 +92,7 @@ impl TransactionRequestBuilder {
 
     #[wasm_bindgen(js_name = "withForeignAccounts")]
     pub fn with_foreign_accounts(mut self, foreign_accounts: Vec<ForeignAccount>) -> Self {
-        let native_foreign_accounts: Vec<NativeForeignAccount> = 
+        let native_foreign_accounts: Vec<NativeForeignAccount> =
             foreign_accounts.into_iter().map(Into::into).collect();
         self.0 = self.0.clone().with_foreign_accounts(native_foreign_accounts);
         self

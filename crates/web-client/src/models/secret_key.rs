@@ -1,7 +1,6 @@
 use miden_objects::crypto::dsa::rpo_falcon512::SecretKey as NativeSecretKey;
+use rand::{SeedableRng, rngs::StdRng};
 use wasm_bindgen::prelude::*;
-
-use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::models::public_key::PublicKey;
 
@@ -22,7 +21,7 @@ impl SecretKey {
             },
             None => StdRng::from_os_rng(),
         };
-        Ok(SecretKey(NativeSecretKey::with_rng(&mut rng).into()))
+        Ok(SecretKey(NativeSecretKey::with_rng(&mut rng)))
     }
 
     #[wasm_bindgen(js_name = "publicKey")]

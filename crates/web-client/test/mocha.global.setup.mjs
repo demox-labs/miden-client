@@ -221,22 +221,24 @@ before(async () => {
         }
       };
 
-      window.helpers.waitForBlocks = async(
-        amountOfBlocks
-      ) => {
+      window.helpers.waitForBlocks = async (amountOfBlocks) => {
         const client = window.client;
         let currentBlock = await client.getSyncHeight();
         let finalBlock = currentBlock + amountOfBlocks;
-        console.log(`Current block: ${currentBlock}, waiting for ${amountOfBlocks} blocks...`);
+        console.log(
+          `Current block: ${currentBlock}, waiting for ${amountOfBlocks} blocks...`
+        );
         while (true) {
           let syncSummary = await client.syncState();
-          console.log(`Synced to block ${syncSummary.blockNum()} (syncing until ${finalBlock})`);
+          console.log(
+            `Synced to block ${syncSummary.blockNum()} (syncing until ${finalBlock})`
+          );
           if (syncSummary.blockNum() >= finalBlock) {
             return;
           }
           await new Promise((r) => setTimeout(r, 1000));
         }
-      }
+      };
 
       window.helpers.refreshClient = async (initSeed) => {
         const client = await WebClient.createClient(rpcUrl, initSeed);

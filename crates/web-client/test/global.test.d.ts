@@ -6,7 +6,7 @@ import {
   AccountHeader,
   AccountId,
   AccountStorageMode,
-  AccountStorageRequirements
+  AccountStorageRequirements,
   AccountType,
   AdviceMap,
   Assembler,
@@ -129,7 +129,7 @@ declare global {
         maxWaitTime?: number,
         delayInterval?: number
       ) => Promise<void>;
-      waitForBlocks:(amountOfBlocks: number) => Promise<void>;
+      waitForBlocks: (amountOfBlocks: number) => Promise<void>;
       refreshClient: (initSeed?: Uint8Array) => Promise<void>;
     };
   }

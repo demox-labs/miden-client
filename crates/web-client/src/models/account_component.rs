@@ -1,9 +1,7 @@
 use miden_lib::account::auth::RpoFalcon512 as NativeRpoFalcon512;
 use miden_objects::{
-    account::{
-        code::procedure, AccountComponent as NativeAccountComponent, StorageSlot as NativeStorageSlot
-    },
-    crypto::dsa::rpo_falcon512::SecretKey as NativeSecretKey
+    account::{AccountComponent as NativeAccountComponent, StorageSlot as NativeStorageSlot},
+    crypto::dsa::rpo_falcon512::SecretKey as NativeSecretKey,
 };
 use wasm_bindgen::prelude::*;
 
@@ -38,30 +36,26 @@ impl AccountComponent {
 
     #[wasm_bindgen(js_name = "getProcedureHash")]
     pub fn get_procedure_hash(&self, procedure_name: &str) -> Result<String, JsValue> {
-        let get_proc_export = self.0
+        let get_proc_export = self
+            .0
             .library()
             .exports()
             .find(|export| export.name.as_str() == procedure_name)
             .ok_or_else(|| {
                 JsValue::from_str(&format!(
-                    "Procedure '{}' not found in the account component library",
-                    procedure_name
+                    "Procedure {procedure_name} not found in the account component library"
                 ))
             })?;
 
-        let get_proc_mast_id = self.0
-            .library()
-            .get_export_node_id(get_proc_export);
+        let get_proc_mast_id = self.0.library().get_export_node_id(get_proc_export);
 
-        let digest_hex = self.0
+        let digest_hex = self
+            .0
             .library()
             .mast_forest()
             .get_node_by_id(get_proc_mast_id)
             .ok_or_else(|| {
-                JsValue::from_str(&format!(
-                    "Mast node for procedure '{}' not found",
-                    procedure_name
-                ))
+                JsValue::from_str(&format!("Mast node for procedure {procedure_name} not found",))
             })?
             .digest()
             .to_hex();
@@ -70,11 +64,10 @@ impl AccountComponent {
     }
 
     #[wasm_bindgen(js_name = "createAuthComponent")]
-    pub fn create_auth_component(
-        secret_key: &SecretKey,
-    ) -> AccountComponent {
+    pub fn create_auth_component(secret_key: &SecretKey) -> AccountComponent {
         let native_secret_key: NativeSecretKey = secret_key.into();
-        let native_auth_component: NativeAccountComponent = NativeRpoFalcon512::new(native_secret_key.public_key()).into();
+        let native_auth_component: NativeAccountComponent =
+            NativeRpoFalcon512::new(native_secret_key.public_key()).into();
         AccountComponent(native_auth_component)
     }
 }

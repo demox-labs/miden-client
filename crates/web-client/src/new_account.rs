@@ -9,7 +9,9 @@ use miden_objects::asset::TokenSymbol;
 use rand::RngCore;
 use wasm_bindgen::prelude::*;
 
-use super::models::{account::Account, account_storage_mode::AccountStorageMode, secret_key::SecretKey, word::Word};
+use super::models::{
+    account::Account, account_storage_mode::AccountStorageMode, secret_key::SecretKey, word::Word,
+};
 use crate::{WebClient, helpers::generate_wallet, js_error_with_context};
 
 #[wasm_bindgen]

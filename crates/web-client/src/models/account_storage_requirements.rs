@@ -1,26 +1,23 @@
-use miden_client::rpc::domain::account::{AccountStorageRequirements as NativeAccountStorageRequirements, StorageMapKey as NativeStorageMapKey};
+use miden_client::rpc::domain::account::{
+    AccountStorageRequirements as NativeAccountStorageRequirements,
+    StorageMapKey as NativeStorageMapKey,
+};
 use wasm_bindgen::prelude::*;
 
-use crate::{
-    js_error_with_context,
-    models::{rpo_digest::RpoDigest},
-};
+use crate::models::rpo_digest::RpoDigest;
 
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct SlotAndKeys {
     storage_slot_index: u8,
-    storage_map_keys: Vec<RpoDigest>
+    storage_map_keys: Vec<RpoDigest>,
 }
 
 #[wasm_bindgen]
 impl SlotAndKeys {
     #[wasm_bindgen(constructor)]
     pub fn new(storage_slot_index: u8, storage_map_keys: Vec<RpoDigest>) -> SlotAndKeys {
-        SlotAndKeys {
-            storage_slot_index,
-            storage_map_keys
-        }
+        SlotAndKeys { storage_slot_index, storage_map_keys }
     }
 
     pub fn storage_slot_index(&self) -> u8 {
@@ -44,29 +41,29 @@ impl AccountStorageRequirements {
 
     #[wasm_bindgen(js_name = "fromSlotAndKeysArray")]
     pub fn from_slot_and_keys_array(
-        slots_and_keys: Vec<SlotAndKeys>
+        slots_and_keys: Vec<SlotAndKeys>,
     ) -> Result<AccountStorageRequirements, JsValue> {
-        let mut intermediate: Vec<(u8, Vec<NativeStorageMapKey>)> = Vec::with_capacity(slots_and_keys.len());
+        let mut intermediate: Vec<(u8, Vec<NativeStorageMapKey>)> =
+            Vec::with_capacity(slots_and_keys.len());
 
         for sk in slots_and_keys {
-            let native_keys: Vec<NativeStorageMapKey> = sk
-                .storage_map_keys
-                .into_iter()
-                .map(|rpo| rpo.into())
-                .collect();
+            let native_keys: Vec<NativeStorageMapKey> =
+                sk.storage_map_keys.into_iter().map(Into::into).collect();
 
             intermediate.push((sk.storage_slot_index, native_keys));
         }
 
         let native_req = NativeAccountStorageRequirements::new(
-            intermediate
-                .iter()
-                .map(|(slot_index, keys_vec)| {
-                    (*slot_index, keys_vec.iter())
-                }),
+            intermediate.iter().map(|(slot_index, keys_vec)| (*slot_index, keys_vec.iter())),
         );
 
         Ok(AccountStorageRequirements(native_req))
+    }
+}
+
+impl Default for AccountStorageRequirements {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

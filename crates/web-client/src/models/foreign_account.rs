@@ -15,9 +15,10 @@ impl ForeignAccount {
         account_id: AccountId,
         storage_requirements: AccountStorageRequirements,
     ) -> Result<ForeignAccount, JsValue> {
-        let native_foreign_account = NativeForeignAccount::public(account_id.into(), storage_requirements.into())
-            .map_err(|e| js_error_with_context(e, "Failed to create public foreign account"));
-        
+        let native_foreign_account =
+            NativeForeignAccount::public(account_id.into(), storage_requirements.into())
+                .map_err(|e| js_error_with_context(e, "Failed to create public foreign account"));
+
         Ok(ForeignAccount(native_foreign_account?))
     }
 

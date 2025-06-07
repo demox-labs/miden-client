@@ -1,8 +1,8 @@
 use miden_objects::crypto::dsa::rpo_falcon512::PublicKey as NativePublicKey;
 use wasm_bindgen::prelude::*;
 
-
 #[wasm_bindgen]
+#[derive(Copy, Clone)]
 pub struct PublicKey(NativePublicKey);
 
 // CONVERSIONS
@@ -16,7 +16,7 @@ impl From<NativePublicKey> for PublicKey {
 
 impl From<&NativePublicKey> for PublicKey {
     fn from(native_public_key: &NativePublicKey) -> Self {
-        PublicKey(native_public_key.clone())
+        PublicKey(*native_public_key)
     }
 }
 
@@ -28,6 +28,6 @@ impl From<PublicKey> for NativePublicKey {
 
 impl From<&PublicKey> for NativePublicKey {
     fn from(public_key: &PublicKey) -> Self {
-        public_key.0.clone()
+        public_key.0
     }
 }

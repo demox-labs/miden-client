@@ -1,10 +1,7 @@
 use miden_objects::account::StorageMap as NativeStorageMap;
 use wasm_bindgen::prelude::*;
 
-use crate::models::{
-    rpo_digest::RpoDigest,
-    word::Word,
-};
+use crate::models::{rpo_digest::RpoDigest, word::Word};
 
 #[wasm_bindgen]
 pub struct StorageMap(NativeStorageMap);
