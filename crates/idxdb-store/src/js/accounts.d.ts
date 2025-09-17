@@ -43,10 +43,10 @@ export declare function getAccountAssetVault(vaultRoot: string): Promise<{
 export declare function getAccountAuthByPubKey(pubKey: string): Promise<{
     secretKey: string;
 }>;
-export declare function insertAccountCode(codeRoot: string, code: Uint8Array): Promise<void>;
-export declare function insertAccountStorage(storageRoot: string, storageSlots: Uint8Array): Promise<void>;
-export declare function insertAccountAssetVault(vaultRoot: string, assets: Uint8Array): Promise<void>;
-export declare function insertAccountRecord(accountId: string, codeRoot: string, storageRoot: string, vaultRoot: string, nonce: string, committed: boolean, commitment: string, accountSeed: Uint8Array | undefined): Promise<void>;
+export declare function upsertAccountCode(codeRoot: string, code: Uint8Array): Promise<void>;
+export declare function upsertAccountStorage(storageRoot: string, storageSlots: Uint8Array): Promise<void>;
+export declare function upsertAccountAssetVault(vaultRoot: string, assets: Uint8Array): Promise<void>;
+export declare function upsertAccountRecord(accountId: string, codeRoot: string, storageRoot: string, vaultRoot: string, nonce: string, committed: boolean, commitment: string, accountSeed: Uint8Array | undefined): Promise<void>;
 export declare function insertAccountAuth(pubKey: string, secretKey: string): Promise<void>;
 export declare function upsertForeignAccountCode(accountId: string, code: Uint8Array, codeRoot: string): Promise<void>;
 export declare function getForeignAccountCode(accountIds: string[]): Promise<{
